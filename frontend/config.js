@@ -1,8 +1,6 @@
 /**
  * সাইট কনফিগ — ব্যাকএন্ড API বেস URL।
- *
- * লোকাল ডেভেলপমেন্টে localhost ব্যবহার হবে; ডিপ্লয় করা সাইটে
- * সমস্ত vercel.app ডোমেইন আপনার API সার্ভারের সাথে সংযুক্ত হবে।
+ * ⚠️ গুরুত্বপূর্ণ: নিচে RENDER_BACKEND_URL দিয়ে প্রতিস্থাপন করুন
  */
 (function () {
   var isLocal =
@@ -12,9 +10,9 @@
 
   var getAPIBase = function() {
     if (isLocal) return "http://localhost:5000";
-    // Production: API সার্ভারের পূর্ণ URL (Render, Railway, ইত্যাদি)
-    // আপনার ব্যাকএন্ড সার্ভারের প্রকৃত ডোমেইন দিয়ে প্রতিস্থাপন করুন
-    return "https://nurulquranmadrasha-api.onrender.com"; // বা আপনার API URL
+    // Production: Render backend URL
+    // উদাহরণ: https://nurulquranmadrasha-backend.onrender.com
+    return "RENDER_BACKEND_URL";
   };
 
   window.APP_CONFIG = {
@@ -22,4 +20,6 @@
     // অ্যাডমিন প্যানেলের অবস্থান (লগইনের পর এখানে পাঠানো হবে)
     ADMIN_URL: isLocal ? "../admin_panel/admin.html" : "./admin_panel/admin.html",
   };
+  
+  console.log('[Frontend Config] API_BASE:', window.APP_CONFIG.API_BASE);
 })();
