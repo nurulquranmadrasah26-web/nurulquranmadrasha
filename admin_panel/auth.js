@@ -11,7 +11,7 @@
 
   var CFG = window.APP_CONFIG || {};
   var API = CFG.API_BASE || '';
-  var LOGIN_URL = CFG.LOGIN_URL || '../frontend/index.html';
+  var LOGIN_URL = CFG.LOGIN_URL || './index.html';
 
   /* ---------- স্টোরেজ থেকে সেশন ---------- */
   function getToken() {

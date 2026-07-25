@@ -49,8 +49,10 @@ app.use(
       if (!origin) return cb(null, true);
       if (ALLOWED_ORIGINS.length === 0) return cb(null, true);
       if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
-      // Allow any *.vercel.app preview/production deployment.
+      // Allow any *.vercel.app preview/production deployment
       if (/\.vercel\.app$/.test(new URL(origin).hostname)) return cb(null, true);
+      // Allow localhost and 127.0.0.1
+      if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return cb(null, true);
       return cb(new Error("Not allowed by CORS: " + origin));
     },
     credentials: true,
