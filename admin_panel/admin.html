@@ -4919,7 +4919,8 @@ function showPage(id, btn, skipRemember) {
   pageEl.classList.add('active');
   if (btn) btn.classList.add('active');
   document.querySelectorAll('.sub-nav').forEach(n => n.classList.remove('visible'));
-  if (subNavs[id]) document.getElementById(subNavs[id]).classList.add('visible');
+  const subNavEl = subNavs[id] ? document.getElementById(subNavs[id]) : null;
+  if (subNavEl) subNavEl.classList.add('visible');
   setActivePill(document.getElementById(id === 'dashboard' ? 'navPillDashboard' : ''));
   closeAllNavDrops();
   renderAll();
@@ -8913,10 +8914,15 @@ function nqInitAutoSaveWatcher() {
 /* ─── Init ─── */
 (async function nqInit() {
   await nqLoadPersistedState();
-  initHajiraData();
-  initAdaiData();
-  restoreLastPage();
-  renderHajira();
+  try {
+    initHajiraData();
+    initAdaiData();
+    restoreLastPage();
+    renderHajira();
+  } catch (e) {
+    console.error('ইনিশিয়ালাইজেশনে সমস্যা হয়েছে (তবে সেভ সিস্টেম চালু থাকবে):', e);
+    try { showPage('dashboard', null, true); } catch (e2) {}
+  }
   nqInitAutoSaveWatcher();
 
   /* ব্যবহারকারী ব্যবস্থাপনায় অ্যাক্সেস থাকলে সার্ভার থেকে তালিকা লোড করুন */
