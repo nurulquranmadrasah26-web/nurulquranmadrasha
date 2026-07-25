@@ -9100,6 +9100,7 @@ function nqInitAutoSaveWatcher() {
   try {
     initHajiraData();
     initAdaiData();
+    populateAdmissionClasses(); // পেজ রিফ্রেশের পর সরাসরি ভর্তি পেজে ফিরলেও শ্রেণী তালিকা যেন খালি না থাকে
     restoreLastPage();
     renderHajira();
   } catch (e) {
