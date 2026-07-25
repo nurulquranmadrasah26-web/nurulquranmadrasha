@@ -8837,14 +8837,42 @@ function nqApplyLoadedState(data) {
   if (hasContent(data.studentDues)) studentDues = data.studentDues;
 }
 
-/* এখনই সেভ করে দেয় (bulk) */
+/* এখনই সেভ করে দেয় — আগে বাল্ক এন্ডপয়েন্ট ট্রাই করে, ব্যাকএন্ড এখনো আপডেট না
+   হয়ে থাকলে (বাল্ক রুট না থাকলে) প্রতিটি কী আলাদাভাবে সেভ করে (এই এন্ডপয়েন্ট
+   আগে থেকেই ছিল, তাই এটা সবসময় কাজ করবে) — ফলে ব্যাকএন্ড রিডিপ্লয় না করলেও ডেটা সেভ হবে। */
 function nqSaveStateNow() {
   if (!nqStoreLoaded || !window.NQAuth) return;
   clearTimeout(nqSaveTimer);
   nqSaveTimer = null;
+
+  const snapshot = nqStateSnapshot();
+
   window.NQAuth
-    .authFetch('/api/store', { method: 'PUT', body: JSON.stringify({ keys: nqStateSnapshot() }) })
-    .catch((e) => console.error('ডেটা সংরক্ষণে সমস্যা:', e));
+    .authFetch('/api/store', { method: 'PUT', body: JSON.stringify({ keys: snapshot }) })
+    .then((res) => {
+      if (!res.ok) throw new Error('bulk save failed: ' + res.status);
+    })
+    .catch((e) => {
+      console.warn('বাল্ক সেভ ব্যর্থ, প্রতিটি কী আলাদাভাবে সেভ করা হচ্ছে:', e);
+      nqSaveStateFallback(snapshot);
+    });
+}
+
+/* প্রতিটি কী আলাদা আলাদাভাবে /api/store/:key -তে PUT করে সেভ করে */
+function nqSaveStateFallback(snapshot) {
+  const keys = Object.keys(snapshot);
+  Promise.all(
+    keys.map((key) =>
+      window.NQAuth
+        .authFetch('/api/store/' + key, { method: 'PUT', body: JSON.stringify({ data: snapshot[key] }) })
+        .then((res) => { if (!res.ok) throw new Error(key + ' -> ' + res.status); })
+    )
+  ).catch((e) => {
+    console.error('ডেটা সংরক্ষণ সম্পূর্ণভাবে ব্যর্থ হয়েছে:', e);
+    if (typeof showErrorPopup === 'function') {
+      showErrorPopup('ডেটা সার্ভারে সংরক্ষণ করা যায়নি! ইন্টারনেট সংযোগ ও সার্ভার চেক করুন।');
+    }
+  });
 }
 
 /* কিছুক্ষণ পরে সেভ করার জন্য শিডিউল করে (একসাথে অনেকবার কল হলেও একবারই সেভ হয়) */
