@@ -1319,7 +1319,7 @@
     </button>
     <div class="nav-drop-menu">
       <button class="nav-drop-item" onclick="showPage('userNew'); resetUserForm();">নতুন ব্যবহারকারী</button>
-      <button class="nav-drop-item" onclick="showPage('userList'); renderUserList();">তালিকা</button>
+      <button class="nav-drop-item" onclick="showPage('userList'); loadUsers();">তালিকা</button>
     </div>
   </div>
 
@@ -1367,7 +1367,7 @@
         <div class="card c-green" style="cursor:pointer;" onclick="showPage('otDivision'); renderOtDivisions();"><span class="card-label">বিভাগ</span><span class="card-value">৩ টি</span></div>
         <div class="card c-black" style="cursor:pointer;" onclick="showPage('ieCategory'); renderIeCategories();"><span class="card-label">আয়/ব্যয় খাত</span><span class="card-value">১৫ টি</span></div>
         <div class="card c-navy" style="cursor:pointer;" onclick="showPage('stutransfer'); renderStuTransfer();"><span class="card-label">স্থানান্তর/বহিষ্কার</span><span class="card-value">০ জন</span></div>
-        <div class="card c-navy" style="cursor:pointer;" onclick="showPage('msgDashboard'); renderMsgDashboard();"><span class="card-label">আজকের পাঠানো ম্যাসেজ</span><span class="card-value">০ টি</span></div>
+        <div class="card c-navy" style="cursor:pointer;" onclick="showPage('msgDashboard'); renderMsgDashboard();"><span class="card-label">আজক��র পাঠানো ম্যাসেজ</span><span class="card-value">০ টি</span></div>
 
         <div class="card c-black" style="cursor:pointer;" onclick="showPage('msgList'); renderMsgListPage();"><span class="card-label">মোট পাঠানো ম্যাসেজ</span><span class="card-value">০ টি</span></div>
         <div class="card c-salmon" style="cursor:pointer;" onclick="showPage('msgTemplate'); renderMsgTemplatePage();"><span class="card-label">ম্যাসেজ টেমপ্লেট</span><span class="card-value">১ টি</span></div>
@@ -2090,7 +2090,7 @@
           </div>
 
           <div class="adm-field" style="grid-column: span 2;">
-            <label>যার মারফতে ভর্তি তার নাম, মোবাইল নং</label>
+            <label>যার মারফতে ভর্তি তার না��, মোবাইল নং</label>
             <input id="admReferrer" placeholder="নাম, মোবাইল নং" />
           </div>
           <div class="adm-field">
@@ -2366,7 +2366,7 @@
         <div class="leave-card-title"><span class="ic ic-wrap"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="17"/><path d="M9 4V2h6v2"/><path d="M9 10h6M9 14h6"/></svg></span> ছুটির আবেদন সমূহ</div>
         <div class="tbl-wrap">
           <table>
-            <thead><tr><th>#</th><th>নাম</th><th>কারণ</th><th>থেকে</th><th>পর্যন্ত</th><th>দিন</th><th>বিস্তারিত কারণ</th><th>অবস্থা</th><th>প্রত্যাখ্যানের কারণ</th></tr></thead>
+            <thead><tr><th>#</th><th>নাম</th><th>কারণ</th><th>থেকে</th><th>পর্যন্ত</th><th>দিন</th><th>বিস্তারিত কারণ</th><th>অবস্থা</th><th>প্রত্যাখ্যানের কার���</th></tr></thead>
             <tbody id="leaveApplyTableBody"></tbody>
           </table>
         </div>
@@ -3695,7 +3695,7 @@
     </div>
   </div>
 
-  <!-- ═══════════════ অন্যান্য মেনু: ৬. ক্লাস গ্রুপ ═══════════════ -->
+  <!-- ═══════════��═══ অন্যান্য মেনু: ৬. ক্লাস গ্রুপ ═══════════════ -->
   <div class="page" id="page-classGroup">
     <div class="section-title">ক্লাশ গ্রপ</div>
     <div style="background:#fff;border-radius:10px;padding:18px;">
@@ -4775,7 +4775,7 @@ function saveStaffAdmission() {
 
 function admissionNext() {
   const required = [
-    ['admDept','বিভাগ নির্বাচন করুন'], ['admClass','শ্রেণী নির্বাচন করুন'],
+    ['admDept','বিভাগ নির্বাচন করুন'], ['admClass','শ্রেণী ��ির্বাচন করুন'],
     ['admStartMonth','ক্লাশ শুরুর মাস'], ['admName','শিক্ষার্থীর নাম'],
     ['admDob','জন্ম তারিখ'], ['admGender','লিঙ্গ নির্বাচন করুন'],
     ['admFatherName','পিতার নাম'], ['admGuardianName','অভিভাবকের নাম'],
@@ -4968,6 +4968,7 @@ async function loadUsers() {
 const usrOpIcoCheck = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
 const usrOpIcoCross = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>';
 const usrOpIcoEdit  = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+const usrOpIcoDel   = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>';
 
 function renderUserList() {
   const body = document.getElementById('userListBody');
@@ -4983,40 +4984,76 @@ function renderUserList() {
     (!fType || u.type === fType)
   ).slice(0, limit);
 
+  // সাপোর্ট রোল শুধু দেখতে পারবে — কোনো অ্যাকশন বাটন নয়
+  const readOnly = !!(window.NQAuth && window.NQAuth.isReadOnlyModule && window.NQAuth.isReadOnlyModule('users'));
+
   body.innerHTML = rows.map((u, i) => {
-    let opCell = '';
-    if (u.editable !== false) {
+    let opCell = '<span style="color:#aaa;">—</span>';
+    if (!readOnly && u.editable !== false) {
       const statusBtn = u.active
-        ? `<button class="usr-op-btn usr-op-active" title="সক্রিয়" onclick="toggleUserStatus('${u.id}')">${usrOpIcoCheck}</button>`
-        : `<button class="usr-op-btn usr-op-inactive" title="নিষ্ক্রিয়" onclick="toggleUserStatus('${u.id}')">${usrOpIcoCross}</button>`;
-      opCell = `${statusBtn} <button class="usr-op-btn usr-op-edit" title="সম্পাদনা" onclick="editUser('${u.id}')">${usrOpIcoEdit}</button>`;
+        ? `<button class="usr-op-btn usr-op-active" title="সক্রিয় — ক্লিক করে নিষ্ক্রিয় করুন" onclick="toggleUserStatus('${u.id}')">${usrOpIcoCheck}</button>`
+        : `<button class="usr-op-btn usr-op-inactive" title="নিষ্ক্রিয় — ক্লিক করে সক্রিয় করুন" onclick="toggleUserStatus('${u.id}')">${usrOpIcoCross}</button>`;
+      opCell =
+        `${statusBtn} ` +
+        `<button class="usr-op-btn usr-op-edit" title="সম্পাদনা" onclick="editUser('${u.id}')">${usrOpIcoEdit}</button> ` +
+        `<button class="usr-op-btn usr-op-inactive" title="মুছে ফেলুন" onclick="deleteUser('${u.id}')">${usrOpIcoDel}</button>`;
+    } else if (u.editable === false) {
+      opCell = '<span class="badge badge-blue">সুরক্ষিত</span>';
     }
     return `<tr>
       <td>${bn(i + 1)}</td>
       <td>${u.name}</td>
       <td>${u.uid}</td>
-      <td>${u.pass}</td>
+      <td>••••••••</td>
       <td>${u.type}</td>
       <td>${opCell}</td>
     </tr>`;
-  }).join('');
+  }).join('') || '<tr><td colspan="6" style="padding:20px;color:#888;text-align:center;">কোনো ব্যবহারকারী পাওয়া যায়নি</td></tr>';
 }
 
-function toggleUserStatus(id) {
+/* সক্রিয়/নিষ্ক্রিয় টগল — ব্যাকএন্ডে সংরক্ষিত হয় (MongoDB) */
+async function toggleUserStatus(id) {
   const u = usersListData.find(x => x.id === id);
   if (!u) return;
-  u.active = !u.active;
-  renderUserList();
-  showToast(u.active ? `${u.name} — সক্রিয় করা হয়েছে` : `${u.name} — নিষ্ক্রিয় করা হয়েছে`);
+  try {
+    const res = await window.NQAuth.authFetch('/api/users/' + id + '/status', { method: 'PATCH' });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) { showErrorPopup(data.message || 'পরিবর্তন ব্যর্থ হয়েছে'); return; }
+    u.active = data.active;
+    renderUserList();
+    showToast(u.active ? `${u.name} — সক্রিয় করা হয়েছে` : `${u.name} — নিষ্ক্রিয় করা হয়েছে`);
+  } catch (e) {
+    console.log('[v0] toggleUserStatus error', e);
+    showErrorPopup('সার্ভারের সাথে সংযোগ করা যায়নি');
+  }
+}
+
+/* ব্যবহারকারী মুছে ফেলা — ব্যাকএন্ডে (MongoDB) থেকেও মুছে যায় */
+async function deleteUser(id) {
+  const u = usersListData.find(x => x.id === id);
+  if (!u) return;
+  if (!confirm(`"${u.name}" ব্যবহারকারীকে স্থায়ীভাবে মুছে ফেলবেন?`)) return;
+  try {
+    const res = await window.NQAuth.authFetch('/api/users/' + id, { method: 'DELETE' });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) { showErrorPopup(data.message || 'মুছে ফেলা ব্যর্থ হয়েছে'); return; }
+    showToast('ব্যবহারকারী মুছে ফেলা হয়েছে');
+    await loadUsers();
+  } catch (e) {
+    console.log('[v0] deleteUser error', e);
+    showErrorPopup('সার্ভারের সাথে সংযোগ করা যায়নি');
+  }
 }
 
 function resetUserForm() {
   usrEditingId = null;
+  usrPhotoFile = null;
   document.getElementById('usrType').value = '';
   document.getElementById('usrName').value = '';
   document.getElementById('usrMobile').value = '';
   document.getElementById('usrId').value = '';
   document.getElementById('usrPass').value = '';
+  document.getElementById('usrPass').placeholder = 'পাসওয়ার্ড';
   document.getElementById('usrPhoto').value = '';
   document.getElementById('usrPhotoPreview').innerHTML =
     '<svg width="90" height="90" viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="1.4"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>';
@@ -5026,17 +5063,23 @@ function editUser(id) {
   const u = usersListData.find(x => x.id === id);
   if (!u) return;
   usrEditingId = id;
+  usrPhotoFile = null;
   document.getElementById('usrType').value = u.type;
   document.getElementById('usrName').value = u.name;
-  document.getElementById('usrMobile').value = /^01\d{9}$/.test(u.pass) ? u.pass : '';
+  document.getElementById('usrMobile').value = u.mobile || '';
   document.getElementById('usrId').value = u.uid;
-  document.getElementById('usrPass').value = u.pass;
+  document.getElementById('usrPass').value = '';
+  document.getElementById('usrPass').placeholder = 'পরিবর্তন করতে নতুন পাসওয়ার্ড দিন (ঐচ্ছিক)';
+  document.getElementById('usrPhotoPreview').innerHTML = u.photoUrl
+    ? `<img src="${u.photoUrl}" alt="ব্যবহারকারীর ছবি" />`
+    : '<svg width="90" height="90" viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="1.4"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>';
   showPage('userNew');
 }
 
 function previewUserPhoto(event) {
   const file = event.target.files[0];
   if (!file) return;
+  usrPhotoFile = file;
   const reader = new FileReader();
   reader.onload = e => {
     document.getElementById('usrPhotoPreview').innerHTML = `<img src="${e.target.result}" alt="ব্যবহারকারীর ছবি" />`;
@@ -5044,27 +5087,67 @@ function previewUserPhoto(event) {
   reader.readAsDataURL(file);
 }
 
-function saveUser() {
+/* নির্বাচিত ছবি Cloudinary তে আপলোড করে URL ফেরত দেয় */
+async function uploadUserPhoto() {
+  if (!usrPhotoFile) return '';
+  const fd = new FormData();
+  fd.append('image', usrPhotoFile);
+  fd.append('folder', 'nurulquran/users');
+  const res = await window.NQAuth.authFetch('/api/upload', { method: 'POST', body: fd });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.message || 'ছবি আপলোড ব্যর্থ');
+  return data.url || '';
+}
+
+/* নতুন/সম্পাদিত ব্যবহারকারী MongoDB তে সংরক্ষণ — এরপর ঐ আইডি/পাসওয়ার্ড
+   দিয়ে ফ্রন্টএন্ড থেকে লগইন করা যাবে */
+async function saveUser() {
+  const btn = document.querySelector('#page-userNew .haz-save-bar');
   const type = document.getElementById('usrType').value;
   const name = document.getElementById('usrName').value.trim();
   const mobile = document.getElementById('usrMobile').value.trim();
   const uid = document.getElementById('usrId').value.trim();
   const pass = document.getElementById('usrPass').value.trim();
 
-  if (!type || !name || !uid || !pass) { showErrorPopup('প্রয়োজনীয় তথ্য দিন'); return; }
+  if (!type || !name || !uid) { showErrorPopup('প্রয়োজনীয় তথ্য দিন (ধরন, নাম, আইডি)'); return; }
+  if (!usrEditingId && !pass) { showErrorPopup('নতুন ব্যবহারকারীর জন্য পাসওয়ার্ড দিন'); return; }
 
-  if (usrEditingId) {
-    const u = usersListData.find(x => x.id === usrEditingId);
-    if (u) { u.type = type; u.name = name; u.uid = uid; u.pass = pass; }
-    showToast('ব্যবহারকারীর তথ্য হালনাগাদ করা হয়েছে');
-  } else {
-    usersListData.push({ id: 'u' + Date.now(), name, uid, pass, type, active: true });
-    showToast('নতুন ব্যবহারকারী সংরক্ষণ করা হয়েছে');
+  if (btn) btn.style.pointerEvents = 'none';
+  try {
+    // ১) ছবি থাকলে আগে Cloudinary তে আপলোড
+    let photoUrl = '';
+    try { photoUrl = await uploadUserPhoto(); }
+    catch (err) { showErrorPopup(err.message || 'ছবি আপলোড ব্যর্থ'); if (btn) btn.style.pointerEvents = ''; return; }
+
+    // ২) ব্যবহারকারী তৈরি/হালনাগাদ
+    let res, data;
+    if (usrEditingId) {
+      const payload = { name, uid, mobile, role: type };
+      if (pass) payload.password = pass;
+      if (photoUrl) payload.photoUrl = photoUrl;
+      res = await window.NQAuth.authFetch('/api/users/' + usrEditingId, {
+        method: 'PUT', body: JSON.stringify(payload)
+      });
+    } else {
+      const payload = { name, uid, mobile, password: pass, role: type };
+      if (photoUrl) payload.photoUrl = photoUrl;
+      res = await window.NQAuth.authFetch('/api/users', {
+        method: 'POST', body: JSON.stringify(payload)
+      });
+    }
+    data = await res.json().catch(() => ({}));
+    if (!res.ok) { showErrorPopup(data.message || 'সংরক্ষণ ব্যর্থ হয়েছে'); if (btn) btn.style.pointerEvents = ''; return; }
+
+    showToast(usrEditingId ? 'ব্যবহারকারীর তথ্য হালনাগাদ করা হয়েছে' : 'নতুন ব্যবহারকারী সংরক্ষণ করা হয়েছে');
+    resetUserForm();
+    await loadUsers();
+    showPage('userList');
+  } catch (e) {
+    console.log('[v0] saveUser error', e);
+    showErrorPopup('সার্ভারের সাথে সংযোগ করা যায়নি');
+  } finally {
+    if (btn) btn.style.pointerEvents = '';
   }
-
-  resetUserForm();
-  showPage('userList');
-  renderUserList();
 }
 
 /* ─── Render functions ─── */
@@ -7316,7 +7399,7 @@ function deleteDailyRoutine(id) {
 let residentialRoutineItems = [
   { id: 1,  desc: 'বাদ এশা রাতের খাবার ও (সহি হাদিসের) কিতাবি তালিম এবং দোয়া/মাসআলা শিখা।', from: '20:30', to: '22:00', classes: ['২৩', '২৪'] },
   { id: 2,  desc: 'মাগরিব থেকে এশা পর্যন্ত নতুন সবক ঠিক করা।', from: '19:00', to: '20:30', classes: ['২৩', '২৪'] },
-  { id: 3,  desc: 'আসর থেকে মাগরিব হালাল বিনোদন/ ইসলামিক বই পড়া এবং মাগরিবের সালাত আদায় করা।', from: '17:15', to: '19:00', classes: ['২৩', '২৪'] },
+  { id: 3,  desc: 'আসর থেকে মাগরিব হালাল ���িনোদন/ ইসলামিক বই পড়া এবং মাগরিবের সালাত আদায় করা।', from: '17:15', to: '19:00', classes: ['২৩', '২৪'] },
   { id: 4,  desc: 'একাডেমিক পড়া-লিখা ঠিক করার সময় এবং আসরের সালাত।', from: '15:30', to: '17:15', classes: ['২৩'] },
   { id: 5,  desc: 'আমুক্তার সময় এবং আসরের সালাত।', from: '15:30', to: '17:15', classes: ['২৪'] },
   { id: 6,  desc: 'কোরআনের মাশক বা তেলোয়াতের সুর শিক্ষা।', from: '14:30', to: '15:00', classes: ['২৪'] },
@@ -8631,6 +8714,12 @@ renderAll();
 initHajiraData();
 renderHajira();
 initAdaiData();
+
+/* ব্যবহারকারী ব্যবস্থাপনায় অ্যাক্সেস থাকলে সার্ভার থেকে তালিকা লোড করুন */
+if (window.NQAuth && window.NQAuth.canAccessModule && window.NQAuth.canAccessModule('users')) {
+  loadUsers();
+}
+
 </script>
 </body>
 </html>

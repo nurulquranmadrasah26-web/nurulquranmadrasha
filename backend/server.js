@@ -95,7 +95,7 @@ const ROLE_PERMISSIONS = {
     "users",
   ],
   Teacher: ["dash", "student", "exam", "routine", "homework", "message"],
-  Student: ["dash", "student", "exam", "routine", "homework"],
+  Student: ["dash", "student", "exam", "routine", "homework", "fee"],
   Support: ["dash", "others", "message", "users"],
 };
 
@@ -178,23 +178,52 @@ function requirePerm(mod) {
 }
 
 /* ------------------------------------------------------------------ */
-/*  Seed a default Super Admin                                         */
+/*  Seed the first Super Admin (bootstrap only)                        */
 /* ------------------------------------------------------------------ */
+/**
+ * The insecure "admin / admin123" default has been removed.
+ * The very first Super Admin is created ONLY from these env vars:
+ *   SEED_SUPERADMIN_UID       -> login id
+ *   SEED_SUPERADMIN_PASSWORD  -> password
+ *   SEED_SUPERADMIN_NAME      -> display name (optional)
+ * If they are not set, no account is seeded. Once at least one
+ * Super Admin exists, seeding is skipped forever — from then on every
+ * account (Super Admin / Admin / Teacher / Student / Support) is created
+ * through the admin panel's "নতুন ব্যবহারকারী" page.
+ */
 async function seedSuperAdmin() {
-  const uid = process.env.ADMIN_USERNAME || "admin";
-  const pass = process.env.ADMIN_PASSWORD || "admin123";
+  const uid = (process.env.SEED_SUPERADMIN_UID || "").trim();
+  const pass = process.env.SEED_SUPERADMIN_PASSWORD || "";
+  const name = process.env.SEED_SUPERADMIN_NAME || "সুপার এডমিন";
+
+  // Never seed the removed insecure defaults.
+  if (!uid || !pass || uid === "admin" || pass === "admin123") {
+    const count = await User.countDocuments({ role: "Super Admin" });
+    if (count === 0) {
+      console.warn(
+        "[seed] No Super Admin exists and SEED_SUPERADMIN_UID / SEED_SUPERADMIN_PASSWORD are not set. " +
+          "Set them once to bootstrap the first Super Admin."
+      );
+    }
+    return;
+  }
+
+  // If this uid already exists, or any Super Admin already exists, skip.
   const existing = await User.findOne({ uid });
   if (existing) return;
+  const anySuper = await User.countDocuments({ role: "Super Admin" });
+  if (anySuper > 0) return;
+
   const passwordHash = await bcrypt.hash(pass, 10);
   await User.create({
-    name: "সুপার এডমিন",
+    name,
     uid,
     passwordHash,
     role: "Super Admin",
     active: true,
     protected: true,
   });
-  console.log(`[seed] Super Admin created -> uid: ${uid}`);
+  console.log(`[seed] First Super Admin created -> uid: ${uid}`);
 }
 
 /* ------------------------------------------------------------------ */
