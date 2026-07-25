@@ -159,6 +159,10 @@
 
     logout: function () {
       clearSession();
+      try {
+        localStorage.removeItem('nq_last_page');
+        localStorage.removeItem('nq_last_subpage');
+      } catch (e) {}
       window.location.href = LOGIN_URL;
     },
 

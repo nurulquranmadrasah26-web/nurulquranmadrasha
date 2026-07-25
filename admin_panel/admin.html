@@ -4891,6 +4891,7 @@ function saveAdmissionFee(total) {
   });
   attendance[id] = 'present';
   renderStudents(); renderParents();
+  if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
 
   document.getElementById('admResId').textContent = bn(id);
   document.getElementById('admResName').textContent = admStudentData.name;
@@ -4905,28 +4906,70 @@ function admSuccessClose() {
   showPage('dashboard');
 }
 
-function showPage(id, btn) {
+function showPage(id, btn, skipRemember) {
   // ── রোল-ভিত্তিক অ্যাক্সেস গার্ড ──
   if (window.NQAuth && !window.NQAuth.canAccessPage(id)) {
     if (typeof showErrorPopup === 'function') showErrorPopup('এই অংশে প্রবেশের অনুমতি নেই');
     return;
   }
+  const pageEl = document.getElementById('page-' + id);
+  if (!pageEl) return; // অজানা পেজ আইডি — রিফ্রেশ রিস্টোরে ভুল কী থাকলে চুপচাপ বাদ দিন
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('page-' + id).classList.add('active');
+  pageEl.classList.add('active');
   if (btn) btn.classList.add('active');
   document.querySelectorAll('.sub-nav').forEach(n => n.classList.remove('visible'));
   if (subNavs[id]) document.getElementById(subNavs[id]).classList.add('visible');
   setActivePill(document.getElementById(id === 'dashboard' ? 'navPillDashboard' : ''));
   closeAllNavDrops();
   renderAll();
+
+  // ── পেজ রিফ্রেশে যেন একই পেজ থাকে, তাই বর্তমান পেজ মনে রাখা হচ্ছে ──
+  if (!skipRemember) {
+    try {
+      localStorage.setItem('nq_last_page', id);
+      localStorage.removeItem('nq_last_subpage');
+    } catch (e) {}
+  }
 }
 
-function showSubPage(subId, btn, navId) {
+function showSubPage(subId, btn, navId, skipRemember) {
   document.querySelectorAll('#page-dashboard > div[id^="subpage-"]').forEach(d => d.style.display = 'none');
   document.getElementById('subpage-' + subId).style.display = '';
   document.querySelectorAll('#' + navId + ' .sub-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
+
+  // ── সাব-পেজও মনে রাখা হচ্ছে, রিফ্রেশে একই জায়গায় ফেরত আনতে ──
+  if (!skipRemember) {
+    try {
+      localStorage.setItem('nq_last_subpage', JSON.stringify({ subId, navId }));
+    } catch (e) {}
+  }
+}
+
+/* বর্তমানে যে পেজে/সাব-পেজে আছেন, রিফ্রেশের পর ঠিক সেখানেই ফিরিয়ে আনে */
+function restoreLastPage() {
+  let lastPage = '';
+  let lastSub = null;
+  try {
+    lastPage = localStorage.getItem('nq_last_page') || '';
+    const rawSub = localStorage.getItem('nq_last_subpage');
+    lastSub = rawSub ? JSON.parse(rawSub) : null;
+  } catch (e) {}
+
+  if (!lastPage || !document.getElementById('page-' + lastPage) ||
+      (window.NQAuth && !window.NQAuth.canAccessPage(lastPage))) {
+    showPage('dashboard', null, true);
+    return;
+  }
+
+  showPage(lastPage, null, true);
+
+  if (lastSub && lastSub.subId && lastSub.navId && document.getElementById('subpage-' + lastSub.subId)) {
+    const navEl = document.getElementById(lastSub.navId);
+    const subBtn = navEl ? navEl.querySelector('.sub-btn[onclick*="\'' + lastSub.subId + '\'"]') : null;
+    showSubPage(lastSub.subId, subBtn, lastSub.navId, true);
+  }
 }
 
 /* ─── Mega-menu nav helpers ─── */
@@ -5385,6 +5428,7 @@ function saveStudentEdit() {
 
   closeModal('studentEditModal');
   renderStudents(); renderParents();
+  if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
   showToast('শিক্ষার্থীর তথ্য হালনাগাদ করা হয়েছে!');
 }
 
@@ -5608,6 +5652,7 @@ function deleteTeacher(id) {
   if (!confirm(`${t.name} কে তালিকা থেকে মুছে ফেলতে চান?`)) return;
   teachers = teachers.filter(x => x.id !== id);
   renderTeachers();
+  if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
   showToast('স্টাফ মুছে ফেলা হয়েছে');
 }
 
@@ -5616,6 +5661,7 @@ function toggleTeacherStatus(id) {
   if (!t) return;
   t.status = (t.status === 'সক্রিয়') ? 'নিষ্ক্রিয়' : 'সক্রিয়';
   renderTeachers();
+  if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
 }
 
 function renderPayments(filter='') {
@@ -5931,6 +5977,7 @@ function addStudent() {
   closeModal('studentModal');
   ['sName','sMobile','sFee','sParent'].forEach(f => document.getElementById(f).value='');
   renderStudents(); renderParents();
+  if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
   showToast('শিক্ষার্থী যোগ করা হয়েছে!');
 }
 
@@ -5938,6 +5985,7 @@ function deleteStudent(id) {
   if (!confirm('এই শিক্ষার্থীকে মুছে ফেলবেন?')) return;
   students = students.filter(s => s.id !== id);
   renderStudents(); renderParents();
+  if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
   showToast('মুছে ফেলা হয়েছে।');
 }
 
@@ -5964,6 +6012,7 @@ function addTeacher() {
   editingTeacherId = null;
   closeModal('teacherModal');
   renderTeachers();
+  if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
 }
 
 function addPayment() {
@@ -8718,16 +8767,135 @@ function renderDonationReport() {
     </div>` : `<div style="font-style:italic;color:#555;">নির্বাচিত সময়ে কোনো ডোনেশন পাওয়া যায়নি।</div>`;
 }
 
-/* ─── Init ─── */
-renderAll();
-initHajiraData();
-renderHajira();
-initAdaiData();
+/* ══════════════════════════════════════════════════════════════════
+   MongoDB-ভিত্তিক ডেটা সংরক্ষণ (Persistence Layer)
+   ------------------------------------------------------------------
+   এডমিন প্যানেলের সব মডিউলের ডেটা (শিক্ষার্থী, স্টাফ, ফি, পরীক্ষা,
+   রুটিন, হিসাব, বাড়ির কাজ, ম্যাসেজ, নোটিশ, ইনভেন্টরি, ডোনেশন ইত্যাদি)
+   এখানে একটি তালিকায় রাখা হয়েছে। এই তালিকার প্রতিটি ভ্যারিয়েবল
+   ব্যাকএন্ডের /api/store এন্ডপয়েন্টের মাধ্যমে MongoDB-তে সংরক্ষিত হয়
+   এবং পেজ লোডের সময় সেখান থেকেই ফেরত পড়া হয়।
+   ══════════════════════════════════════════════════════════════════ */
+let nqStoreLoaded = false;
+let nqSaveTimer = null;
+const NQ_SAVE_DEBOUNCE_MS = 900;
 
-/* ব্যবহারকারী ব্যবস্থাপনায় অ্যাক্সেস থাকলে সার্ভার থেকে তালিকা লোড করুন */
-if (window.NQAuth && window.NQAuth.canAccessModule && window.NQAuth.canAccessModule('users')) {
-  loadUsers();
+/* বর্তমান অবস্থার একটি স্ন্যাপশট তৈরি করে (সেভ করার জন্য) */
+function nqStateSnapshot() {
+  return {
+    students, teachers, staffDesignations, staffAttendanceRecords, staffOutWork, staffLeaveRequests,
+    payments, paymentDetails, dueDetails, messages, invProducts, invSales, invPurchases,
+    hwDailyList, hwResidentialList, sentMessages, savedMessageTemplates, leaveRequests,
+    dailyRoutines, residentialRoutineItems, crTimeSlots, examSubjects, examTypes, otClasses, otDivisions,
+    classGroups, ieFunds, ieCategories, notices, buses, transportAssignments, driverPayments,
+    siteRegistrations, financeTx, donationGroups, donationTx, attendance, studentDues
+  };
 }
+
+/* সার্ভার থেকে ফেরত আসা ডেটা প্রতিটি ভ্যারিয়েবলে বসিয়ে দেয় (খালি না হলে) */
+function nqApplyLoadedState(data) {
+  if (!data || typeof data !== 'object') return;
+  const hasContent = (v) => Array.isArray(v) ? v.length > 0 : (v && typeof v === 'object' ? Object.keys(v).length > 0 : v != null);
+
+  if (hasContent(data.students)) students = data.students;
+  if (hasContent(data.teachers)) teachers = data.teachers;
+  if (hasContent(data.staffDesignations)) staffDesignations = data.staffDesignations;
+  if (hasContent(data.staffAttendanceRecords)) staffAttendanceRecords = data.staffAttendanceRecords;
+  if (hasContent(data.staffOutWork)) staffOutWork = data.staffOutWork;
+  if (hasContent(data.staffLeaveRequests)) staffLeaveRequests = data.staffLeaveRequests;
+  if (hasContent(data.payments)) payments = data.payments;
+  if (hasContent(data.paymentDetails)) paymentDetails = data.paymentDetails;
+  if (hasContent(data.dueDetails)) dueDetails = data.dueDetails;
+  if (hasContent(data.messages)) messages = data.messages;
+  if (hasContent(data.invProducts)) invProducts = data.invProducts;
+  if (hasContent(data.invSales)) invSales = data.invSales;
+  if (hasContent(data.invPurchases)) invPurchases = data.invPurchases;
+  if (hasContent(data.hwDailyList)) hwDailyList = data.hwDailyList;
+  if (hasContent(data.hwResidentialList)) hwResidentialList = data.hwResidentialList;
+  if (hasContent(data.sentMessages)) sentMessages = data.sentMessages;
+  if (hasContent(data.savedMessageTemplates)) savedMessageTemplates = data.savedMessageTemplates;
+  if (hasContent(data.leaveRequests)) leaveRequests = data.leaveRequests;
+  if (hasContent(data.dailyRoutines)) dailyRoutines = data.dailyRoutines;
+  if (hasContent(data.residentialRoutineItems)) residentialRoutineItems = data.residentialRoutineItems;
+  if (hasContent(data.crTimeSlots)) crTimeSlots = data.crTimeSlots;
+  if (hasContent(data.examSubjects)) examSubjects = data.examSubjects;
+  if (hasContent(data.examTypes)) examTypes = data.examTypes;
+  if (hasContent(data.otClasses)) otClasses = data.otClasses;
+  if (hasContent(data.otDivisions)) otDivisions = data.otDivisions;
+  if (hasContent(data.classGroups)) classGroups = data.classGroups;
+  if (hasContent(data.ieFunds)) ieFunds = data.ieFunds;
+  if (hasContent(data.ieCategories)) ieCategories = data.ieCategories;
+  if (hasContent(data.notices)) notices = data.notices;
+  if (hasContent(data.buses)) buses = data.buses;
+  if (hasContent(data.transportAssignments)) transportAssignments = data.transportAssignments;
+  if (hasContent(data.driverPayments)) driverPayments = data.driverPayments;
+  if (hasContent(data.siteRegistrations)) siteRegistrations = data.siteRegistrations;
+  if (hasContent(data.financeTx)) financeTx = data.financeTx;
+  if (hasContent(data.donationGroups)) donationGroups = data.donationGroups;
+  if (hasContent(data.donationTx)) donationTx = data.donationTx;
+  if (hasContent(data.attendance)) attendance = data.attendance;
+  if (hasContent(data.studentDues)) studentDues = data.studentDues;
+}
+
+/* এখনই সেভ করে দেয় (bulk) */
+function nqSaveStateNow() {
+  if (!nqStoreLoaded || !window.NQAuth) return;
+  clearTimeout(nqSaveTimer);
+  nqSaveTimer = null;
+  window.NQAuth
+    .authFetch('/api/store', { method: 'PUT', body: JSON.stringify({ keys: nqStateSnapshot() }) })
+    .catch((e) => console.error('ডেটা সংরক্ষণে সমস্যা:', e));
+}
+
+/* কিছুক্ষণ পরে সেভ করার জন্য শিডিউল করে (একসাথে অনেকবার কল হলেও একবারই সেভ হয়) */
+function nqScheduleSave() {
+  if (!nqStoreLoaded) return;
+  clearTimeout(nqSaveTimer);
+  nqSaveTimer = setTimeout(nqSaveStateNow, NQ_SAVE_DEBOUNCE_MS);
+}
+window.nqScheduleSave = nqScheduleSave;
+window.nqSaveStateNow = nqSaveStateNow;
+
+/* সার্ভার থেকে সব ডেটা লোড করে (প্রথমবার হলে বর্তমান ডিফল্ট ডেটা দিয়েই সিড করে) */
+async function nqLoadPersistedState() {
+  try {
+    const res = await window.NQAuth.authFetch('/api/store');
+    if (res.ok) {
+      const data = await res.json();
+      nqApplyLoadedState(data);
+    }
+  } catch (e) {
+    console.error('ডেটা লোড করতে সমস্যা:', e);
+  }
+  nqStoreLoaded = true;
+  // প্রথমবার (ডাটাবেজ খালি থাকলে) বর্তমান ডিফল্ট/সিড ডেটা সংরক্ষণ করে রাখা হচ্ছে
+  nqSaveStateNow();
+}
+
+/* যেকোনো পরিবর্তনের (অ্যাড/এডিট/ডিলিট) পর UI রি-রেন্ডার হয় — এই পরিবর্তনগুলো
+   স্বয়ংক্রিয়ভাবে ধরে ডেটাবেজে সেভ করার জন্য পুরো অ্যাপ কন্টেইনার পর্যবেক্ষণ করা হচ্ছে। */
+function nqInitAutoSaveWatcher() {
+  const target = document.querySelector('.main') || document.body;
+  const observer = new MutationObserver(() => nqScheduleSave());
+  observer.observe(target, { childList: true, subtree: true, characterData: true });
+  window.addEventListener('beforeunload', () => { if (nqSaveTimer) nqSaveStateNow(); });
+  window.addEventListener('blur', () => nqScheduleSave());
+}
+
+/* ─── Init ─── */
+(async function nqInit() {
+  await nqLoadPersistedState();
+  initHajiraData();
+  initAdaiData();
+  restoreLastPage();
+  renderHajira();
+  nqInitAutoSaveWatcher();
+
+  /* ব্যবহারকারী ব্যবস্থাপনায় অ্যাক্সেস থাকলে সার্ভার থেকে তালিকা লোড করুন */
+  if (window.NQAuth && window.NQAuth.canAccessModule && window.NQAuth.canAccessModule('users')) {
+    loadUsers();
+  }
+})();
 
 </script>
 </body>

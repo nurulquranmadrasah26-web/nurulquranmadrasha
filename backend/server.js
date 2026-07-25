@@ -605,6 +605,27 @@ app.put("/api/store/:key", auth, async (req, res) => {
   res.json({ ok: true, key: doc.key });
 });
 
+// Bulk upsert: PUT /api/store  { keys: { key1: data1, key2: data2, ... } }
+// Lets the admin panel persist the entire in-memory app state (students,
+// staff, fee, exam, routine, accounts, homework, message, etc.) in one call.
+app.put("/api/store", auth, async (req, res) => {
+  try {
+    const keys = (req.body && req.body.keys) || {};
+    const entries = Object.entries(keys).filter(([k]) => STORE_KEY_RE.test(k));
+    if (entries.length === 0) return res.json({ ok: true, saved: [] });
+
+    await Promise.all(
+      entries.map(([key, data]) =>
+        Store.findOneAndUpdate({ key }, { data }, { upsert: true })
+      )
+    );
+    res.json({ ok: true, saved: entries.map(([k]) => k) });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "সার্ভার ত্রুটি" });
+  }
+});
+
 /* ------------------------------------------------------------------ */
 /*  Start                                                              */
 /* ------------------------------------------------------------------ */
