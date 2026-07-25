@@ -45,27 +45,19 @@ app.use(express.json({ limit: "12mb" }));
 app.use(
   cors({
     origin(origin, cb) {
-      try {
-        // allow requests with no origin (curl / mobile / same-origin)
-        if (!origin) return cb(null, true);
-        if (ALLOWED_ORIGINS.length === 0) return cb(null, true);
-        if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
-        // Allow any *.vercel.app preview/production deployment
-        if (/\.vercel\.app$/.test(new URL(origin).hostname)) return cb(null, true);
-        // Allow localhost and 127.0.0.1
-        if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return cb(null, true);
-        console.warn("[cors] blocked origin:", origin);
-        return cb(null, false);
-      } catch (e) {
-        console.warn("[cors] error parsing origin:", origin, e.message);
-        return cb(null, false);
-      }
+      // allow requests with no origin (curl / mobile / same-origin)
+      if (!origin) return cb(null, true);
+      if (ALLOWED_ORIGINS.length === 0) return cb(null, true);
+      if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+      // Allow any *.vercel.app preview/production deployment
+      if (/\.vercel\.app$/.test(new URL(origin).hostname)) return cb(null, true);
+      // Allow localhost and 127.0.0.1
+      if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return cb(null, true);
+      return cb(new Error("Not allowed by CORS: " + origin));
     },
     credentials: true,
   })
 );
-// Make sure every preflight (OPTIONS) request gets an immediate, correct response.
-app.options("*", cors());
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 8 * 1024 * 1024 } });
 
@@ -272,22 +264,29 @@ async function seedDefaultStudents() {
  * Seed First Super Admin
  */
 async function seedSuperAdmin() {
-  // Accept either naming convention so a mismatched env var name on the
-  // hosting dashboard (Render, etc.) never silently skips the seed.
-  const name =
-    process.env.SUPER_ADMIN_NAME || process.env.SEED_SUPERADMIN_NAME || "সুপার এডমিন";
-  const uid =
-    process.env.SUPER_ADMIN_UID || process.env.SEED_SUPERADMIN_UID || "admin";
-  const pass =
-    process.env.SUPER_ADMIN_PASSWORD || process.env.SEED_SUPERADMIN_PASSWORD || "admin123";
+  // .env / Render-এ SEED_SUPERADMIN_* নামে সেট করা আছে; আগে ভুলবশত
+  // SUPER_ADMIN_* নাম খোঁজা হতো যা কখনো মিলতো না — তাই কোনো Super Admin
+  // তৈরি হতো না এবং লগইন সবসময় ব্যর্থ হতো। এখন উভয় নাম গ্রহণ করা হচ্ছে।
+  const name = process.env.SEED_SUPERADMIN_NAME || process.env.SUPER_ADMIN_NAME;
+  const uid = process.env.SEED_SUPERADMIN_UID || process.env.SUPER_ADMIN_UID;
+  const pass = process.env.SEED_SUPERADMIN_PASSWORD || process.env.SUPER_ADMIN_PASSWORD;
 
-  // If any Super Admin already exists, skip (bootstrap only runs once).
-  const anySuper = await User.countDocuments({ role: "Super Admin" });
-  if (anySuper > 0) return;
+  if (!name || !uid || !pass) {
+    console.warn(
+      "[seed] SEED_SUPERADMIN_NAME, SEED_SUPERADMIN_UID, SEED_SUPERADMIN_PASSWORD missing"
+    );
+    return;
+  }
 
-  // If this uid already exists (e.g. created with a different role earlier), skip.
+  // If this uid already exists, or any Super Admin already exists, skip.
   const existing = await User.findOne({ uid });
   if (existing) return;
+
+  const anySuper = await User.countDocuments({
+    role: "Super Admin",
+  });
+
+  if (anySuper > 0) return;
 
   const passwordHash = await bcrypt.hash(pass, 10);
 
@@ -300,7 +299,9 @@ async function seedSuperAdmin() {
     protected: true,
   });
 
-  console.log(`[seed] First Super Admin created -> uid: ${uid}`);
+  console.log(
+    `[seed] First Super Admin created -> uid: ${uid}`
+  );
 }
 /* ------------------------------------------------------------------ */
 /*  Routes: health                                                     */
