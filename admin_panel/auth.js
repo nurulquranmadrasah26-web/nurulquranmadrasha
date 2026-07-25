@@ -13,6 +13,32 @@
   var API = CFG.API_BASE || '';
   var LOGIN_URL = CFG.LOGIN_URL || './index.html';
 
+  /* ---------- ফ্রন্টএন্ড থেকে আসা লগইন হ্যান্ডঅফ (ক্রস-ডোমেইন) ---------- */
+  // ফ্রন্টএন্ড ও এডমিন প্যানেল আলাদা ডোমেইনে থাকলে localStorage শেয়ার হয় না,
+  // তাই ফ্রন্টএন্ড লগইনের পর টোকেন URL হ্যাশে (#nq_auth=...) পাঠায়।
+  // এখানে সেটা পড়ে নিজের storage-এ সেভ করে URL থেকে মুছে ফেলা হচ্ছে।
+  (function consumeAuthHandoff() {
+    var hash = window.location.hash || '';
+    var marker = '#nq_auth=';
+    if (hash.indexOf(marker) !== 0) return;
+    try {
+      var payload = JSON.parse(decodeURIComponent(hash.slice(marker.length)));
+      if (payload && payload.token && payload.user) {
+        var store = payload.remember ? localStorage : sessionStorage;
+        var other = payload.remember ? sessionStorage : localStorage;
+        store.setItem('nq_token', payload.token);
+        store.setItem('nq_user', JSON.stringify(payload.user));
+        other.removeItem('nq_token');
+        other.removeItem('nq_user');
+      }
+    } catch (e) {
+      console.error('লগইন হ্যান্ডঅফ পার্স করতে সমস্যা:', e);
+    }
+    // URL থেকে টোকেনযুক্ত হ্যাশ মুছে ফেলা (ব্রাউজার হিস্টোরি/ঠিকানায় যাতে না থাকে)
+    var cleanUrl = window.location.pathname + window.location.search;
+    window.history.replaceState(null, '', cleanUrl);
+  })();
+
   /* ---------- স্টোরেজ থেকে সেশন ---------- */
   function getToken() {
     return localStorage.getItem('nq_token') || sessionStorage.getItem('nq_token') || '';

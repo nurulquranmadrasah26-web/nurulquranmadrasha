@@ -1076,7 +1076,7 @@
         return false;
       }
 
-      // টোকেন ও ইউজার সংরক্ষণ
+      // টোকেন ও ইউজার সংরক্ষণ (এই ডোমেইনের জন্য, ব্যাকআপ হিসেবে)
       const store = remember ? localStorage : sessionStorage;
       store.setItem('nq_token', data.token);
       store.setItem('nq_user', JSON.stringify(data.user));
@@ -1085,8 +1085,16 @@
       (remember ? sessionStorage : localStorage).removeItem('nq_user');
 
       // এডমিন প্যানেলে পাঠানো
+      // ফ্রন্টএন্ড ও এডমিন প্যানেল আলাদা ডোমেইনে ডিপ্লয় করা থাকলে localStorage
+      // একটি থেকে আরেকটিতে শেয়ার হয় না, তাই টোকেন URL হ্যাশের মাধ্যমে পাঠানো হচ্ছে।
+      // admin_panel/auth.js এই হ্যাশ পড়ে নিজের storage-এ সেভ করে নেবে এবং URL থেকে মুছে ফেলবে।
       const adminUrl = (window.APP_CONFIG && window.APP_CONFIG.ADMIN_URL) || '../admin_panel/admin.html';
-      window.location.href = adminUrl;
+      const handoff = '#nq_auth=' + encodeURIComponent(JSON.stringify({
+        token: data.token,
+        user: data.user,
+        remember: !!remember
+      }));
+      window.location.href = adminUrl + handoff;
     }catch(err){
       errBox.textContent = 'সার্ভারের সাথে সংযোগ করা যায়নি। পরে চেষ্টা করুন।';
       errBox.style.display = 'block';
