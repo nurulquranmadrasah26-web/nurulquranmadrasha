@@ -1,6 +1,7 @@
 /**
  * অ্যাডমিন প্যানেল কনফিগ — ব্যাকএন্ড API বেস URL।
- * ⚠️ গুরুত্বপূর্ণ: নিচে RENDER_BACKEND_URL দিয়ে প্রতিস্থাপন করুন
+ * Local: http://localhost:5000
+ * Production: আপনার Render Backend URL সেট করুন
  */
 (function () {
   var isLocal =
@@ -13,7 +14,8 @@
     
     // Production: Render backend URL
     // উদাহরণ: https://nurulquranmadrasha-backend.onrender.com
-    return "RENDER_BACKEND_URL";
+    // নিচের লিঙ্ক আপডেট করুন
+    return "https://nurulquranmadrasha-backend.onrender.com";
   };
 
   window.APP_CONFIG = {
@@ -21,6 +23,4 @@
     // লগইন পেজ (ফ্রন্টএন্ড) — লগআউট/অননুমোদিত হলে এখানে ফেরত পাঠানো হবে
     LOGIN_URL: isLocal ? "../frontend/index.html" : "../",
   };
-  
-  console.log('[Admin Config] API_BASE:', window.APP_CONFIG.API_BASE);
 })();

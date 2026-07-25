@@ -131,6 +131,24 @@ const userSchema = new mongoose.Schema(
 
 const User = mongoose.model("User", userSchema);
 
+// Student schema (শিক্ষার্থী তথ্য সংরক্ষণ)
+const studentSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true, trim: true },
+    rollNo: { type: String, required: true },
+    className: { type: String, required: true },
+    fatherName: { type: String, default: "" },
+    motherName: { type: String, default: "" },
+    mobileNo: { type: String, default: "" },
+    address: { type: String, default: "" },
+    admissionDate: { type: Date, default: Date.now },
+    photoUrl: { type: String, default: "" },
+    active: { type: Boolean, default: true },
+  },
+  { timestamps: true }
+);
+const Student = mongoose.model("Student", studentSchema);
+
 // Generic store: one document per (collection) holding the admin panel data array.
 const storeSchema = new mongoose.Schema(
   {
@@ -183,40 +201,121 @@ function requirePerm(mod) {
 /*  Seed the first Super Admin (bootstrap only)                        */
 /* ------------------------------------------------------------------ */
 /**
- * The insecure "admin / admin123" default has been removed.
- * The very first Super Admin is created ONLY from these env vars:
- *   SEED_SUPERADMIN_UID       -> login id
- *   SEED_SUPERADMIN_PASSWORD  -> password
- *   SEED_SUPERADMIN_NAME      -> display name (optional)
- * If they are not set, no account is seeded. Once at least one
- * Super Admin exists, seeding is skipped forever — from then on every
- * account (Super Admin / Admin / Teacher / Student / Support) is created
- * through the admin panel's "নতুন ব্যবহারকারী" page.
+ * Seed default Super Admin: admin / admin123
+ * যদি কোনো Super Admin না থাকে তবে এই ডিফল্ট অ্যাকাউন্ট তৈরি হবে।
+ * এটি সুরক্ষিত (protected: true) তাই মুছে ফেলা যাবে না।
  */
 async function seedSuperAdmin() {
-  const uid = (process.env.SEED_SUPERADMIN_UID || "").trim();
-  const pass = process.env.SEED_SUPERADMIN_PASSWORD || "";
-  const name = process.env.SEED_SUPERADMIN_NAME || "সুপার এডমিন";
+  // Check if any Super Admin already exists
+  const anySuper = await User.countDocuments({ role: "Super Admin" });
+  if (anySuper > 0) return; // Already seeded, skip
 
-  // Never seed the removed insecure defaults.
-  if (!uid || !pass || uid === "admin" || pass === "admin123") {
-    const count = await User.countDocuments({ role: "Super Admin" });
-    if (count === 0) {
-      console.warn(
-        "[seed] No Super Admin exists and SEED_SUPERADMIN_UID / SEED_SUPERADMIN_PASSWORD are not set. " +
-          "Set them once to bootstrap the first Super Admin."
-      );
-    }
+  // Seed default "admin" Super Admin
+  const defaultUid = "admin";
+  const defaultPass = "admin123";
+  const defaultName = "সুপার এডমিন";
+
+  const passwordHash = await bcrypt.hash(defaultPass, 10);
+  await User.create({
+    name: defaultName,
+    uid: defaultUid,
+    passwordHash,
+    role: "Super Admin",
+    active: true,
+    protected: true, // Cannot be deleted
+  });
+  console.log(`[seed] Default Super Admin created -> uid: ${defaultUid}`);
+}
+/**
+ * Seed default students (ডিফল্ট শিক্ষার্থী)
+ */
+async function seedDefaultStudents() {
+  const count = await Student.countDocuments();
+
+  if (count > 0) return; // Already seeded
+
+  const defaultStudents = [
+    {
+      name: "আহমদ আলী",
+      rollNo: "001",
+      className: "প্রথম বর্ষ",
+      fatherName: "করিম আহমেদ",
+      motherName: "ফাতিমা বেগম",
+      mobileNo: "01712345671",
+      address: "ঢাকা",
+    },
+    {
+      name: "ফাতিমা খান",
+      rollNo: "002",
+      className: "প্রথম বর্ষ",
+      fatherName: "খান সাহেব",
+      motherName: "আয়শা খান",
+      mobileNo: "01712345672",
+      address: "চট্টগ্রাম",
+    },
+    {
+      name: "মুহাম্মদ হাসান",
+      rollNo: "003",
+      className: "দ্বিতীয় বর্ষ",
+      fatherName: "হাসান সাহেব",
+      motherName: "লাইলা আক্তার",
+      mobileNo: "01712345673",
+      address: "সিলেট",
+    },
+    {
+      name: "আয়শা সুলতানা",
+      rollNo: "004",
+      className: "দ্বিতীয় বর্ষ",
+      fatherName: "সুলতান আহমেদ",
+      motherName: "রাহিমা বেগম",
+      mobileNo: "01712345674",
+      address: "খুলনা",
+    },
+    {
+      name: "করিম উদ্দিন",
+      rollNo: "005",
+      className: "তৃতীয় বর্ষ",
+      fatherName: "উদ্দিন সাহেব",
+      motherName: "হামিদা বেগম",
+      mobileNo: "01712345675",
+      address: "রাজশাহী",
+    },
+  ];
+
+  await Student.insertMany(defaultStudents);
+
+  console.log(
+    `[seed] ${defaultStudents.length} default students created`
+  );
+}
+
+/**
+ * Seed First Super Admin
+ */
+async function seedSuperAdmin() {
+  const name = process.env.SUPER_ADMIN_NAME;
+  const uid = process.env.SUPER_ADMIN_UID;
+  const pass = process.env.SUPER_ADMIN_PASSWORD;
+
+  if (!name || !uid || !pass) {
+    console.warn(
+      "[seed] SUPER_ADMIN_NAME, SUPER_ADMIN_UID, SUPER_ADMIN_PASSWORD missing"
+    );
     return;
   }
 
   // If this uid already exists, or any Super Admin already exists, skip.
   const existing = await User.findOne({ uid });
   if (existing) return;
-  const anySuper = await User.countDocuments({ role: "Super Admin" });
+
+  const anySuper = await User.countDocuments({
+    role: "Super Admin",
+  });
+
   if (anySuper > 0) return;
 
   const passwordHash = await bcrypt.hash(pass, 10);
+
   await User.create({
     name,
     uid,
@@ -225,9 +324,11 @@ async function seedSuperAdmin() {
     active: true,
     protected: true,
   });
-  console.log(`[seed] First Super Admin created -> uid: ${uid}`);
-}
 
+  console.log(
+    `[seed] First Super Admin created -> uid: ${uid}`
+  );
+}
 /* ------------------------------------------------------------------ */
 /*  Routes: health                                                     */
 /* ------------------------------------------------------------------ */
@@ -425,6 +526,78 @@ app.delete("/api/users/:id", auth, requirePerm("users"), async (req, res) => {
 });
 
 /* ------------------------------------------------------------------ */
+/*  Routes: students (শিক্ষার্থী)                                      */
+/* ------------------------------------------------------------------ */
+app.get("/api/students", auth, async (_req, res) => {
+  try {
+    const students = await Student.find().sort({ createdAt: 1 }).lean();
+    res.json(students);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "সার্ভার ত্রুটি" });
+  }
+});
+
+app.post("/api/students", auth, async (req, res) => {
+  try {
+    const { name, rollNo, className, fatherName, motherName, mobileNo, address, photoUrl } = req.body || {};
+    if (!name || !rollNo || !className)
+      return res.status(400).json({ message: "নাম, রোল ও ক্লাস প্রয়োজন" });
+
+    const student = await Student.create({
+      name,
+      rollNo,
+      className,
+      fatherName: fatherName || "",
+      motherName: motherName || "",
+      mobileNo: mobileNo || "",
+      address: address || "",
+      photoUrl: photoUrl || "",
+      active: true,
+    });
+    res.status(201).json({ id: student._id, ...student.toObject() });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "সার্ভার ত্রুটি" });
+  }
+});
+
+app.put("/api/students/:id", auth, async (req, res) => {
+  try {
+    const student = await Student.findById(req.params.id);
+    if (!student) return res.status(404).json({ message: "পাওয়া যায়নি" });
+
+    const { name, rollNo, className, fatherName, motherName, mobileNo, address, photoUrl, active } = req.body || {};
+    if (name) student.name = name;
+    if (rollNo) student.rollNo = rollNo;
+    if (className) student.className = className;
+    if (fatherName !== undefined) student.fatherName = fatherName;
+    if (motherName !== undefined) student.motherName = motherName;
+    if (mobileNo !== undefined) student.mobileNo = mobileNo;
+    if (address !== undefined) student.address = address;
+    if (photoUrl !== undefined) student.photoUrl = photoUrl;
+    if (active !== undefined) student.active = active;
+
+    await student.save();
+    res.json({ ok: true, ...student.toObject() });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "সার্ভার ত্রুটি" });
+  }
+});
+
+app.delete("/api/students/:id", auth, async (req, res) => {
+  try {
+    const student = await Student.findByIdAndDelete(req.params.id);
+    if (!student) return res.status(404).json({ message: "পাওয়া যায়নি" });
+    res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "সার্ভার ত্রুটি" });
+  }
+});
+
+/* ------------------------------------------------------------------ */
 /*  Routes: generic data store (all admin panel modules)               */
 /*  GET  /api/store/:key         -> returns saved array (or [])         */
 /*  PUT  /api/store/:key         -> replaces the array                  */
@@ -469,6 +642,7 @@ async function start() {
   await mongoose.connect(MONGODB_URI);
   console.log("[db] MongoDB connected");
   await seedSuperAdmin();
+  await seedDefaultStudents();
   app.listen(PORT, () => console.log(`[api] listening on :${PORT}`));
 }
 
