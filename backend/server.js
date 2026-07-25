@@ -45,19 +45,27 @@ app.use(express.json({ limit: "12mb" }));
 app.use(
   cors({
     origin(origin, cb) {
-      // allow requests with no origin (curl / mobile / same-origin)
-      if (!origin) return cb(null, true);
-      if (ALLOWED_ORIGINS.length === 0) return cb(null, true);
-      if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
-      // Allow any *.vercel.app preview/production deployment
-      if (/\.vercel\.app$/.test(new URL(origin).hostname)) return cb(null, true);
-      // Allow localhost and 127.0.0.1
-      if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return cb(null, true);
-      return cb(new Error("Not allowed by CORS: " + origin));
+      try {
+        // allow requests with no origin (curl / mobile / same-origin)
+        if (!origin) return cb(null, true);
+        if (ALLOWED_ORIGINS.length === 0) return cb(null, true);
+        if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+        // Allow any *.vercel.app preview/production deployment
+        if (/\.vercel\.app$/.test(new URL(origin).hostname)) return cb(null, true);
+        // Allow localhost and 127.0.0.1
+        if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return cb(null, true);
+        console.warn("[cors] blocked origin:", origin);
+        return cb(null, false);
+      } catch (e) {
+        console.warn("[cors] error parsing origin:", origin, e.message);
+        return cb(null, false);
+      }
     },
     credentials: true,
   })
 );
+// Make sure every preflight (OPTIONS) request gets an immediate, correct response.
+app.options("*", cors());
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 8 * 1024 * 1024 } });
 
@@ -197,35 +205,6 @@ function requirePerm(mod) {
   };
 }
 
-/* ------------------------------------------------------------------ */
-/*  Seed the first Super Admin (bootstrap only)                        */
-/* ------------------------------------------------------------------ */
-/**
- * Seed default Super Admin: admin / admin123
- * যদি কোনো Super Admin না থাকে তবে এই ডিফল্ট অ্যাকাউন্ট তৈরি হবে।
- * এটি সুরক্ষিত (protected: true) তাই মুছে ফেলা যাবে না।
- */
-async function seedSuperAdmin() {
-  // Check if any Super Admin already exists
-  const anySuper = await User.countDocuments({ role: "Super Admin" });
-  if (anySuper > 0) return; // Already seeded, skip
-
-  // Seed default "admin" Super Admin
-  const defaultUid = "admin";
-  const defaultPass = "admin123";
-  const defaultName = "সুপার এডমিন";
-
-  const passwordHash = await bcrypt.hash(defaultPass, 10);
-  await User.create({
-    name: defaultName,
-    uid: defaultUid,
-    passwordHash,
-    role: "Super Admin",
-    active: true,
-    protected: true, // Cannot be deleted
-  });
-  console.log(`[seed] Default Super Admin created -> uid: ${defaultUid}`);
-}
 /**
  * Seed default students (ডিফল্ট শিক্ষার্থী)
  */
@@ -293,26 +272,22 @@ async function seedDefaultStudents() {
  * Seed First Super Admin
  */
 async function seedSuperAdmin() {
-  const name = process.env.SUPER_ADMIN_NAME;
-  const uid = process.env.SUPER_ADMIN_UID;
-  const pass = process.env.SUPER_ADMIN_PASSWORD;
+  // Accept either naming convention so a mismatched env var name on the
+  // hosting dashboard (Render, etc.) never silently skips the seed.
+  const name =
+    process.env.SUPER_ADMIN_NAME || process.env.SEED_SUPERADMIN_NAME || "সুপার এডমিন";
+  const uid =
+    process.env.SUPER_ADMIN_UID || process.env.SEED_SUPERADMIN_UID || "admin";
+  const pass =
+    process.env.SUPER_ADMIN_PASSWORD || process.env.SEED_SUPERADMIN_PASSWORD || "admin123";
 
-  if (!name || !uid || !pass) {
-    console.warn(
-      "[seed] SUPER_ADMIN_NAME, SUPER_ADMIN_UID, SUPER_ADMIN_PASSWORD missing"
-    );
-    return;
-  }
+  // If any Super Admin already exists, skip (bootstrap only runs once).
+  const anySuper = await User.countDocuments({ role: "Super Admin" });
+  if (anySuper > 0) return;
 
-  // If this uid already exists, or any Super Admin already exists, skip.
+  // If this uid already exists (e.g. created with a different role earlier), skip.
   const existing = await User.findOne({ uid });
   if (existing) return;
-
-  const anySuper = await User.countDocuments({
-    role: "Super Admin",
-  });
-
-  if (anySuper > 0) return;
 
   const passwordHash = await bcrypt.hash(pass, 10);
 
@@ -325,9 +300,7 @@ async function seedSuperAdmin() {
     protected: true,
   });
 
-  console.log(
-    `[seed] First Super Admin created -> uid: ${uid}`
-  );
+  console.log(`[seed] First Super Admin created -> uid: ${uid}`);
 }
 /* ------------------------------------------------------------------ */
 /*  Routes: health                                                     */
