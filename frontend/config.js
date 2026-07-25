@@ -11,7 +11,7 @@
     location.hostname === "";
 
   // ⬇️ Render এ ডিপ্লয়ের পর এই URL পরিবর্তন করুন
-  var PRODUCTION_API = "https://nurulquran-backend.onrender.com";
+  var PRODUCTION_API = "https://nurulquranmadrasha.onrender.com";
 
   window.APP_CONFIG = {
     API_BASE: isLocal ? "http://localhost:5000" : PRODUCTION_API,
