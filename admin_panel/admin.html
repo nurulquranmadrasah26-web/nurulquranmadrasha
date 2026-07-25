@@ -460,6 +460,24 @@
     }
     .fee-count-bar { text-align: center; padding: 10px; background: #f5f5f5; font-size: 13px; color: #555; margin-top: 8px; }
 
+    .fee-detail-row { border: 1.5px solid #a5d6a7; background: #f4fbf4; padding: 12px 14px; margin-bottom: 12px; position: relative; }
+    .fee-detail-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .fee-detail-name { font-weight: 700; font-size: 14px; color: #1b5e20; }
+    .fee-detail-orig { font-size: 12px; color: #777; margin-top: 2px; }
+    .fee-detail-del {
+      background: #e53935; color: #fff; border: none; width: 26px; height: 26px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .fee-detail-del:hover { background: #c62828; }
+    .fee-detail-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    @media (max-width: 640px) { .fee-detail-grid { grid-template-columns: repeat(2, 1fr); } }
+    .fee-detail-field label { display: block; font-size: 11px; color: #666; margin-bottom: 4px; }
+    .fee-detail-field input {
+      width: 100%; padding: 7px 8px; border: 1.5px solid #ddd; font-size: 13px; box-sizing: border-box;
+      font-family: 'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif; background: #f0f0f0;
+    }
+    .fee-detail-field input.editable { background: #fff; }
+
     .pay-placeholder { text-align: center; color: #777; padding: 40px 10px; }
     .pay-placeholder svg { margin-bottom: 12px; opacity: .5; }
     .pay-summary-head { background: #1e88e5; color: #fff; padding: 10px 16px; font-weight: 700; margin: 16px 0 12px; }
@@ -3920,7 +3938,7 @@
     </div>
     <div class="popup-divider"></div>
     <div style="text-align:left;font-size:13px;color:#555;margin-bottom:8px;">প্রিন্ট অপশন:</div>
-    <button class="popup-print-btn" onclick="window.print()">স্টুডেন্ট প্রিন্ট করুন</button>
+    <button class="popup-print-btn" onclick="admSuccessPrint()">স্টুডেন্ট প্রিন্ট করুন</button>
   </div>
 </div>
 
@@ -4654,7 +4672,9 @@ const feeItems = [
   {id:'dress4',    label:'ড্রেস বাবদ ( আবাসিক বালিকা শাখা )',    amount:1200, tag:'এককালীন'},
 ];
 let admSelectedFees = new Set();
+let admFeeRows = {};   // { [feeId]: { selected, discount, paid } } — per-fee editable breakdown (ধাপ-২)
 let admStudentData = {};
+let admLastSavedId = null;
 
 function populateAdmissionClasses() {
   const c1 = document.getElementById('admClass');
@@ -4711,6 +4731,8 @@ function resetAdmission() {
   document.querySelector('input[name="admYear"]').checked = true;
   document.querySelector('input[name="admBranch"]').checked = true;
   admSelectedFees = new Set();
+  admFeeRows = {};
+  admLastSavedId = null;
 }
 
 function calcStaffAge() {
@@ -4791,17 +4813,38 @@ function admissionNext() {
     showErrorPopup('প্রয়োজনীয় তথ্য দিন');
     return;
   }
+  const photoImg = document.querySelector('#admPhotoPreview img');
   admStudentData = {
     dept: document.getElementById('admDept').value,
     cls: document.getElementById('admClass').value,
-    name: document.getElementById('admName').value.trim(),
-    fatherName: document.getElementById('admFatherName').value.trim(),
-    motherName: document.getElementById('admMotherName').value.trim(),
-    guardianMobile: document.getElementById('admGuardianMobile').value.trim(),
+    group: document.getElementById('admGroup').value,
     startMonth: document.getElementById('admStartMonth').value,
+    year: (document.querySelector('input[name="admYear"]:checked') || {}).value || '২০২৬ ইং',
+    branch: (document.querySelector('input[name="admBranch"]:checked') || {}).value || '',
+    birthReg: document.getElementById('admBirthReg').value.trim(),
+    name: document.getElementById('admName').value.trim(),
+    dob: document.getElementById('admDob').value,
+    age: document.getElementById('admAge').value,
+    gender: document.getElementById('admGender').value,
+    fatherName: document.getElementById('admFatherName').value.trim(),
+    fatherJob: document.getElementById('admFatherJob').value.trim(),
+    fatherMobile: document.getElementById('admFatherMobile').value.trim(),
+    motherName: document.getElementById('admMotherName').value.trim(),
+    motherJob: document.getElementById('admMotherJob').value.trim(),
+    motherMobile: document.getElementById('admMotherMobile').value.trim(),
+    curAddr: document.getElementById('admCurAddr').value.trim(),
+    permAddr: document.getElementById('admPermAddr').value.trim(),
+    guardianName: document.getElementById('admGuardianName').value.trim(),
+    guardianRel: document.getElementById('admGuardianRel').value.trim(),
+    guardianMobile: document.getElementById('admGuardianMobile').value.trim(),
+    prevInst: document.getElementById('admPrevInst').value.trim(),
+    prevClass: document.getElementById('admPrevClass').value,
+    referrer: document.getElementById('admReferrer').value.trim(),
+    photo: photoImg ? photoImg.src : '',
   };
   renderAdmissionSummary();
   admSelectedFees = new Set();
+  admFeeRows = {};
   renderFeeList();
   renderPaymentPanel();
   document.getElementById('admission-step1').style.display = 'none';
@@ -4836,9 +4879,68 @@ function renderFeeList() {
 }
 
 function toggleFee(id) {
-  if (admSelectedFees.has(id)) admSelectedFees.delete(id); else admSelectedFees.add(id);
+  if (admSelectedFees.has(id)) {
+    admSelectedFees.delete(id);
+    delete admFeeRows[id];
+  } else {
+    admSelectedFees.add(id);
+    const f = feeItems.find(x => x.id === id);
+    admFeeRows[id] = { selected: f.amount, discount: 0, paid: 0 };
+  }
   renderFeeList();
   renderPaymentPanel();
+}
+
+/* Remove a fee row directly from the payment panel (৩য় কলাম থেকে ×) */
+function removeAdmFeeRow(id) {
+  admSelectedFees.delete(id);
+  delete admFeeRows[id];
+  renderFeeList();
+  renderPaymentPanel();
+}
+
+/* ইনপুট বদলালে শুধু প্রাসঙ্গিক DOM অংশটুকু আপডেট হয় — পুরো প্যানেল পুনরায় আঁকা হয় না,
+   এতে টাইপ করার সময় ফোকাস/কার্সার হারায় না */
+function onAdmFeeInput(id) {
+  const selEl = document.getElementById('feeSel_' + id);
+  const discEl = document.getElementById('feeDisc_' + id);
+  const paidEl = document.getElementById('feePaid_' + id);
+  if (!selEl || !discEl || !paidEl) return;
+  const selected = parseFloat(selEl.value) || 0;
+  const discount = parseFloat(discEl.value) || 0;
+  const paid = parseFloat(paidEl.value) || 0;
+  admFeeRows[id] = { selected, discount, paid };
+  const due = Math.max(selected - discount - paid, 0);
+  const dueEl = document.getElementById('feeDue_' + id);
+  if (dueEl) dueEl.value = due.toFixed(2);
+  recalcAdmTotals();
+}
+
+/* মোট হিসাব — সব নির্বাচিত ফি সারি যোগফল করে টোটাল বক্স আপডেট করে */
+function recalcAdmTotals() {
+  const totalOrigEl = document.getElementById('admTotalOriginal');
+  if (!totalOrigEl) return; // টোটাল বক্স তৈরি না হয়ে থাকলে কিছু করার নেই
+  let totalOriginal = 0, totalSelected = 0, totalDiscount = 0, totalPaid = 0, totalDue = 0;
+  admSelectedFees.forEach(id => {
+    const f = feeItems.find(x => x.id === id);
+    const row = admFeeRows[id] || { selected: f.amount, discount: 0, paid: 0 };
+    totalOriginal += f.amount;
+    totalSelected += row.selected;
+    totalDiscount += row.discount;
+    totalPaid += row.paid;
+    totalDue += Math.max(row.selected - row.discount - row.paid, 0);
+  });
+  const totalNet = Math.max(totalSelected - totalDiscount, 0);
+  totalOrigEl.value = totalOriginal.toFixed(2);
+  document.getElementById('admTotalNet').value = totalNet.toFixed(2);
+  document.getElementById('admTotalDiscount').value = totalDiscount.toFixed(2);
+  document.getElementById('admTotalPaid').value = totalPaid.toFixed(2);
+  document.getElementById('admTotalDue').value = totalDue.toFixed(2);
+
+  const extraDiscount = parseFloat(document.getElementById('admExtraDiscount').value) || 0;
+  const finalPaid = parseFloat(document.getElementById('admFinalPaid').value) || 0;
+  const finalDue = Math.max(totalDue - extraDiscount - finalPaid, 0);
+  document.getElementById('admFinalDue').value = finalDue.toFixed(2);
 }
 
 function renderPaymentPanel() {
@@ -4849,62 +4951,147 @@ function renderPaymentPanel() {
         <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#777" stroke-width="1.8"><path d="M9 12V4a1.5 1.5 0 013 0v6"/><path d="M12 6a1.5 1.5 0 013 0v5"/><path d="M15 7.5a1.5 1.5 0 013 0V13"/><path d="M9 11l-2 1c-1 .6-1 2 0 3l3 3c1 1 2 1.4 3.4 1.4H16a3 3 0 003-3v-3"/></svg>
         <div>বাম পাশ থেকে ফি প্রকার নির্বাচন করুন (ঐচ্ছিক)</div>
       </div>
-      <button class="fee-save-btn" onclick="saveAdmissionFee(0)">${icoCheck} ফি ছাড়াই ভর্তি সম্পন্ন করুন</button>`;
+      <button class="fee-save-btn" onclick="saveAdmissionFee()">${icoCheck} ফি ছাড়াই ভর্তি সম্পন্ন করুন</button>`;
     return;
   }
-  const total = [...admSelectedFees].reduce((s,id) => s + feeItems.find(f => f.id === id).amount, 0);
-  panel.innerHTML = `
-    <div class="pay-summary-head">মোট হিসাব</div>
+
+  const rowsHtml = [...admSelectedFees].map(id => {
+    const f = feeItems.find(x => x.id === id);
+    if (!admFeeRows[id]) admFeeRows[id] = { selected: f.amount, discount: 0, paid: 0 };
+    const row = admFeeRows[id];
+    const due = Math.max(row.selected - row.discount - row.paid, 0);
+    return `
+      <div class="fee-detail-row" id="feeRow_${id}">
+        <div class="fee-detail-head">
+          <div>
+            <div class="fee-detail-name">${f.label}</div>
+            <div class="fee-detail-orig">Original: ${bnTaka(f.amount)}</div>
+          </div>
+          <button type="button" class="fee-detail-del" title="বাদ দিন" onclick="removeAdmFeeRow('${id}')">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><line x1="4" y1="4" x2="20" y2="20"/><line x1="20" y1="4" x2="4" y2="20"/></svg>
+          </button>
+        </div>
+        <div class="fee-detail-grid">
+          <div class="fee-detail-field"><label>নির্বাচিত</label><input class="editable" type="number" id="feeSel_${id}" value="${row.selected}" oninput="onAdmFeeInput('${id}')" /></div>
+          <div class="fee-detail-field"><label>ডিসকাউন্ট</label><input class="editable" type="number" id="feeDisc_${id}" value="${row.discount}" oninput="onAdmFeeInput('${id}')" /></div>
+          <div class="fee-detail-field"><label>প্রদেয়</label><input class="editable" type="number" id="feePaid_${id}" value="${row.paid}" oninput="onAdmFeeInput('${id}')" /></div>
+          <div class="fee-detail-field"><label>বকেয়া</label><input readonly id="feeDue_${id}" value="${due.toFixed(2)}" /></div>
+        </div>
+      </div>`;
+  }).join('');
+
+  panel.innerHTML = rowsHtml + `
+    <div class="pay-summary-head"><svg class="btn-ic solo" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="1"/><line x1="2" y1="9" x2="22" y2="9"/><line x1="7" y1="14" x2="10" y2="14"/></svg> মোট হিসাব</div>
     <div class="pay-grid">
-      <div class="pay-field"><label>মোট আসল টাকা</label><input readonly value="${total.toFixed(2)}" /></div>
-      <div class="pay-field"><label>মোট নেট টাকা</label><input readonly value="${total.toFixed(2)}" /></div>
-      <div class="pay-field"><label>মোট ডিসকাউন্ট</label><input readonly value="0.00" /></div>
-      <div class="pay-field"><label>মোট প্রদেয়</label><input readonly value="${total.toFixed(2)}" /></div>
-      <div class="pay-field"><label>মোট বাকি</label><input readonly value="${total.toFixed(2)}" /></div>
-      <div class="pay-field"><label>অতিরিক্ত ডিসকাউন্ট</label><input class="editable" type="number" id="admExtraDiscount" value="0" oninput="recalcAdmPayment(${total})" /></div>
-      <div class="pay-field"><label>চূড়ান্ত বাকি</label><input readonly id="admFinalDue" value="${total.toFixed(2)}" /></div>
-      <div class="pay-field"><label>চূড়ান্ত পেমেন্ট</label><input class="editable" type="number" id="admFinalPaid" value="0" oninput="recalcAdmPayment(${total})" /></div>
+      <div class="pay-field"><label>মোট আসল টাকা</label><input readonly id="admTotalOriginal" value="0.00" /></div>
+      <div class="pay-field"><label>মোট নেট টাকা</label><input readonly id="admTotalNet" value="0.00" /></div>
+      <div class="pay-field"><label>মোট ডিসকাউন্ট</label><input readonly id="admTotalDiscount" value="0.00" /></div>
+      <div class="pay-field"><label>মোট প্রদেয়</label><input readonly id="admTotalPaid" value="0.00" /></div>
+      <div class="pay-field"><label>মোট বাকি</label><input readonly id="admTotalDue" value="0.00" /></div>
+      <div class="pay-field"><label>অতিরিক্ত ডিসকাউন্ট</label><input class="editable" type="number" id="admExtraDiscount" value="0" oninput="recalcAdmTotals()" /></div>
+      <div class="pay-field"><label>চূড়ান্ত বাকি</label><input readonly id="admFinalDue" value="0.00" /></div>
+      <div class="pay-field"><label>চূড়ান্ত পেমেন্ট</label><input class="editable" type="number" id="admFinalPaid" value="0" oninput="recalcAdmTotals()" /></div>
     </div>
-    <button class="fee-save-btn" onclick="saveAdmissionFee(${total})">${icoCheck} ফি সংরক্ষণ করুন</button>`;
+    <button class="fee-save-btn" onclick="saveAdmissionFee()">${icoCheck} ফি সংরক্ষণ করুন</button>`;
+
+  recalcAdmTotals();
 }
 
-function recalcAdmPayment(total) {
-  const discount = parseFloat(document.getElementById('admExtraDiscount').value) || 0;
-  const paid = parseFloat(document.getElementById('admFinalPaid').value) || 0;
-  document.getElementById('admFinalDue').value = Math.max(total - discount - paid, 0).toFixed(2);
+/* আজকের তারিখ বাংলা সংখ্যায়, dd-mm-yyyy ফরম্যাটে (প্রিন্ট ফরমের জন্য) */
+function todayAdmDateBn() {
+  const now = new Date();
+  const dd = String(now.getDate()).padStart(2, '0');
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const yyyy = now.getFullYear();
+  return `${bn(dd)}-${bn(mm)}-${bn(yyyy)}`;
 }
 
-function saveAdmissionFee(total) {
-  const discountEl = document.getElementById('admExtraDiscount');
-  const paidEl = document.getElementById('admFinalPaid');
-  const discount = discountEl ? (parseFloat(discountEl.value) || 0) : 0;
-  const paid = paidEl ? (parseFloat(paidEl.value) || 0) : 0;
-  const due = Math.max(total - discount - paid, 0);
+function saveAdmissionFee() {
+  let totalOriginal = 0, totalSelected = 0, totalDiscount = 0, totalPaidRows = 0, totalDue = 0;
+  const feeBreakdown = [];
+  admSelectedFees.forEach(id => {
+    const f = feeItems.find(x => x.id === id);
+    const row = admFeeRows[id] || { selected: f.amount, discount: 0, paid: 0 };
+    const due = Math.max(row.selected - row.discount - row.paid, 0);
+    totalOriginal += f.amount;
+    totalSelected += row.selected;
+    totalDiscount += row.discount;
+    totalPaidRows += row.paid;
+    totalDue += due;
+    feeBreakdown.push({ label: f.label, original: f.amount, selected: row.selected, discount: row.discount, paid: row.paid, due });
+  });
 
-  const id = students.length ? students[students.length-1].id + 1 : 1;
+  const extraDiscountEl = document.getElementById('admExtraDiscount');
+  const finalPaidEl = document.getElementById('admFinalPaid');
+  const extraDiscount = extraDiscountEl ? (parseFloat(extraDiscountEl.value) || 0) : 0;
+  const finalPaid = finalPaidEl ? (parseFloat(finalPaidEl.value) || 0) : 0;
+  const finalDue = Math.max(totalDue - extraDiscount - finalPaid, 0);
+  const paidTotal = totalPaidRows + finalPaid;
+
+  const id = students.length ? Math.max(...students.map(x => x.id)) + 1 : 1;
   const regNo = id;
-  const branchVal = (document.querySelector('input[name="admBranch"]:checked') || {}).value || '';
+  const classRoll = students.filter(x => x.attCls === admStudentData.cls).length + 1;
+
   students.push({
-    id, regNo, name: admStudentData.name, cls: admStudentData.cls,
-    attCls: admStudentData.cls, attDept: admStudentData.dept, branch: branchVal,
-    mobile: admStudentData.guardianMobile, fee: total || 860,
+    id, regNo, classRoll,
+    name: admStudentData.name,
+    cls: admStudentData.cls, attCls: admStudentData.cls, attDept: admStudentData.dept,
+    group: admStudentData.group, branch: admStudentData.branch,
+    mobile: admStudentData.guardianMobile, fee: totalOriginal || 860,
     parent: admStudentData.fatherName || admStudentData.motherName,
-    mother: admStudentData.motherName || '', status: 'সক্রিয়'
+    mother: admStudentData.motherName || '',
+    dob: admStudentData.dob, gender: admStudentData.gender,
+    fatherJob: admStudentData.fatherJob, fatherMobile: admStudentData.fatherMobile,
+    motherJob: admStudentData.motherJob, motherMobile: admStudentData.motherMobile,
+    curAddr: admStudentData.curAddr, permAddr: admStudentData.permAddr,
+    guardianName: admStudentData.guardianName, guardianRel: admStudentData.guardianRel,
+    guardianMobile: admStudentData.guardianMobile,
+    birthReg: admStudentData.birthReg, prevInst: admStudentData.prevInst, prevClass: admStudentData.prevClass,
+    referrer: admStudentData.referrer, photo: admStudentData.photo || '',
+    session: (admStudentData.year || '২০২৬ ইং').replace(' ইং', ''),
+    admission: todayAdmDateBn(),
+    startMonth: admStudentData.startMonth,
+    feeBreakdown, status: 'সক্রিয়'
   });
   attendance[id] = 'present';
+
+  /* বকেয়া থাকলে "ফি আদায়" মডিউলের সাথে সামঞ্জস্যপূর্ণভাবে যুক্ত করা হচ্ছে */
+  if (typeof studentDues === 'object') {
+    studentDues[id] = finalDue > 0 ? [{ id: Date.now(), label: 'ভর্তি বাবদ বকেয়া', amount: finalDue }] : [];
+    if (typeof rebuildDueDetails === 'function') rebuildDueDetails();
+  }
+  if (paidTotal > 0 && typeof payments !== 'undefined') {
+    const payId = payments.length ? payments[payments.length - 1].id + 1 : 1;
+    payments.push({ id: payId, student: admStudentData.name, amount: paidTotal, month: admStudentData.startMonth || '-', date: todayAdmDateBn(), by: 'ব্যবহারকারী', remark: 'ভর্তি ফি' });
+    if (typeof paymentDetails !== 'undefined') {
+      feeBreakdown.filter(r => r.paid > 0).forEach((r, i) => {
+        const pdId = paymentDetails.length ? paymentDetails[paymentDetails.length - 1].id + 1 : 1;
+        const billBase = paymentDetails.length ? paymentDetails[paymentDetails.length - 1].billNo + 1 : 100;
+        paymentDetails.push({ id: pdId, billNo: billBase + i, studentId: id, date: todayAdmDateBn() + ' ইং', label: r.label, amount: r.paid, month: '-', by: 'ব্যবহারকারী' });
+      });
+    }
+  }
+
   renderStudents(); renderParents();
   if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
 
+  admLastSavedId = id;
   document.getElementById('admResId').textContent = bn(id);
   document.getElementById('admResName').textContent = admStudentData.name;
   document.getElementById('admResClass').textContent = admStudentData.cls;
-  document.getElementById('admResPaid').textContent = bnTaka(paid);
-  document.getElementById('admResDue').textContent = bnTaka(due);
+  document.getElementById('admResPaid').textContent = bnTaka(paidTotal);
+  document.getElementById('admResDue').textContent = bnTaka(finalDue);
   openModal('admSuccessModal');
+}
+
+function admSuccessPrint() {
+  if (admLastSavedId != null) printStudent(admLastSavedId);
+  else window.print();
 }
 
 function admSuccessClose() {
   closeModal('admSuccessModal');
+  resetAdmission();
   showPage('dashboard');
 }
 
@@ -5436,9 +5623,11 @@ function printStudent(id) {
   if (!s) return;
   const photoHtml = s.photo ? `<img src="${s.photo}" style="width:100%;height:100%;object-fit:cover;" />` :
     '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>';
+  const logoImg = document.querySelector('.logo-circle img');
+  const logoHtml = logoImg ? `<img src="${logoImg.src}" style="width:100%;height:100%;object-fit:contain;" />` : '';
   document.getElementById('printArea').innerHTML = `
       <div class="p-head">
-        <div class="p-photo-box"></div>
+        <div class="p-photo-box">${logoHtml}</div>
         <div class="p-head-center">
           <h1>নুরুল কোরআন মাদ্রাসা</h1>
           <h2>Nurul Quran Madrasa</h2>
