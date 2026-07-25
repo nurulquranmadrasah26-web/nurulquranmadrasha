@@ -455,9 +455,14 @@
     .fee-item-name { font-weight: 600; font-size: 14px; display: flex; align-items: center; gap: 8px; }
     .fee-item-amt { font-weight: 700; color: #2e7d32; }
     .fee-item-tag {
-      display: inline-block; margin-top: 5px; font-size: 11px; padding: 2px 8px;
-      background: #fff3e0; color: #e65100; font-weight: 600;
+      display: inline-flex; align-items: center; gap: 5px; margin-top: 6px; font-size: 11px; padding: 3px 9px 3px 7px;
+      background: #eef1f4; color: #90979e; font-weight: 600;
     }
+    .fee-item-tag::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #b0b6bc; flex-shrink: 0; }
+    .fee-item.checked .fee-item-tag { background: #e3f2fd; color: #1565c0; }
+    .fee-item.checked .fee-item-tag::before { background: #1e88e5; }
+    .fee-item.checked .fee-item-tag.tag-monthly { background: #fff3e0; color: #e65100; }
+    .fee-item.checked .fee-item-tag.tag-monthly::before { background: #f57c00; }
     .fee-count-bar { text-align: center; padding: 10px; background: #f5f5f5; font-size: 13px; color: #555; margin-top: 8px; }
 
     .fee-detail-row { border: 1.5px solid #a5d6a7; background: #f4fbf4; padding: 12px 14px; margin-bottom: 12px; position: relative; }
@@ -4843,8 +4848,14 @@ function admissionNext() {
     photo: photoImg ? photoImg.src : '',
   };
   renderAdmissionSummary();
-  admSelectedFees = new Set();
+  /* ধাপ-২ এ প্রবেশ করার সময় প্রথম ৭টি (নিয়মিত) ফি ডিফল্টভাবে নির্বাচিত থাকবে —
+     পোশাক/ড্রেস সংক্রান্ত শেষ ৩টি ঐচ্ছিক থাকবে, ব্যবহারকারী চাইলে টিক দিয়ে যোগ করতে পারবেন */
+  admSelectedFees = new Set(feeItems.slice(0, 7).map(f => f.id));
   admFeeRows = {};
+  admSelectedFees.forEach(id => {
+    const f = feeItems.find(x => x.id === id);
+    admFeeRows[id] = { selected: f.amount, discount: 0, paid: 0 };
+  });
   renderFeeList();
   renderPaymentPanel();
   document.getElementById('admission-step1').style.display = 'none';
@@ -4874,7 +4885,7 @@ function renderFeeList() {
         <span class="fee-item-name"><input type="checkbox" ${admSelectedFees.has(f.id) ? 'checked' : ''} onclick="event.stopPropagation(); toggleFee('${f.id}')"> ${f.label}</span>
         <span class="fee-item-amt">${bnTaka(f.amount)}</span>
       </div>
-      <span class="fee-item-tag">${f.tag}</span>
+      <span class="fee-item-tag ${f.tag === 'মাসিক' ? 'tag-monthly' : ''}">${f.tag}</span>
     </div>`).join('') + `<div class="fee-count-bar">নির্বাচিত: ${bn(admSelectedFees.size)} টি ফি</div>`;
 }
 
