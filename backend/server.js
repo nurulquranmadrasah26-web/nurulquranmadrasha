@@ -23,7 +23,7 @@ const app = express();
 /*  Config                                                             */
 /* ------------------------------------------------------------------ */
 const PORT = process.env.PORT || 5000;
-const JWT_SECRET = process.env.JWT_SECRET || "change_this_secret";
+const JWT_SECRET = process.env.JWT_SECRET || "MySuperSecretKey_2026_X9A7Bt8LmN5YQr";
 const MONGODB_URI = process.env.MONGODB_URI;
 
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "")
