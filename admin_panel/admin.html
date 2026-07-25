@@ -1156,6 +1156,8 @@
       <button class="nav-drop-item" onclick="showPage('classtransfer'); renderClassTransfer();">শিক্ষার্থীর শ্রেণী পরিবর্তন</button>
       <button class="nav-drop-item" onclick="showPage('stumobile'); renderStuMobile();">মোবাইল নং</button>
       <button class="nav-drop-item" onclick="showPage('stutransfer'); renderStuTransfer();">স্থানান্তর/বহিষ্কার</button>
+      <button class="nav-drop-item" onclick="showPage('parents'); renderParents && renderParents();">অভিভাবক তালিকা</button>
+      <button class="nav-drop-item" onclick="showPage('committee'); renderCommittee && renderCommittee();">ক্লাস কমিটি</button>
     </div>
   </div>
 
@@ -3090,7 +3092,7 @@
     <div class="section-title">পরীক্ষার মার্কশীট</div>
     <div class="msk-tabs">
       <button class="msk-tab active" id="mskTabSingle" onclick="switchMarksheetTab('single')">👤 একক অনুসন্ধান</button>
-      <button class="msk-tab" id="mskTabBulk" onclick="switchMarksheetTab('bulk')">👥 বাল্ক অন��সন্ধান</button>
+      <button class="msk-tab" id="mskTabBulk" onclick="switchMarksheetTab('bulk')">👥 বাল্ক অনসন্ধান</button>
     </div>
     <div class="stu-filters" id="mskSingleFields">
       <div class="hazlist-field" style="min-width:220px;"><span class="lbl">শিক্ষার্থীর আইডি</span><input id="mskStudentId" placeholder="শিক্ষার্থীর আইডি অথবা রোল নম্বর লিখুন..." /></div>
@@ -3098,7 +3100,7 @@
       <div class="hazlist-field"><span class="lbl">পরীক্ষা</span><select id="mskExam"><option value="">Select Exam</option></select></div>
     </div>
     <div style="display:flex; gap:10px; flex-wrap:wrap; margin:18px 0;">
-      <button class="add-btn" onclick="searchMarksheet(false)">🔍 শিক্��ার্থীর অনুসন্ধান</button>
+      <button class="add-btn" onclick="searchMarksheet(false)">🔍 শিক্ষার্থীর অনুসন্ধান</button>
       <button class="add-btn" style="background:#43a047;" onclick="searchMarksheet(true)">🖶 অনুসন্ধান এবং মুদ্রণ</button>
       <button class="add-btn" style="background:#78909c;" onclick="resetMarksheetSearch()">↺ রিসেট</button>
     </div>
@@ -4988,11 +4990,6 @@ function closeAllNavDrops() {
 function setActivePill(pillEl) {
   document.querySelectorAll('#mainNav .nav-pill').forEach(p => p.classList.remove('active'));
   if (pillEl) pillEl.classList.add('active');
-}
-
-function notReady(label) {
-  closeAllNavDrops();
-  showToast((label ? label + ' — ' : '') + 'ফিচারটি শীঘ্রই যুক্ত করা হবে');
 }
 
 document.addEventListener('click', function (e) {
@@ -7418,9 +7415,6 @@ function saveCrDaily() {
   showToast('ক্লাসের সময়সূচী সংরক্ষণ করা হয়েছে!');
 }
 
-function crdAddTeacher() {
-  showToast('শিক্ষক যোগ করার ফিচারটি শীঘ্রই যুক্ত করা হবে');
-}
 
 /* ৩. তালিকা — dailyRoutines-এর তালিকা প্রদর্শন */
 function renderClassRoutineList() {
@@ -8930,6 +8924,23 @@ function nqInitAutoSaveWatcher() {
     loadUsers();
   }
 })();
+
+
+/* ═══════════ অভিভাবক তালিকা (Parents) ═══════════ */
+function renderParents() {
+  const tb = document.getElementById('parentTableBody');
+  if (!tb) return;
+  const rows = (students || []).filter(s => s && (s.guardianName || s.parent))
+    .map((s, i) => `<tr>
+        <td>${i + 1}</td>
+        <td>${s.guardianName || s.parent || ''}</td>
+        <td>${s.name || ''}</td>
+        <td>${s.guardianMobile || s.mobile || ''}</td>
+        <td>${s.address || ''}</td>
+      </tr>`).join('');
+  tb.innerHTML = rows || '<tr><td colspan="5" style="text-align:center;color:#888;padding:20px;">কোনো অভিভাবক পাওয়া যায়নি</td></tr>';
+}
+function renderCommittee() { /* static content */ }
 
 </script>
 </body>
