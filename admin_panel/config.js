@@ -13,9 +13,9 @@
     if (isLocal) return "http://localhost:5000";
     
     // Production: Render backend URL
-    // উদাহরণ: https://nurulquranmadrasha-backend.onrender.com
+    // উদাহরণ: https://nurulquranmadrasha.onrender.com
     // নিচের লিঙ্ক আপডেট করুন
-    return "https://nurulquranmadrasha-backend.onrender.com";
+    return "https://nurulquranmadrasha.onrender.com";
   };
 
   window.APP_CONFIG = {
