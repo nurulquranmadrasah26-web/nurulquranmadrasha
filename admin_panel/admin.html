@@ -2058,7 +2058,7 @@
           </div>
           <div class="adm-field">
             <label>পিতার নাম <span class="req">*</span></label>
-            <input id="admFatherName" placeholder="পিতার নাম" />
+            <input id="admFatherName" placeholder="পি��ার নাম" />
           </div>
 
           <div class="adm-field"><label>পিতার পেশা</label><input id="admFatherJob" placeholder="পিতার পেশা" /></div>
@@ -2090,7 +2090,7 @@
           </div>
 
           <div class="adm-field" style="grid-column: span 2;">
-            <label>যার মারফতে ভর্তি তার নাম, মোবাইল নং</label>
+            <label>যার মার���তে ভর্তি তার না��, মোবাইল নং</label>
             <input id="admReferrer" placeholder="নাম, মোবাইল নং" />
           </div>
           <div class="adm-field">
@@ -4762,9 +4762,12 @@ function saveStaffAdmission() {
   const join = document.getElementById('sfJoinDate').value || '২০২৬-০৭-১৫';
 
   const id = teachers.length ? teachers[teachers.length-1].id+1 : 1;
+  const today = new Date().toISOString().slice(0,10);
   teachers.push({
-    id, name, title: position, subject: dutyParts.join(' / ') || '—',
-    mobile, salary, join
+    id, regNo: id, name, parent: '-', title: position,
+    subject: dutyParts.join(' / ') || '—',
+    cls: classDuty !== '-' ? classDuty : '', branch: deptDuty !== '-' ? deptDuty : '',
+    mobile, salary, recruitDate: today, join, photo: '', status: 'সক্রিয়'
   });
 
   resetStaffAdmission();
@@ -4842,8 +4845,9 @@ function renderPaymentPanel() {
     panel.innerHTML = `
       <div class="pay-placeholder">
         <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#777" stroke-width="1.8"><path d="M9 12V4a1.5 1.5 0 013 0v6"/><path d="M12 6a1.5 1.5 0 013 0v5"/><path d="M15 7.5a1.5 1.5 0 013 0V13"/><path d="M9 11l-2 1c-1 .6-1 2 0 3l3 3c1 1 2 1.4 3.4 1.4H16a3 3 0 003-3v-3"/></svg>
-        <div>বাম পাশ থেকে ফি প্রকার নির্বাচন করুন</div>
-      </div>`;
+        <div>বাম পাশ থেকে ফি প্রকার নির্বাচন করুন (ঐচ্ছিক)</div>
+      </div>
+      <button class="fee-save-btn" onclick="saveAdmissionFee(0)">${icoCheck} ফি ছাড়াই ভর্তি সম্পন্ন করুন</button>`;
     return;
   }
   const total = [...admSelectedFees].reduce((s,id) => s + feeItems.find(f => f.id === id).amount, 0);
@@ -4869,15 +4873,21 @@ function recalcAdmPayment(total) {
 }
 
 function saveAdmissionFee(total) {
-  const discount = parseFloat(document.getElementById('admExtraDiscount').value) || 0;
-  const paid = parseFloat(document.getElementById('admFinalPaid').value) || 0;
+  const discountEl = document.getElementById('admExtraDiscount');
+  const paidEl = document.getElementById('admFinalPaid');
+  const discount = discountEl ? (parseFloat(discountEl.value) || 0) : 0;
+  const paid = paidEl ? (parseFloat(paidEl.value) || 0) : 0;
   const due = Math.max(total - discount - paid, 0);
 
   const id = students.length ? students[students.length-1].id + 1 : 1;
+  const regNo = id;
+  const branchVal = (document.querySelector('input[name="admBranch"]:checked') || {}).value || '';
   students.push({
-    id, name: admStudentData.name, cls: admStudentData.cls,
+    id, regNo, name: admStudentData.name, cls: admStudentData.cls,
+    attCls: admStudentData.cls, attDept: admStudentData.dept, branch: branchVal,
     mobile: admStudentData.guardianMobile, fee: total || 860,
-    parent: admStudentData.fatherName || admStudentData.motherName, status: 'সক্রিয়'
+    parent: admStudentData.fatherName || admStudentData.motherName,
+    mother: admStudentData.motherName || '', status: 'সক্রিয়'
   });
   attendance[id] = 'present';
   renderStudents(); renderParents();
@@ -5069,7 +5079,7 @@ function editUser(id) {
   document.getElementById('usrMobile').value = u.mobile || '';
   document.getElementById('usrId').value = u.uid;
   document.getElementById('usrPass').value = '';
-  document.getElementById('usrPass').placeholder = 'পরিবর্তন করতে নতুন পাসওয়ার্ড দিন (ঐচ্ছিক)';
+  document.getElementById('usrPass').placeholder = 'পরি��র্তন করতে নতুন পাসওয়ার্ড দিন (ঐচ্ছিক)';
   document.getElementById('usrPhotoPreview').innerHTML = u.photoUrl
     ? `<img src="${u.photoUrl}" alt="ব্যবহারকারীর ছবি" />`
     : '<svg width="90" height="90" viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="1.4"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>';
@@ -5191,9 +5201,6 @@ function initExtStudentData() {
       admissionClassOptions.forEach(c => { const o = document.createElement('option'); o.textContent = c; sel.appendChild(o); });
     }
   });
-  if (students.length && students[students.length - 1].transferred === undefined) {
-    students.slice(-2).forEach(s => { s.transferred = true; });
-  }
 }
 
 function branchTagHtml(branch) {
