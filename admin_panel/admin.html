@@ -272,6 +272,19 @@
       border-radius: 8px; font-family: 'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif; font-size: 14px;
     }
     .search-input:focus { outline: none; border-color: #1565c0; }
+
+    /* ───── Alphabet quick-filter bar (নাম দিয়ে খোঁজার অক্ষর তালিকা) ───── */
+    .nq-alpha-bar {
+      display: flex; flex-wrap: wrap; gap: 4px; margin: 6px 0 4px; width: 100%;
+    }
+    .nq-alpha-btn {
+      min-width: 26px; height: 26px; padding: 0 5px; border-radius: 6px;
+      border: 1.5px solid #ddd; background: #fafafa; color: #444; cursor: pointer;
+      font-family: 'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif; font-size: 13px;
+      display: flex; align-items: center; justify-content: center; transition: all .12s;
+    }
+    .nq-alpha-btn:hover { background: #e3f2fd; border-color: #90caf9; color: #1565c0; }
+    .nq-alpha-btn.active { background: #1565c0; border-color: #1565c0; color: #fff; }
     .add-btn {
       background: #1565c0; color: #fff; border: none; border-radius: 8px;
       padding: 9px 18px; font-family: 'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;
@@ -1480,6 +1493,7 @@
       <div class="hazlist-field"><span class="lbl">রেজিস্ট্রেশন নং.</span><input type="text" id="stuFReg" placeholder="রেজিস্ট্রেশন নং" oninput="renderStudents()" /></div>
       <div class="hazlist-field"><span class="lbl">জন্ম নিবন্ধন নাম্বার</span><input type="text" id="stuFBirth" placeholder="জন্ম নিবন্ধন নাম্বার" oninput="renderStudents()" /></div>
       <div class="hazlist-field"><span class="lbl">শিক্ষার্থীর নাম</span><input type="text" id="stuFName" placeholder="শিক্ষার্থীর নাম" oninput="renderStudents()" /></div>
+      <div class="nq-alpha-bar" id="stuFNameAlphaBar"></div>
       <div class="hazlist-field"><span class="lbl">বিভাগ</span>
         <select id="stuFDept" onchange="renderStudents()"><option value="">সকল</option><option>বালিকা</option><option>নুরানি</option><option>বালক</option></select>
       </div>
@@ -2490,6 +2504,7 @@
                oninput="searchAdaiStudent(this.value)"
                onkeydown="if(event.key==='Enter'){ const m = students.find(s=>String(s.regNo)===this.value.trim()); if(m) selectAdaiStudent(m.id); }" />
         <div class="adai-suggest-list" id="adaiSuggestList" style="display:none;"></div>
+        <div class="nq-alpha-bar" id="adaiRegAlphaBar"></div>
       </div>
       <div class="adai-field">
         <span class="lbl">পরিশোধের পদ্ধতি</span>
@@ -2569,7 +2584,9 @@
     <div class="hazlist-filters">
       <div class="hazlist-field"><span class="lbl">শ্রেণী</span><select id="faClassFilter" onchange="renderFeeAddStudents()"><option value="">সকল শ্রেণী</option></select></div>
       <div class="hazlist-field"><span class="lbl">শাখা</span><select id="faBranchFilter" onchange="renderFeeAddStudents()"><option value="">সকল শাখা</option></select></div>
-      <div class="hazlist-field" style="flex:1 1 240px;"><span class="lbl">নাম / রেজি. নং</span><input id="faSearch" placeholder="নাম বা রেজিস্ট্রেশন নং লিখে অনুসন্ধান" oninput="renderFeeAddStudents()"/></div>
+      <div class="hazlist-field" style="flex:1 1 240px;"><span class="lbl">নাম / রেজি. নং</span><input id="faSearch" placeholder="নাম বা রেজিস্ট্রেশন নং লিখে অনুসন্ধান" oninput="renderFeeAddStudents()"/>
+        <div class="nq-alpha-bar" id="faSearchAlphaBar"></div>
+      </div>
       <div style="display:flex; gap:8px;">
         <button class="add-btn" onclick="faSelectAll(true)">সব নির্বাচন</button>
         <button class="add-btn" style="background:#78909c;" onclick="faSelectAll(false)">সব বাতিল</button>
@@ -3617,6 +3634,7 @@
           </div>
           <div class="form-row"><label>শিক্ষার্থী অনুসন্ধান</label>
             <input id="taSearch" placeholder="নাম লিখে খুঁজুন" oninput="renderTransportAssignStudents()" />
+            <div class="nq-alpha-bar" id="taSearchAlphaBar"></div>
           </div>
           <div id="taStudentGrid" style="max-height:320px;overflow:auto;border-top:1px solid #eee;padding-top:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px;"></div>
           <button class="add-btn" style="width:100%;margin-top:14px;" onclick="saveTransportAssign()">✓ সংরক্ষণ করুন</button>
@@ -3899,6 +3917,7 @@
         <div class="section-title" style="margin:0;">শিক্ষার্থী রেজিস্ট্রেশন তালিকা (ওয়েবসাইট থেকে)</div>
         <input id="siteRegSearch" placeholder="নাম বা মোবাইল দিয়ে খুঁজুন" style="max-width:240px;" oninput="renderSiteRegList()" />
       </div>
+      <div class="nq-alpha-bar" id="siteRegSearchAlphaBar"></div>
       <div class="tbl-wrap">
         <table>
           <thead><tr><th>#</th><th>নাম</th><th>মোবাইল</th><th>শাখা/বিভাগ</th><th>তারিখ</th><th>অবস্থা</th><th>অপারেশন</th></tr></thead>
@@ -5452,6 +5471,46 @@ function branchBadgeHtml(branch) {
   if (!branch) return '';
   const cls = branchClassMap[branch] || '';
   return `<span class="branch-badge ${cls}">${branch}</span>`;
+}
+
+/* ═══════════ শিক্ষার্থী সার্চের অক্ষর ভিত্তিক কুইক ফিল্টার (সকল স্থানে ব্যবহৃত) ═══════════ */
+const NQ_ALPHA_BENGALI = ['অ','আ','ই','ঈ','উ','ঊ','ঋ','এ','ঐ','ও','ঔ','ক','খ','গ','ঘ','ঙ','চ','ছ','জ','ঝ','ঞ','ট','ঠ','ড','ঢ','ণ','ত','থ','দ','ধ','ন','প','ফ','ব','ভ','ম','য','র','ল','শ','ষ','স','হ','ড়','ঢ়','য়'];
+
+/* containerId -> সেই কন্টেইনারে অক্ষরের বাটনগুলো একবারই বসিয়ে দেয় */
+function nqBuildAlphaBar(containerId, inputId) {
+  const el = document.getElementById(containerId);
+  if (!el || el.dataset.nqBuilt) return;
+  el.innerHTML = NQ_ALPHA_BENGALI.map(ch =>
+    `<button type="button" class="nq-alpha-btn" onclick="nqAlphaFilter('${inputId}', '${ch}', this)">${ch}</button>`
+  ).join('');
+  el.dataset.nqBuilt = '1';
+}
+
+/* একটি অক্ষরে ক্লিক করলে সার্চবক্সে ঐ অক্ষর বসিয়ে বিদ্যমান সার্চ ফাংশনকে (oninput) চালু করে দেয় —
+   ফলে যাদের নামে ঐ অক্ষর আছে তারাই ফলাফলে দেখা যাবে। আবার একই অক্ষরে ক্লিক করলে ফিল্টার উঠে যাবে। */
+function nqAlphaFilter(inputId, letter, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const bar = btn.parentElement;
+  const wasActive = btn.classList.contains('active');
+  bar.querySelectorAll('.nq-alpha-btn').forEach(b => b.classList.remove('active'));
+  if (wasActive) {
+    input.value = '';
+  } else {
+    input.value = letter;
+    btn.classList.add('active');
+  }
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+  input.focus();
+}
+
+/* পেজ লোডের সময় সবগুলো শিক্ষার্থী-সার্চ বক্সের সাথে অক্ষর বার তৈরি করে দেয় */
+function nqInitAllAlphaBars() {
+  nqBuildAlphaBar('stuFNameAlphaBar', 'stuFName');
+  nqBuildAlphaBar('adaiRegAlphaBar', 'adaiRegInput');
+  nqBuildAlphaBar('faSearchAlphaBar', 'faSearch');
+  nqBuildAlphaBar('taSearchAlphaBar', 'taSearch');
+  nqBuildAlphaBar('siteRegSearchAlphaBar', 'siteRegSearch');
 }
 
 function renderStudents() {
@@ -9119,6 +9178,7 @@ function nqInitAutoSaveWatcher() {
     try { showPage('dashboard', null, true); } catch (e2) {}
   }
   nqInitAutoSaveWatcher();
+  nqInitAllAlphaBars();
 
   /* ব্যবহারকারী ব্যবস্থাপনায় অ্যাক্সেস থাকলে সার্ভার থেকে তালিকা লোড করুন */
   if (window.NQAuth && window.NQAuth.canAccessModule && window.NQAuth.canAccessModule('users')) {
