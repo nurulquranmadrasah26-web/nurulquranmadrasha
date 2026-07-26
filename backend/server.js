@@ -318,15 +318,15 @@ app.post("/api/auth/login", async (req, res) => {
   try {
     const { uid, password } = req.body || {};
     if (!uid || !password)
-      return res.status(400).json({ message: "আইডি ও পাসওয়ার্ড দিন" });
+      return res.status(400).json({ message: "আইডিি ও পাসওয়ার্ড দিন" });
 
     const user = await User.findOne({ uid: uid.trim() });
-    if (!user) return res.status(401).json({ message: "ভুল আইডি বা পাসওয়ার্ড" });
+    if (!user) return res.status(401).json({ message: "ভুল আইডিি বা পাসওয়ার্ড" });
     if (!user.active)
       return res.status(403).json({ message: "আপনার অ্যাকাউন্ট নিষ্ক্রিয় করা হয়েছে" });
 
     const ok = await bcrypt.compare(password, user.passwordHash);
-    if (!ok) return res.status(401).json({ message: "ভুল আইডি বা পাসওয়ার্ড" });
+    if (!ok) return res.status(401).json({ message: "ভুল আইডিি বা পাসওয়ার্ড" });
 
     const token = signToken(user);
     res.json({
@@ -415,7 +415,7 @@ app.post("/api/users", auth, requirePerm("users"), async (req, res) => {
       return res.status(403).json({ message: "এই রোলের ব্যবহারকারী তৈরির অনুমতি নেই" });
 
     const exists = await User.findOne({ uid: uid.trim() });
-    if (exists) return res.status(409).json({ message: "এই আইডি ইতিমধ্যে ব্যবহৃত" });
+    if (exists) return res.status(409).json({ message: "এই আইডিইতিমধ্যে ব্যবহৃত" });
 
     const passwordHash = await bcrypt.hash(password, 10);
     const user = await User.create({
