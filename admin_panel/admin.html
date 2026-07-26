@@ -417,8 +417,31 @@
     }
     .adm-field input:focus, .adm-field select:focus { outline: none; border-color: #1565c0; }
     .adm-field input[readonly] { background: #f0f0f0; color: #666; }
-    .adm-radio-group { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; font-size: 14px; }
-    .adm-radio-group label { display: flex; align-items: center; gap: 5px; font-weight: 500; font-size: 14px; }
+    .adm-radio-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 14px; }
+    .adm-radio-group label {
+      display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 13.5px;
+      padding: 8px 14px; border-radius: 20px; border: 1.5px solid #ddd; background: #fafafa;
+      color: #555; cursor: pointer; white-space: nowrap; transition: all .15s;
+    }
+    .adm-radio-group label:hover { border-color: #90caf9; background: #f0f7ff; }
+    .adm-radio-group input[type="radio"] {
+      appearance: none; -webkit-appearance: none; width: 15px; height: 15px; margin: 0;
+      border: 2px solid #bbb; border-radius: 50%; flex-shrink: 0; cursor: pointer; transition: all .15s;
+    }
+    .adm-radio-group label:has(input:checked) {
+      background: #1565c0; border-color: #1565c0; color: #fff;
+      box-shadow: 0 2px 6px rgba(21,101,192,.3);
+    }
+    .adm-radio-group label:has(input:checked) input[type="radio"] {
+      border-color: #fff; background: radial-gradient(circle, #fff 40%, transparent 44%);
+    }
+    .adm-section-divider {
+      grid-column: 1 / -1; display: flex; align-items: center; gap: 8px;
+      font-size: 13.5px; font-weight: 700; color: #1565c0; letter-spacing: .2px;
+      padding-top: 16px; margin-top: 4px; border-top: 1px dashed #e2e2e2;
+    }
+    .adm-section-divider.first { border-top: none; padding-top: 0; margin-top: 0; }
+    .adm-section-divider .dot { width: 7px; height: 7px; border-radius: 50%; background: #1565c0; flex-shrink: 0; }
     .adm-photo-box {
       border: 1.5px dashed #bbb; padding: 16px; text-align: center; background: #fafafa;
     }
@@ -2016,6 +2039,7 @@
       </div>
       <div class="adm-panel">
         <div class="adm-grid">
+          <div class="adm-section-divider first"><span class="dot"></span>একাডেমিক তথ্য</div>
           <div class="adm-field">
             <label>বিভাগ নির্বাচন করুন <span class="req">*</span></label>
             <select id="admDept">
@@ -2060,6 +2084,7 @@
             <select id="admGroup"><option value="">---ক্লাশ গ্রুপ---</option><option>ক</option><option>খ</option><option>গ</option></select>
           </div>
 
+          <div class="adm-section-divider"><span class="dot"></span>শিক্ষার্থীর ব্যক্তিগত তথ্য</div>
           <div class="adm-field">
             <label>জন্ম নিবন্ধন নাম্বার</label>
             <input id="admBirthReg" placeholder="জন্ম নিবন্ধন নাম্বার" />
@@ -2083,9 +2108,10 @@
           </div>
           <div class="adm-field">
             <label>পিতার নাম <span class="req">*</span></label>
-            <input id="admFatherName" placeholder="পি��ার নাম" />
+            <input id="admFatherName" placeholder="পিতার নাম" />
           </div>
 
+          <div class="adm-section-divider"><span class="dot"></span>পিতা-মাতা ও অভিভাবকের তথ্য</div>
           <div class="adm-field"><label>পিতার পেশা</label><input id="admFatherJob" placeholder="পিতার পেশা" /></div>
           <div class="adm-field"><label>পিতার মোবাইল নং</label><input id="admFatherMobile" placeholder="০১XXXXXXXXX" /></div>
           <div class="adm-field"><label>মাতার নাম</label><input id="admMotherName" placeholder="মাতার নাম" /></div>
@@ -2108,6 +2134,7 @@
             <label>অভিভাবকের মোবাইল নং <span class="req">*</span></label>
             <input id="admGuardianMobile" placeholder="০১XXXXXXXXX" />
           </div>
+          <div class="adm-section-divider"><span class="dot"></span>পূর্ববর্তী তথ্য ও ছবি</div>
           <div class="adm-field"><label>পূর্ববর্তী প্রতিষ্ঠানের নাম</label><input id="admPrevInst" placeholder="পূর্ববর্তী প্রতিষ্ঠানের নাম" /></div>
           <div class="adm-field">
             <label>পূর্ববর্তী শ্রেণী</label>
