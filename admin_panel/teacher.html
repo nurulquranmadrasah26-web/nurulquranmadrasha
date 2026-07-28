@@ -432,7 +432,7 @@
           <tbody id="subject-hw-body">
             <tr><td>১</td><td>প্রথম</td><td style="color:var(--blue-dark)">English For Today</td><td>২৮/০৭/২০২৬ ইং</td><td class="status-run">চলমান</td><td>মোসাঃ মানসুরা বেগম</td><td><span class="icon-btn icon-edit">✎</span><span class="icon-btn icon-del">🗑</span></td></tr>
             <tr><td>২</td><td>প্রথম</td><td style="color:var(--blue-dark)">আমার বাংলা বই</td><td>২৮/০৭/২০২৬ ইং</td><td class="status-run">চলমান</td><td>আব্দুর রউফ</td><td><span class="icon-btn icon-edit">✎</span><span class="icon-btn icon-del">🗑</span></td></tr>
-            <tr><td>৩</td><td>নার্সারী</td><td style="color:var(--blue-dark)">আমার বাংলা বই</td><td>২৮/০৭/২০২৬ ইং</td><td class="status-run">চলমান</td><td>আব্দুর রউফ</td><td><span class="icon-btn icon-edit">✎</span><span class="icon-btn icon-del">🗑</span></td></tr>
+            <tr><td>৩</td><td>নার্সারী</td><td style="color:var(--blue-dark)">আমার বাংলা বই</td><td>২৮/০৭/২০২৬ ইং</td><td class="status-run">চলমান</td><td>আব্দুর রউফ</td><td><span class="icon-btn icon-edit">✎</span><span class="icon-btn icon-del">���</span></td></tr>
             <tr><td>৪</td><td>নার্সারী</td><td style="color:var(--blue-dark)">English For Today</td><td>২৮/০৭/২০২৬ ইং</td><td class="status-run">চলমান</td><td>মোসাঃ মানসুরা বেগম</td><td><span class="icon-btn icon-edit">✎</span><span class="icon-btn icon-del">🗑</span></td></tr>
             <tr><td>৫</td><td>প্রথম</td><td style="color:var(--blue-dark)">গণিত</td><td>২৮/০৭/২০২৬ ইং</td><td class="status-run">চলমান</td><td>মোসাঃ মানসুরা বেগম</td><td><span class="icon-btn icon-edit">✎</span><span class="icon-btn icon-del">🗑</span></td></tr>
             <tr><td>৬</td><td>নার্সারী</td><td style="color:var(--blue-dark)">সাধারণ জ্ঞান</td><td>২৮/০৭/২০২৬ ইং</td><td class="status-run">চলমান</td><td>মোসাঃ মানসুরা বেগম</td><td><span class="icon-btn icon-edit">✎</span><span class="icon-btn icon-del">🗑</span></td></tr>
@@ -535,6 +535,40 @@
     </div>
   </section>
 
+  <!-- ============ MESSAGING ============ -->
+  <section id="view-messages" class="view">
+    <div class="page-head">
+      <div class="page-head-left"><div class="icon-box">💬</div><h1>মেসেজিং সিস্টেম</h1></div>
+      <div class="quicklinks">
+        <button class="qb-dash" onclick="goto('dashboard')">🏠 <span class="lbl">ড্যাশবোর্ড</span></button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📥 গৃহীত মেসেজ</h2>
+      <div id="teacher-inbox" style="max-height:300px;overflow-y:auto;">
+        <div style="text-align:center;color:var(--muted);padding:20px;">লোড হচ্ছে...</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📤 মেসেজ পাঠান</h2>
+      <div class="form-row">
+        <div class="form-field" style="grid-column:span 2;"><label>প্রাপক (শিক্ষার্থী/কর্মী)</label><input type="text" id="teacher-msg-to" placeholder="শিক্ষার্থীর নাম বা আইডি"></div>
+        <div class="form-field" style="grid-column:span 2;"><label>বিষয়</label><input type="text" id="teacher-msg-subject" placeholder="বিষয় (ঐচ্ছিক)"></div>
+      </div>
+      <div style="margin-bottom:16px;"><label style="display:block;font-size:13px;color:#374151;margin-bottom:6px;">বার্তা</label><textarea id="teacher-msg-body" placeholder="আপনার বার্তা লিখুন..." style="width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-family:inherit;resize:vertical;min-height:80px;"></textarea></div>
+      <button onclick="sendTeacherMessage()" style="background:var(--blue);color:#fff;padding:12px 24px;border-radius:8px;font-weight:600;cursor:pointer;">পাঠান</button>
+    </div>
+
+    <div class="card">
+      <h2>📋 পাঠানো মেসেজ</h2>
+      <div id="teacher-sent" style="max-height:300px;overflow-y:auto;">
+        <div style="text-align:center;color:var(--muted);padding:20px;">লোড হচ্ছে...</div>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ PROFILE ============ -->
   <section id="view-profile" class="view">
     <div class="page-head">
@@ -568,7 +602,7 @@
 
 <nav class="bottomnav">
   <a href="#" data-view="dashboard" class="active" onclick="goto('dashboard');return false;"><span class="ic">🏠</span>ড্যাশবোর্ড</a>
-  <a href="#" data-view="admit" onclick="return false;"><span class="ic">👤➕</span>ভর্তি</a>
+  <a href="#" data-view="messages" onclick="goto('messages');return false;"><span class="ic">💬</span>বার্তা</a>
   <a href="#" data-view="attendance" onclick="goto('attendance');return false;"><span class="ic">📅</span>হাজিরা</a>
   <a href="#" data-view="fee" onclick="goto('fee');return false;"><span class="ic">💰</span>আদায়</a>
   <a href="#" data-view="hw-list" onclick="goto('hw-list');return false;"><span class="ic">📖</span>বাড়ির কাজ</a>
@@ -592,6 +626,107 @@
     document.querySelectorAll('#view-attendance .tabbtn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
   }
+
+  /* ═══════════ শিক্ষক মেসেজিং ═══════════ */
+  async function loadTeacherInbox() {
+    try {
+      const res = await fetch('/api/messages/inbox', {
+        headers: {
+          'Authorization': 'Bearer ' + localStorage.getItem('auth_token')
+        }
+      });
+      const data = await res.json();
+      const container = document.getElementById('teacher-inbox');
+
+      if (!data.ok || !data.messages || data.messages.length === 0) {
+        container.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px;">কোন মেসেজ নেই</div>';
+        return;
+      }
+
+      container.innerHTML = data.messages.map((m, i) => `
+        <div style="border:1px solid var(--line);border-radius:8px;padding:14px;margin-bottom:10px;font-size:14px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+            <strong style="color:#1f2430;">থেকে: ${m.fromUserId?.name || 'অজানা'}</strong>
+            <span style="color:var(--muted);font-size:13px;">${new Date(m.createdAt).toLocaleDateString('bn-BD')}</span>
+          </div>
+          ${m.subject ? '<div style="color:#2f7dd9;margin-bottom:6px;"><strong>বিষয়:</strong> ' + m.subject + '</div>' : ''}
+          <div style="color:#374151;background:#f9fafb;padding:10px;border-radius:6px;">${m.body}</div>
+        </div>
+      `).join('');
+    } catch (e) {
+      console.error('ইনবক্স লোড ত্রুটি:', e);
+      document.getElementById('teacher-inbox').innerHTML = '<div style="color:#ef4444;padding:20px;">সংযোগ ত্রুটি</div>';
+    }
+  }
+
+  async function loadTeacherSent() {
+    try {
+      const res = await fetch('/api/messages/sent', {
+        headers: {
+          'Authorization': 'Bearer ' + localStorage.getItem('auth_token')
+        }
+      });
+      const data = await res.json();
+      const container = document.getElementById('teacher-sent');
+
+      if (!data.ok || !data.messages || data.messages.length === 0) {
+        container.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px;">কোন পাঠানো মেসেজ নেই</div>';
+        return;
+      }
+
+      container.innerHTML = data.messages.map((m, i) => `
+        <div style="border:1px solid var(--line);border-radius:8px;padding:14px;margin-bottom:10px;font-size:14px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+            <strong style="color:#1f2430;">প্রাপক: ${m.toUserId?.name || 'অজানা'}</strong>
+            <span style="color:var(--muted);font-size:13px;">${new Date(m.createdAt).toLocaleDateString('bn-BD')}</span>
+          </div>
+          ${m.subject ? '<div style="color:#2f7dd9;margin-bottom:6px;"><strong>বিষয়:</strong> ' + m.subject + '</div>' : ''}
+          <div style="color:#374151;background:#f9fafb;padding:10px;border-radius:6px;">${m.body}</div>
+        </div>
+      `).join('');
+    } catch (e) {
+      console.error('পাঠানো মেসেজ লোড ত্রুটি:', e);
+      document.getElementById('teacher-sent').innerHTML = '<div style="color:#ef4444;padding:20px;">সংযোগ ত্রুটি</div>';
+    }
+  }
+
+  async function sendTeacherMessage() {
+    try {
+      const toUser = document.getElementById('teacher-msg-to').value.trim();
+      const subject = document.getElementById('teacher-msg-subject').value.trim();
+      const body = document.getElementById('teacher-msg-body').value.trim();
+
+      if (!toUser || !body) {
+        alert('প্রাপক এবং বার্তা প্রয়োজন');
+        return;
+      }
+
+      // নোট: আসল ইমপ্লিমেন্টেশনে এখানে ইউজার খুঁজে বের করতে হবে
+      // এখানে শুধু ডেমো
+      alert('বার্তা পাঠানো হয়েছে (ডেমো মোড)');
+      document.getElementById('teacher-msg-to').value = '';
+      document.getElementById('teacher-msg-subject').value = '';
+      document.getElementById('teacher-msg-body').value = '';
+      loadTeacherSent();
+    } catch (e) {
+      console.error('মেসেজ পাঠানোর ত্রুটি:', e);
+      alert('মেসেজ পাঠাতে ব্যর্থ হয়েছে');
+    }
+  }
+
+  // মেসেজ ভিউ দেখার সময় লোড করুন
+  document.addEventListener('DOMContentLoaded', function() {
+    const origGoto = window.goto;
+    window.goto = function(name) {
+      if (name === 'messages') {
+        setTimeout(() => {
+          loadTeacherInbox();
+          loadTeacherSent();
+        }, 100);
+      }
+      origGoto(name);
+    };
+  });
 </script>
 
 </body>

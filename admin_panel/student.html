@@ -489,7 +489,7 @@
             <tbody>
               <tr><td>১</td><td>আরবী</td><td>১৯/৫/২০২৬</td><td>08:30-10:30</td><td>১০০</td><td>৩৩</td></tr>
               <tr><td>২</td><td>কালিমা ও দোয়া</td><td>১৯/৫/২০২৬</td><td>10:30-11:30</td><td>৫০</td><td>১৭</td></tr>
-              <tr><td>৩</td><td>আমার বাংলা বই</td><td>২০/৫/২০২৬</td><td>08:30-10:30</td><td>১০০</td><td>৩৩</td></tr>
+              <tr><td>৩</td><td>আমার বাংলা বই</td><td>২০/��/২০২৬</td><td>08:30-10:30</td><td>১০০</td><td>৩৩</td></tr>
               <tr><td>৪</td><td>সাধারণ জ্ঞান</td><td>২০/৫/২০২৬</td><td>10:30-11:30</td><td>১০০</td><td>৩৩</td></tr>
               <tr><td>৫</td><td>গণিত</td><td>২১/৫/২০২৬</td><td>08:30-10:30</td><td>১০০</td><td>৩৩</td></tr>
               <tr><td>৬</td><td>English For Today</td><td>২৩/৫/২০২৬</td><td>08:30-10:30</td><td>১০০</td><td>৩৩</td></tr>
@@ -579,6 +579,39 @@
       </div>
     </section>
 
+    <!-- MESSAGES -->
+    <section class="tab-panel" id="tab-messages">
+      <div class="card">
+        <div class="card-head">
+          <div class="title">💬 ইনবক্স</div>
+        </div>
+        <div id="inbox-container" style="padding:14px 16px;">
+          <div style="text-align:center;color:#9ca3af;padding:20px;">লোড হচ্ছে...</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="title">📤 মেসেজ পাঠান</div>
+        </div>
+        <div style="padding:14px 16px;">
+          <div style="margin-bottom:12px;">
+            <label style="display:block;font-size:12px;color:#6b7280;margin-bottom:6px;">প্রাপক</label>
+            <input type="text" id="msgToUser" placeholder="শিক্ষক বা প্রশাসকের নাম" style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;">
+          </div>
+          <div style="margin-bottom:12px;">
+            <label style="display:block;font-size:12px;color:#6b7280;margin-bottom:6px;">বিষয়</label>
+            <input type="text" id="msgSubject" placeholder="বিষয় (ঐচ্ছিক)" style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;">
+          </div>
+          <div style="margin-bottom:12px;">
+            <label style="display:block;font-size:12px;color:#6b7280;margin-bottom:6px;">বার্তা</label>
+            <textarea id="msgBody" placeholder="আপনার বার্তা লিখুন..." style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;resize:vertical;min-height:60px;"></textarea>
+          </div>
+          <button onclick="sendStudentMessage()" style="width:100%;background:#16a34a;color:#fff;padding:10px;border:none;border-radius:8px;font-weight:600;cursor:pointer;">পাঠান</button>
+        </div>
+      </div>
+    </section>
+
     <!-- SETTINGS -->
     <section class="tab-panel" id="tab-settings">
       <div class="card">
@@ -611,8 +644,8 @@
   <nav class="bottom">
     <button class="nav-btn active" data-tab="home" data-grad="var(--home-grad)"><span class="icon">🏠</span>হোম</button>
     <button class="nav-btn" data-tab="routine" data-grad="var(--routine-grad)"><span class="icon">📅</span>রুটিন</button>
+    <button class="nav-btn" data-tab="messages" data-grad="linear-gradient(120deg,#3b82f6,#8b5cf6)"><span class="icon">💬</span>বার্তা</button>
     <button class="nav-btn" data-tab="attendance" data-grad="var(--attendance-grad)"><span class="icon">✅</span>হাজিরা</button>
-    <button class="nav-btn" data-tab="result" data-grad="var(--result-grad)"><span class="icon">📈</span>ফলাফল</button>
     <button class="nav-btn" data-tab="payment" data-grad="var(--payment-grad)"><span class="icon">💳</span>পেমেন্ট</button>
     <button class="nav-btn" data-tab="settings" data-grad="var(--settings-grad)"><span class="icon">⚙️</span>সেটিংস</button>
   </nav>
@@ -638,6 +671,70 @@
   const notifToggle = document.getElementById('notif-toggle');
   document.getElementById('notif-row').addEventListener('click', () => {
     notifToggle.classList.toggle('on');
+  });
+
+  /* ═══════════ মেসেজ সিস্টেম ═══════════ */
+  async function loadStudentInbox() {
+    try {
+      const res = await fetch('/api/messages/inbox', {
+        headers: {
+          'Authorization': 'Bearer ' + localStorage.getItem('auth_token')
+        }
+      });
+      const data = await res.json();
+      const container = document.getElementById('inbox-container');
+
+      if (!data.ok || !data.messages || data.messages.length === 0) {
+        container.innerHTML = '<div style="text-align:center;color:#9ca3af;padding:20px;">কোন মেসেজ নেই</div>';
+        return;
+      }
+
+      container.innerHTML = data.messages.map((m, i) => `
+        <div style="border-bottom:1px solid #e5e7eb;padding:12px 0;font-size:14px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+            <strong style="color:#1f2937;">${m.fromUserId?.name || 'অজানা'}</strong>
+            <span style="color:#9ca3af;font-size:12px;">${new Date(m.createdAt).toLocaleDateString('bn-BD')}</span>
+          </div>
+          ${m.subject ? '<div style="color:#6b7280;font-size:13px;margin-bottom:4px;"><strong>বিষয়:</strong> ' + m.subject + '</div>' : ''}
+          <div style="color:#374151;">${m.body}</div>
+        </div>
+      `).join('');
+    } catch (e) {
+      console.error('ইনবক্স লোড ত্রুটি:', e);
+      document.getElementById('inbox-container').innerHTML = '<div style="text-align:center;color:#ef4444;padding:20px;">সংযোগ ত্রুটি</div>';
+    }
+  }
+
+  async function sendStudentMessage() {
+    try {
+      const toUser = document.getElementById('msgToUser').value.trim();
+      const subject = document.getElementById('msgSubject').value.trim();
+      const body = document.getElementById('msgBody').value.trim();
+
+      if (!toUser || !body) {
+        alert('প্রাপক এবং বার্তা প্রয়োজন');
+        return;
+      }
+
+      // নোট: আসল ইমপ্লিমেন্টেশনে এখানে ইউজার খুঁজে বের করতে হবে
+      // এখানে শুধু ডেমো
+      alert('বার্তা পাঠানো হয়েছে (ডেমো মোড)');
+      document.getElementById('msgToUser').value = '';
+      document.getElementById('msgSubject').value = '';
+      document.getElementById('msgBody').value = '';
+    } catch (e) {
+      console.error('মেসেজ পাঠানোর ত্রুটি:', e);
+    }
+  }
+
+  // মেসেজ ট্যাবে ক্লিক হলে ইনবক্স লোড করুন
+  const navBtns = document.querySelectorAll('.nav-btn');
+  navBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      if (this.dataset.tab === 'messages') {
+        setTimeout(loadStudentInbox, 100);
+      }
+    });
   });
 </script>
 
