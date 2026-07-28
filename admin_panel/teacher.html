@@ -275,6 +275,8 @@
     .tabbar.three{grid-template-columns:1fr;}
   }
 </style>
+<script src="config.js"></script>
+<script src="auth.js"></script>
 </head>
 <body>
 
@@ -287,15 +289,17 @@
     </div>
   </div>
   <nav class="mainnav">
-    <a href="#"><span class="plusicon">+</span> ভর্তি</a>
-    <a href="#"><span class="plusicon">+</span> নিয়োগ</a>
-    <a href="#"><span class="plusicon">+</span> হাজিরা</a>
-    <a href="#"><span class="plusicon">+</span> আদায়</a>
-    <a href="#">🗄️ ইনভেন্টরি</a>
+    <a href="#" onclick="goto('attendance');return false;"><span class="plusicon">+</span> হাজিরা</a>
+    <a href="#" onclick="goto('fee');return false;"><span class="plusicon">+</span> আদায়</a>
+    <a href="#" onclick="goto('hw-subject');return false;"><span class="plusicon">+</span> বাড়ির কাজ</a>
+    <a href="#" onclick="goto('hw-list');return false;">📖 তালিকা</a>
+    <a href="#" onclick="goto('messages');return false;">💬 বার্তা</a>
   </nav>
   <div class="topbar-right">
-    <div class="bell">🔔<span class="badge">0</span></div>
-    <span class="caret">▾</span>
+    <div class="bell" onclick="goto('messages')">🔔<span class="badge" id="msgBadge">0</span></div>
+    <span style="font-size:14px;font-weight:600;" data-user-name>—</span>
+    <span style="font-size:12px;color:var(--muted);" data-user-role></span>
+    <button data-logout style="background:#fdeaea;color:#c81452;padding:8px 14px;border-radius:8px;font-weight:600;">লগআউট</button>
   </div>
 </header>
 
@@ -321,22 +325,24 @@
       <div class="tile sm t-result">📋 ফলাফলের তালিকা</div>
     </div>
     <div class="tile-grid row-1">
-      <div class="tile t-absent">১২ জন<br>অনুপস্থিত শিক্ষার্থী</div>
+      <div class="tile t-absent" id="dashAbsent" onclick="goto('attendance')">০ জন<br>অনুপস্থিত শিক্ষার্থী</div>
     </div>
     <div class="tile-grid row-2">
-      <div class="tile t-checkin">↪️ চেক-ইন<div class="checkline">--</div></div>
-      <div class="tile t-checkout">↩️ চেক-আউট<div class="checkline">--</div></div>
+      <div class="tile t-checkin">👨‍🎓 মোট শিক্ষার্থী<div class="checkline" id="dashStudents">০</div></div>
+      <div class="tile t-checkout">📖 আজকের বাড়ির কাজ<div class="checkline" id="dashHw">০</div></div>
     </div>
 
     <div class="block-title">নোটিশ বোর্ড</div>
-    <div class="alert-pink">কোন তথ্য খুঁজে পাওয়া যাইনি! <span class="x">✕</span></div>
+    <div id="dashNotices"><div class="alert-pink">কোন তথ্য খুঁজে পাওয়া যাইনি!</div></div>
 
     <div class="block-title">শেষ ১০টি ফি আদায়ের তালিকা</div>
-    <div class="alert-pink" style="justify-content:center;">কোন তথ্য খুঁজে পাওয়া যাইনি!</div>
+    <div id="dashPayments"><div class="alert-pink" style="justify-content:center;">কোন তথ্য খুঁজে পাওয়া যাইনি!</div></div>
 
     <div class="routine-card">
-      <div class="routine-head"><span>🎓 ক্লাস রুটিন</span><span class="day-btn">মঙ্গলবার</span></div>
-      <div class="routine-body">🗓️ রুটিন পাওয়া যায়নি!</div>
+      <div class="routine-head"><span>🎓 ক্লাস রুটিন</span>
+        <select class="day-btn" id="dashRoutineClass" onchange="renderTeacherRoutine()" style="border:none;"></select>
+      </div>
+      <div class="routine-body" id="dashRoutine">🗓️ রুটিন পাওয়া যায়নি!</div>
     </div>
 
     <footer class="foot">
@@ -358,20 +364,18 @@
       </div>
     </div>
 
-    <div class="tabbar">
-      <button class="tabbtn active" onclick="switchClassTab(this)">নার্সারী</button>
-      <button class="tabbtn" onclick="switchClassTab(this)">নুরানি</button>
-    </div>
+    <div class="tabbar" id="attTabs"></div>
 
     <div class="card">
       <table>
         <thead>
-          <tr><th>#</th><th>ছবি</th><th>রেজিস্ট্রেশন নং</th><th>শ্রেণী রোল</th><th>নাম</th><th>শ্রেণী</th><th>বিভাগ</th><th>হাজিরা</th></tr>
+          <tr><th>#</th><th>রেজিঃ নং</th><th>নাম</th><th>শ্রেণী</th><th>মোবাইল</th><th>হাজিরা</th></tr>
         </thead>
+        <tbody id="attBody"><tr><td colspan="6" class="empty-row">লোড হচ্ছে...</td></tr></tbody>
       </table>
-      <div class="save-bar" onclick="alert('হাজিরা সংরক্ষণ করা হয়েছে (ডেমো)')">
+      <div class="save-bar" onclick="saveAttendance()">
         ✓ সংরক্ষণ করুন
-        <small>মোট : 0 উপস্থিত – 0 অনুপস্থিত – 0 ছুটিতে</small>
+        <small id="attSummary">মোট : ০ উপস্থিত – ০ অনুপস্থিত – ০ ছুটিতে</small>
       </div>
     </div>
   </section>
@@ -390,23 +394,21 @@
     </div>
 
     <div class="form-row">
-      <div class="form-field"><label>রেজিস্ট্রেশন নং.</label><input type="text" placeholder="রেজিস্ট্রেশন নং."></div>
-      <div class="form-field"><label>পরিশোধের পদ্ধতি</label><select><option>-</option></select></div>
-      <div class="form-field"><label>আদায়কারীর নাম</label><input type="text" value="বালিকা শাখা" disabled></div>
-      <div class="form-field"><label>মন্তব্য</label><input type="text" placeholder="মন্তব্য"></div>
-      <div class="form-field total">মোট বকেয়া : <div class="num">0.00</div></div>
+      <div class="form-field"><label>শিক্ষার্থী</label><select id="feeStudent" onchange="renderFeeDues()"></select></div>
+      <div class="form-field"><label>পরিশোধের পদ্ধতি</label><select id="feeMethod"><option>নগদ</option><option>বিকাশ</option><option>ব্যাংক</option></select></div>
+      <div class="form-field"><label>আদায়কারীর নাম</label><input type="text" id="feeCollector" data-user-name disabled></div>
+      <div class="form-field"><label>মন্তব্য</label><input type="text" id="feeRemark" placeholder="মন্তব্য"></div>
+      <div class="form-field total">মোট বকেয়া : <div class="num" id="feeTotalDue">0.00</div></div>
     </div>
 
     <div class="fee-layout">
-      <div class="fee-left"></div>
+      <div class="fee-left" style="padding:16px;" id="feeDueList"></div>
       <div class="fee-right">
-        <div class="fee-row">মোট নির্বাচিত <span class="val">0.00 টাকা</span></div>
-        <div class="fee-row">ডিসকাউন্ট <span class="val">0 টাকা</span></div>
-        <div class="fee-row">পরিশোধ <span class="val">0 টাকা</span></div>
-        <div class="fee-row bar">অগ্রিম <span class="val">0 টাকা</span></div>
-        <div class="fee-row bar green">বাকি টাকা <span class="val">0.00 টাকা</span></div>
-        <div class="fee-advance-btn">▶▶ অগ্রিম ফি</div>
-        <div class="fee-save" onclick="alert('ফি সংরক্ষণ করা হয়েছে (ডেমো)')">✓ সংরক্ষণ করুন</div>
+        <div class="fee-row">মোট নির্বাচিত <span class="val" id="feeSelected">0.00 টাকা</span></div>
+        <div class="fee-row">ডিসকাউন্ট <span class="val"><input type="number" id="feeDiscount" value="0" oninput="updateFeeSummary()" style="width:90px;border:1px solid var(--line);border-radius:6px;padding:4px 6px;"></span></div>
+        <div class="fee-row">পরিশোধ <span class="val"><input type="number" id="feePaid" value="0" oninput="updateFeeSummary()" style="width:90px;border:1px solid var(--line);border-radius:6px;padding:4px 6px;"></span></div>
+        <div class="fee-row bar green">বাকি টাকা <span class="val" id="feeRemaining">0.00 টাকা</span></div>
+        <div class="fee-save" onclick="saveFeeCollection()">✓ সংরক্ষণ করুন</div>
       </div>
     </div>
   </section>
@@ -429,15 +431,7 @@
         <h2 style="margin-top:0;">বিষয়ভিত্তিক বাড়ির কাজের তালিকা</h2>
         <table class="hw-list-table">
           <thead><tr><th>#</th><th>শ্রেণী</th><th>বিষয়</th><th>তারিখ</th><th>অবস্থা</th><th>শিক্ষক</th><th>অপারেশন</th></tr></thead>
-          <tbody id="subject-hw-body">
-            <tr><td>১</td><td>প্রথম</td><td style="color:var(--blue-dark)">English For Today</td><td>২৮/০৭/২০২৬ ইং</td><td class="status-run">চলমান</td><td>মোসাঃ মানসুরা বেগম</td><td><span class="icon-btn icon-edit">✎</span><span class="icon-btn icon-del">🗑</span></td></tr>
-            <tr><td>২</td><td>প্রথম</td><td style="color:var(--blue-dark)">আমার বাংলা বই</td><td>২৮/০৭/২০২৬ ইং</td><td class="status-run">চলমান</td><td>আব্দুর রউফ</td><td><span class="icon-btn icon-edit">✎</span><span class="icon-btn icon-del">🗑</span></td></tr>
-            <tr><td>৩</td><td>নার্সারী</td><td style="color:var(--blue-dark)">আমার বাংলা বই</td><td>২৮/০৭/২০২৬ ইং</td><td class="status-run">চলমান</td><td>আব্দুর রউফ</td><td><span class="icon-btn icon-edit">✎</span><span class="icon-btn icon-del">���</span></td></tr>
-            <tr><td>৪</td><td>নার্সারী</td><td style="color:var(--blue-dark)">English For Today</td><td>২৮/০৭/২০২৬ ইং</td><td class="status-run">চলমান</td><td>মোসাঃ মানসুরা বেগম</td><td><span class="icon-btn icon-edit">✎</span><span class="icon-btn icon-del">🗑</span></td></tr>
-            <tr><td>৫</td><td>প্রথম</td><td style="color:var(--blue-dark)">গণিত</td><td>২৮/০৭/২০২৬ ইং</td><td class="status-run">চলমান</td><td>মোসাঃ মানসুরা বেগম</td><td><span class="icon-btn icon-edit">✎</span><span class="icon-btn icon-del">🗑</span></td></tr>
-            <tr><td>৬</td><td>নার্সারী</td><td style="color:var(--blue-dark)">সাধারণ জ্ঞান</td><td>২৮/০৭/২০২৬ ইং</td><td class="status-run">চলমান</td><td>মোসাঃ মানসুরা বেগম</td><td><span class="icon-btn icon-edit">✎</span><span class="icon-btn icon-del">🗑</span></td></tr>
-            <tr><td>৭</td><td>প্রথম</td><td style="color:var(--blue-dark)">সাধারণ জ্ঞান</td><td>২৮/০৭/২০২৬ ইং</td><td class="status-run">চলমান</td><td>মোসাঃ মানসুরা বেগম</td><td><span class="icon-btn icon-edit">✎</span><span class="icon-btn icon-del">🗑</span></td></tr>
-          </tbody>
+          <tbody id="subject-hw-body"><tr><td colspan="7" class="empty-row">লোড হচ্ছে...</td></tr></tbody>
         </table>
       </div>
       <div class="fee-right">
@@ -445,12 +439,12 @@
           <h2 style="margin:0;">বিষয়ভিত্তিক বাড়ির কাজের তথ্য</h2>
           <span class="detail-btn">☰ বিস্তারিত</span>
         </div>
-        <div class="form-field"><label>শ্রেণী</label><select><option>নার্সারী</option><option>প্রথম</option></select></div>
-        <div class="form-field"><label>বিষয়</label><select><option>-</option></select></div>
-        <div class="form-field"><label>বাড়ির কাজ</label><textarea rows="4"></textarea></div>
-        <label style="display:flex;align-items:center;gap:8px;font-size:14px;"><input type="checkbox"> খাতা লেখা</label>
-        <div class="form-field"><label>তারিখ</label><input type="date"></div>
-        <div class="fee-save" onclick="alert('সংরক্ষণ করা হয়েছে (ডেমো)')">✓ সংরক্ষণ করুন</div>
+        <div class="form-field"><label>শ্রেণী</label><select id="hwdClass" onchange="fillHwSubjects()"></select></div>
+        <div class="form-field"><label>বিষয়</label><select id="hwdSubject"></select></div>
+        <div class="form-field"><label>বাড়ির কাজ</label><textarea rows="4" id="hwdTask"></textarea></div>
+        <label style="display:flex;align-items:center;gap:8px;font-size:14px;"><input type="checkbox" id="hwdKhata"> খাতা লেখা</label>
+        <div class="form-field"><label>তারিখ</label><input type="date" id="hwdDate"></div>
+        <div class="fee-save" onclick="saveHwDaily()">✓ সংরক্ষণ করুন</div>
       </div>
     </div>
   </section>
@@ -474,18 +468,17 @@
         <span class="detail-btn">☰ বিস্তারিত</span>
       </div>
       <div class="radio-row" style="margin-top:16px;">
-        <label><input type="radio" name="cls">নুরানি</label>
-        <label><input type="radio" name="cls">বালিকা শাখা</label>
-        <span class="sep">||</span>
-        <label><input type="radio" name="book">কায়দা</label>
-        <label><input type="radio" name="book">আমপারা</label>
-        <label><input type="radio" name="book">কুরআন</label>
-        <span class="sep">||</span>
+        <label><input type="radio" name="hwrCat" value="কায়দা" checked>কায়দা</label>
+        <label><input type="radio" name="hwrCat" value="আমপারা">আমপারা</label>
+        <label><input type="radio" name="hwrCat" value="কুরআন">কুরআন</label>
+        <label><input type="radio" name="hwrCat" value="হিফজ">হিফজ</label>
       </div>
-      <div class="form-field" style="margin-bottom:18px;"><label>মন্তব্য</label><textarea rows="4" placeholder="মন্তব্য"></textarea></div>
-      <div class="form-field"><label>শিক্ষার্থী</label><input type="text"></div>
+      <div class="form-field" style="margin-bottom:18px;"><label>মন্তব্য</label><textarea rows="4" id="hwrComment" placeholder="মন্তব্য"></textarea></div>
+      <div class="form-field"><label>শিক্ষার্থী (একাধিক নির্বাচন করা যাবে)</label>
+        <div id="hwrStudents" style="max-height:220px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:10px;"></div>
+      </div>
     </div>
-    <div class="fee-save" style="border-radius:8px;" onclick="alert('সংরক্ষণ করা হয়েছে (ডেমো)')">✓ সংরক্ষণ করুন</div>
+    <div class="fee-save" style="border-radius:8px;" onclick="saveHwResidential()">✓ সংরক্ষণ করুন</div>
   </section>
 
   <!-- ============ HOMEWORK: LIST ============ -->
@@ -503,34 +496,20 @@
 
     <div class="hw-detail-card">
       <div class="hw-detail-head">
-        <span style="flex:1;">📘 নার্সারী</span>
+        <span style="flex:1;">📘 বাড়ির কাজ</span>
         <div style="display:flex;align-items:center;gap:14px;font-size:14px;font-weight:400;">
-          <label style="display:flex;align-items:center;gap:5px;"><input type="radio" name="hwtype">আবাসিক</label>
-          <label style="display:flex;align-items:center;gap:5px;"><input type="radio" name="hwtype">অনাবাসিক</label>
-          <span>||</span>
-          <span class="icon-btn" style="background:rgba(255,255,255,.25);">＋</span>
+          <label style="display:flex;align-items:center;gap:5px;"><input type="radio" name="hwtype" value="" checked onchange="renderHwList()">সব</label>
+          <label style="display:flex;align-items:center;gap:5px;"><input type="radio" name="hwtype" value="res" onchange="renderHwList()">আবাসিক</label>
+          <label style="display:flex;align-items:center;gap:5px;"><input type="radio" name="hwtype" value="daily" onchange="renderHwList()">অনাবাসিক</label>
         </div>
       </div>
-      <div class="hw-detail-body">
-        <div class="hw-item">
-          <div class="top"><span class="subj">১. আমার বাংলা বই</span><span style="color:#374151;">২৮/০৭/২০২৬ ইং</span><span class="status">চলমান</span><span style="color:#374151;">আব্দুর রউফ</span></div>
-          <div class="desc">ড় দিয়ে শব্দ ও বানান , সাথে খাতা লেখা</div>
-        </div>
-        <div class="hw-item">
-          <div class="top"><span class="subj">২. English For Today</span><span style="color:#374151;">২৮/০৭/২০২৬ ইং</span><span class="status">চলমান</span><span style="color:#374151;">মোসাঃ মানসুরা বেগম</span></div>
-          <div class="desc">X Y দিয়ে শব্দ ও বানান পড়া , সাথে খাতা লেখা</div>
-        </div>
-        <div class="hw-item">
-          <div class="top"><span class="subj">৩. সাধারণ জ্ঞান</span><span style="color:#374151;">২৮/০৭/২০২৬ ইং</span><span class="status">চলমান</span><span style="color:#374151;">মোসাঃ মানসুরা বেগম</span></div>
-          <div class="desc">১২ পৃষ্ঠার পড়া সবটি,</div>
-        </div>
-      </div>
+      <div class="hw-detail-body" id="hwListCards"><div class="empty-row">লোড হচ্ছে...</div></div>
     </div>
 
     <div class="card">
       <table class="hw-list-table">
-        <thead><tr><th>শিক্ষক/শিক্ষিকা</th><th style="text-align:right;">তারিখ</th><th style="text-align:right;">অবস্থা</th><th style="text-align:right;">অপারেশন</th></tr></thead>
-        <tbody><tr><td colspan="4" class="empty-row">কোন তথ্য পাওয়া যায়নি</td></tr></tbody>
+        <thead><tr><th>শিক্ষক/শিক্ষিকা</th><th style="text-align:right;">শ্রেণী/বিষয়</th><th style="text-align:right;">তারিখ</th><th style="text-align:right;">অপারেশন</th></tr></thead>
+        <tbody id="hwListBody"><tr><td colspan="4" class="empty-row">লোড হচ্ছে...</td></tr></tbody>
       </table>
     </div>
   </section>
@@ -554,7 +533,7 @@
     <div class="card">
       <h2>📤 মেসেজ পাঠান</h2>
       <div class="form-row">
-        <div class="form-field" style="grid-column:span 2;"><label>প্রাপক (শিক্ষার্থী/কর্মী)</label><input type="text" id="teacher-msg-to" placeholder="শিক্ষার্থীর নাম বা আইডি"></div>
+        <div class="form-field" style="grid-column:span 2;"><label>প্রাপক (শিক্ষার্থী/কর্মী)</label><select id="teacher-msg-to"><option value="">-- নির্বাচন করুন --</option></select></div>
         <div class="form-field" style="grid-column:span 2;"><label>বিষয়</label><input type="text" id="teacher-msg-subject" placeholder="বিষয় (ঐচ্ছিক)"></div>
       </div>
       <div style="margin-bottom:16px;"><label style="display:block;font-size:13px;color:#374151;margin-bottom:6px;">বার্তা</label><textarea id="teacher-msg-body" placeholder="আপনার বার্তা লিখুন..." style="width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-family:inherit;resize:vertical;min-height:80px;"></textarea></div>
@@ -584,16 +563,17 @@
 
     <div class="profile-layout">
       <div class="profile-card">
-        <div class="avatar-circle">Admin</div>
-        <div class="role-name">বালিকা শাখা</div>
-        <div class="role-tag">Teacher</div>
+        <div class="avatar-circle" id="profInitial">—</div>
+        <div class="role-name" data-user-name>—</div>
+        <div class="role-tag" data-user-role></div>
+        <div style="margin-top:10px;font-size:13px;color:var(--muted);">আইডি: <span id="profUid">—</span></div>
       </div>
       <div class="pw-card">
         <h2>পাসওয়ার্ড পরিবর্তন করুন</h2>
-        <div class="pw-field"><label>বর্তমান পাসওয়ার্ড</label><input type="password"></div>
-        <div class="pw-field"><label>নতুন পাসওয়ার্ড</label><input type="password" disabled></div>
-        <div class="pw-field"><label>নতুন পাসওয়ার্ড পুনরাবৃত্তি করুন</label><input type="password" disabled></div>
-        <button class="pw-submit" onclick="alert('পাসওয়ার্ড সংশোধন করা হয়েছে (ডেমো)')">পাসওয়ার্ড সংশোধন করুন</button>
+        <div class="pw-field"><label>বর্তমান পাসওয়ার্ড</label><input type="password" id="pwCurrent"></div>
+        <div class="pw-field"><label>নতুন পাসওয়ার্ড</label><input type="password" id="pwNew"></div>
+        <div class="pw-field"><label>নতুন পাসওয়ার্ড পুনরাবৃত্তি করুন</label><input type="password" id="pwNew2"></div>
+        <button class="pw-submit" onclick="changeTeacherPassword()">পাসওয়ার্ড সংশোধন করুন</button>
       </div>
     </div>
   </section>
@@ -610,123 +590,421 @@
 </nav>
 
 <script>
-  function goto(name){
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    const target = document.getElementById('view-' + name);
-    if(target) target.classList.add('active');
+/* ══════════════════════════════════════════════════════════════════
+   শিক্ষক প্যানেল — এডমিন প্যানেলের একই ডেটার সাথে সরাসরি সংযুক্ত।
+   সব তথ্য /api/store (MongoDB) থেকে পড়া হয় ও সেখানেই সংরক্ষিত হয়,
+   ফলে এখানে করা হাজিরা/ফি/বাড়ির কাজ এডমিন প্যানেলেও দেখা যায়।
+   ══════════════════════════════════════════════════════════════════ */
+var S = {};                 // এডমিন প্যানেলের ডেটা স্টোর
+var DIR = [];               // মেসেজ প্রাপকদের তালিকা
+var attTempt = {};          // হাজিরার অস্থায়ী অবস্থা
+var attActiveClass = '';
+var feeSelected = {};       // নির্বাচিত বকেয়া আইডি
 
-    document.querySelectorAll('nav.bottomnav a').forEach(a => a.classList.remove('active'));
-    const navLink = document.querySelector('nav.bottomnav a[data-view="' + name + '"]');
-    if(navLink) navLink.classList.add('active');
+function bn(n){ return String(n).replace(/[0-9]/g, function(d){ return '০১২৩৪৫৬৭৮৯'[d]; }); }
+function esc(t){ return String(t == null ? '' : t).replace(/[&<>"]/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
+function todayISO(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function bnDate(iso){ if(!iso) return ''; var p=String(iso).split('-'); return p.length===3 ? bn(p[2]+'/'+p[1]+'/'+p[0]) : String(iso); }
+function toast(msg){
+  var el = document.getElementById('nqToast');
+  if(!el){ el=document.createElement('div'); el.id='nqToast';
+    el.style.cssText='position:fixed;bottom:96px;left:50%;transform:translateX(-50%);background:#1f2430;color:#fff;padding:12px 20px;border-radius:8px;z-index:200;font-size:14px;box-shadow:0 6px 18px rgba(0,0,0,.2);display:none;';
+    document.body.appendChild(el); }
+  el.textContent=msg; el.style.display='block';
+  clearTimeout(el._t); el._t=setTimeout(function(){ el.style.display='none'; }, 2600);
+}
+function arr(v){ return Array.isArray(v) ? v : []; }
+function obj(v){ return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {}; }
+function me(){ return (window.NQAuth && window.NQAuth.user) || {}; }
+function classList(){
+  var set = {};
+  arr(S.students).forEach(function(st){ if(st.cls) set[st.cls]=1; });
+  arr(S.otClasses).forEach(function(c){ if(c && c.name) set[c.name]=1; });
+  var out = Object.keys(set);
+  return out.length ? out : ['নার্সারী'];
+}
 
-    window.scrollTo({top:0, behavior:'smooth'});
-  }
+/* ---------- নেভিগেশন ---------- */
+function goto(name){
+  document.querySelectorAll('.view').forEach(function(v){ v.classList.remove('active'); });
+  var target = document.getElementById('view-' + name);
+  if(target) target.classList.add('active');
+  document.querySelectorAll('nav.bottomnav a').forEach(function(a){ a.classList.remove('active'); });
+  var navLink = document.querySelector('nav.bottomnav a[data-view="' + name + '"]');
+  if(navLink) navLink.classList.add('active');
+  if(name === 'messages'){ loadTeacherInbox(); loadTeacherSent(); }
+  if(name === 'attendance') renderAttendance();
+  if(name === 'fee') renderFeeStudents();
+  if(name === 'hw-subject'){ fillHwClasses(); renderHwDailyTable(); }
+  if(name === 'hw-residential') renderHwrStudents();
+  if(name === 'hw-list') renderHwList();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
 
-  function switchClassTab(btn){
-    document.querySelectorAll('#view-attendance .tabbtn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-  }
+/* ---------- ডেটা লোড/সেভ ---------- */
+function saveKeys(keys){
+  return window.NQAuth.saveStore(keys).then(function(){ Object.assign(S, keys); })
+    .catch(function(e){ console.error(e); toast('সংরক্ষণ ব্যর্থ: ' + e.message); throw e; });
+}
 
-  /* ═══════════ শিক্ষক মেসেজিং ═══════════ */
-  async function loadTeacherInbox() {
-    try {
-      const res = await fetch('/api/messages/inbox', {
-        headers: {
-          'Authorization': 'Bearer ' + localStorage.getItem('auth_token')
-        }
-      });
-      const data = await res.json();
-      const container = document.getElementById('teacher-inbox');
+function boot(){
+  if(!window.NQAuth || !window.NQAuth.isLoggedIn()) return;
+  var u = me();
+  document.getElementById('profUid').textContent = u.uid || '—';
+  document.getElementById('profInitial').textContent = (u.name || 'T').trim().charAt(0);
 
-      if (!data.ok || !data.messages || data.messages.length === 0) {
-        container.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px;">কোন মেসেজ নেই</div>';
-        return;
-      }
+  window.NQAuth.loadStore().then(function(data){
+    S = data || {};
+    renderDashboard();
+    renderAttendance();
+    renderFeeStudents();
+    fillHwClasses();
+    renderHwDailyTable();
+    renderHwrStudents();
+    renderHwList();
+  });
+  window.NQAuth.getJSON('/api/directory').then(function(list){
+    DIR = list || [];
+    var sel = document.getElementById('teacher-msg-to');
+    sel.innerHTML = '<option value="">-- নির্বাচন করুন --</option>' + DIR.map(function(u){
+      return '<option value="' + u.id + '">' + esc(u.name) + ' (' + esc(u.role) + ')</option>';
+    }).join('');
+  }).catch(function(){});
+  loadTeacherInbox();
+}
 
-      container.innerHTML = data.messages.map((m, i) => `
-        <div style="border:1px solid var(--line);border-radius:8px;padding:14px;margin-bottom:10px;font-size:14px;">
-          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-            <strong style="color:#1f2430;">থেকে: ${m.fromUserId?.name || 'অজানা'}</strong>
-            <span style="color:var(--muted);font-size:13px;">${new Date(m.createdAt).toLocaleDateString('bn-BD')}</span>
-          </div>
-          ${m.subject ? '<div style="color:#2f7dd9;margin-bottom:6px;"><strong>বিষয়:</strong> ' + m.subject + '</div>' : ''}
-          <div style="color:#374151;background:#f9fafb;padding:10px;border-radius:6px;">${m.body}</div>
-        </div>
-      `).join('');
-    } catch (e) {
-      console.error('ইনবক্স লোড ত্রুটি:', e);
-      document.getElementById('teacher-inbox').innerHTML = '<div style="color:#ef4444;padding:20px;">সংযোগ ত্রুটি</div>';
-    }
-  }
+/* ---------- ড্যাশবোর্ড ---------- */
+function renderDashboard(){
+  var students = arr(S.students);
+  var att = obj(S.attendance);
+  var absent = students.filter(function(st){ return att[st.id] === 'absent'; }).length;
+  document.getElementById('dashAbsent').innerHTML = bn(absent) + ' জন<br>অনুপস্থিত শিক্ষার্থী';
+  document.getElementById('dashStudents').textContent = bn(students.length);
 
-  async function loadTeacherSent() {
-    try {
-      const res = await fetch('/api/messages/sent', {
-        headers: {
-          'Authorization': 'Bearer ' + localStorage.getItem('auth_token')
-        }
-      });
-      const data = await res.json();
-      const container = document.getElementById('teacher-sent');
+  var today = bnDate(todayISO());
+  var hwToday = arr(S.hwDailyList).filter(function(h){ return h.date === today; }).length;
+  document.getElementById('dashHw').textContent = bn(hwToday);
 
-      if (!data.ok || !data.messages || data.messages.length === 0) {
-        container.innerHTML = '<div style="text-align:center;color:var(--muted);padding:20px;">কোন পাঠানো মেসেজ নেই</div>';
-        return;
-      }
+  var notices = arr(S.notices);
+  document.getElementById('dashNotices').innerHTML = notices.length
+    ? notices.slice(-5).reverse().map(function(n){
+        return '<div class="alert-pink" style="margin-bottom:8px;"><span><strong>' + esc(n.title) + '</strong> — ' + esc(n.desc || '') + '</span></div>';
+      }).join('')
+    : '<div class="alert-pink">কোন তথ্য খুঁজে পাওয়া যাইনি!</div>';
 
-      container.innerHTML = data.messages.map((m, i) => `
-        <div style="border:1px solid var(--line);border-radius:8px;padding:14px;margin-bottom:10px;font-size:14px;">
-          <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
-            <strong style="color:#1f2430;">প্রাপক: ${m.toUserId?.name || 'অজানা'}</strong>
-            <span style="color:var(--muted);font-size:13px;">${new Date(m.createdAt).toLocaleDateString('bn-BD')}</span>
-          </div>
-          ${m.subject ? '<div style="color:#2f7dd9;margin-bottom:6px;"><strong>বিষয়:</strong> ' + m.subject + '</div>' : ''}
-          <div style="color:#374151;background:#f9fafb;padding:10px;border-radius:6px;">${m.body}</div>
-        </div>
-      `).join('');
-    } catch (e) {
-      console.error('পাঠানো মেসেজ লোড ত্রুটি:', e);
-      document.getElementById('teacher-sent').innerHTML = '<div style="color:#ef4444;padding:20px;">সংযোগ ত্রুটি</div>';
-    }
-  }
+  var pays = arr(S.payments).slice(-10).reverse();
+  document.getElementById('dashPayments').innerHTML = pays.length
+    ? '<div class="card"><table><thead><tr><th>#</th><th>শিক্ষার্থী</th><th>টাকা</th><th>তারিখ</th></tr></thead><tbody>' +
+      pays.map(function(p,i){ return '<tr><td>' + bn(i+1) + '</td><td>' + esc(p.student) + '</td><td>' + bn(p.amount) + '</td><td>' + esc(p.date) + '</td></tr>'; }).join('') +
+      '</tbody></table></div>'
+    : '<div class="alert-pink" style="justify-content:center;">কোন তথ্য খুঁজে পাওয়া যাইনি!</div>';
 
-  async function sendTeacherMessage() {
-    try {
-      const toUser = document.getElementById('teacher-msg-to').value.trim();
-      const subject = document.getElementById('teacher-msg-subject').value.trim();
-      const body = document.getElementById('teacher-msg-body').value.trim();
+  var sel = document.getElementById('dashRoutineClass');
+  var cls = classList();
+  sel.innerHTML = cls.map(function(c){ return '<option>' + esc(c) + '</option>'; }).join('');
+  renderTeacherRoutine();
+}
 
-      if (!toUser || !body) {
-        alert('প্রাপক এবং বার্তা প্রয়োজন');
-        return;
-      }
+function renderTeacherRoutine(){
+  var cls = document.getElementById('dashRoutineClass').value;
+  var routine = arr(S.dailyRoutines).find(function(r){ return r.className === cls; });
+  var slots = arr(S.crTimeSlots);
+  var teachers = arr(S.teachers);
+  var box = document.getElementById('dashRoutine');
+  if(!routine || !arr(routine.items).length){ box.innerHTML = '🗓️ রুটিন পাওয়া যায়নি!'; return; }
+  box.innerHTML = '<table style="width:100%"><thead><tr><th>সময়</th><th>বিষয়</th><th>শিক্ষক</th></tr></thead><tbody>' +
+    routine.items.map(function(it){
+      var slot = slots.find(function(x){ return x.id === it.slotId; });
+      var t = teachers.find(function(x){ return x.id === it.teacherId; });
+      return '<tr><td>' + esc(slot ? slot.label : '-') + '</td><td>' + esc(it.subject || '-') + '</td><td>' + esc(t ? t.name : '-') + '</td></tr>';
+    }).join('') + '</tbody></table>';
+}
 
-      // নোট: আসল ইমপ্লিমেন্টেশনে এখানে ইউজার খুঁজে বের করতে হবে
-      // এখানে শুধু ডেমো
-      alert('বার্তা পাঠানো হয়েছে (ডেমো মোড)');
-      document.getElementById('teacher-msg-to').value = '';
+/* ---------- হাজিরা ---------- */
+function renderAttendance(){
+  var cls = classList();
+  if(!attActiveClass || cls.indexOf(attActiveClass) === -1) attActiveClass = cls[0];
+  document.getElementById('attTabs').innerHTML = cls.map(function(c){
+    return '<button class="tabbtn' + (c === attActiveClass ? ' active' : '') + '" onclick="switchClassTab(this)">' + esc(c) + '</button>';
+  }).join('');
+  var att = obj(S.attendance);
+  var rows = arr(S.students).filter(function(st){ return st.cls === attActiveClass; });
+  var body = document.getElementById('attBody');
+  if(!rows.length){ body.innerHTML = '<tr><td colspan="6" class="empty-row">এই শ্রেণীতে কোনো শিক্ষার্থী নেই</td></tr>'; updateAttSummary(); return; }
+  body.innerHTML = rows.map(function(st, i){
+    var cur = attTempt[st.id] || att[st.id] || 'present';
+    attTempt[st.id] = cur;
+    return '<tr><td>' + bn(i+1) + '</td><td>' + bn(st.id) + '</td><td>' + esc(st.name) + '</td><td>' + esc(st.cls) + '</td><td>' + esc(st.mobile || '-') + '</td>' +
+      '<td><select onchange="setAtt(' + st.id + ', this.value)" style="padding:6px;border:1px solid var(--line);border-radius:6px;">' +
+      '<option value="present"' + (cur==='present'?' selected':'') + '>উপস্থিত</option>' +
+      '<option value="absent"' + (cur==='absent'?' selected':'') + '>অনুপস্থিত</option>' +
+      '<option value="leave"' + (cur==='leave'?' selected':'') + '>ছুটিতে</option></select></td></tr>';
+  }).join('');
+  updateAttSummary();
+}
+function setAtt(id, val){ attTempt[id] = val; updateAttSummary(); }
+function updateAttSummary(){
+  var rows = arr(S.students).filter(function(st){ return st.cls === attActiveClass; });
+  var p=0,a=0,l=0;
+  rows.forEach(function(st){ var v = attTempt[st.id] || 'present'; if(v==='present')p++; else if(v==='absent')a++; else l++; });
+  document.getElementById('attSummary').textContent = 'মোট : ' + bn(p) + ' উপস্থিত – ' + bn(a) + ' অনুপস্থিত – ' + bn(l) + ' ছুটিতে';
+}
+function switchClassTab(btn){
+  attActiveClass = btn.textContent.trim();
+  renderAttendance();
+}
+function saveAttendance(){
+  var att = Object.assign({}, obj(S.attendance), attTempt);
+  saveKeys({ attendance: att }).then(function(){ toast('হাজিরা সংরক্ষণ করা হয়েছে!'); renderDashboard(); });
+}
+
+/* ---------- ফি আদায় ---------- */
+function renderFeeStudents(){
+  var sel = document.getElementById('feeStudent');
+  var students = arr(S.students);
+  sel.innerHTML = '<option value="">-- শিক্ষার্থী নির্বাচন করুন --</option>' + students.map(function(st){
+    return '<option value="' + st.id + '">' + esc(st.name) + ' (' + esc(st.cls) + ')</option>';
+  }).join('');
+  renderFeeDues();
+}
+function renderFeeDues(){
+  feeSelected = {};
+  var id = parseInt(document.getElementById('feeStudent').value) || 0;
+  var dues = arr(obj(S.studentDues)[id]);
+  var box = document.getElementById('feeDueList');
+  box.innerHTML = dues.length ? dues.map(function(d){
+    return '<label style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding:10px 4px;font-size:14px;">' +
+      '<span><input type="checkbox" onchange="toggleDue(' + d.id + ', ' + d.amount + ', this.checked)"> ' + esc(d.label) + ' <small style="color:var(--muted)">' + esc(d.month || '') + '</small></span>' +
+      '<strong>' + bn(d.amount) + ' টাকা</strong></label>';
+  }).join('') : '<div class="empty-row">কোনো বকেয়া নেই</div>';
+  var total = dues.reduce(function(sum,d){ return sum + (Number(d.amount)||0); }, 0);
+  document.getElementById('feeTotalDue').textContent = total.toFixed(2);
+  document.getElementById('feePaid').value = 0;
+  document.getElementById('feeDiscount').value = 0;
+  updateFeeSummary();
+}
+function toggleDue(id, amount, on){
+  if(on) feeSelected[id] = amount; else delete feeSelected[id];
+  var sum = Object.keys(feeSelected).reduce(function(t,k){ return t + Number(feeSelected[k]); }, 0);
+  document.getElementById('feePaid').value = sum;
+  updateFeeSummary();
+}
+function updateFeeSummary(){
+  var sum = Object.keys(feeSelected).reduce(function(t,k){ return t + Number(feeSelected[k]); }, 0);
+  var discount = Number(document.getElementById('feeDiscount').value) || 0;
+  var paid = Number(document.getElementById('feePaid').value) || 0;
+  document.getElementById('feeSelected').textContent = sum.toFixed(2) + ' টাকা';
+  document.getElementById('feeRemaining').textContent = Math.max(0, sum - discount - paid).toFixed(2) + ' টাকা';
+}
+function saveFeeCollection(){
+  var id = parseInt(document.getElementById('feeStudent').value) || 0;
+  var student = arr(S.students).find(function(st){ return st.id === id; });
+  if(!student){ toast('শিক্ষার্থী নির্বাচন করুন'); return; }
+  var paid = Number(document.getElementById('feePaid').value) || 0;
+  if(paid <= 0){ toast('পরিশোধের পরিমাণ দিন'); return; }
+
+  var dues = obj(S.studentDues);
+  var mine = arr(dues[id]);
+  var selectedIds = Object.keys(feeSelected).map(Number);
+  var collected = mine.filter(function(d){ return selectedIds.indexOf(d.id) !== -1; });
+
+  var payments = arr(S.payments).slice();
+  var paymentDetails = arr(S.paymentDetails).slice();
+  var payId = payments.length ? Math.max.apply(null, payments.map(function(p){ return p.id || 0; })) + 1 : 1;
+  var today = bnDate(todayISO());
+  payments.push({
+    id: payId, student: student.name, amount: paid,
+    month: (collected[0] && collected[0].month) || '-', date: today,
+    by: me().name || 'শিক্ষক', remark: document.getElementById('feeRemark').value || 'শিক্ষক প্যানেল থেকে আদায়'
+  });
+  var billBase = paymentDetails.length ? (paymentDetails[paymentDetails.length-1].billNo || 100) + 1 : 100;
+  var rows = collected.length ? collected : [{ label: 'অগ্রিম ফি', amount: paid, month: '-' }];
+  rows.forEach(function(d, i){
+    var pdId = paymentDetails.length ? Math.max.apply(null, paymentDetails.map(function(x){ return x.id || 0; })) + 1 + i : 1 + i;
+    paymentDetails.push({ id: pdId, billNo: billBase + i, studentId: id, date: today + ' ইং', label: d.label, amount: d.amount, month: d.month || '-', by: me().name || 'শিক্ষক' });
+  });
+  dues[id] = mine.filter(function(d){ return selectedIds.indexOf(d.id) === -1; });
+
+  saveKeys({ payments: payments, paymentDetails: paymentDetails, studentDues: dues }).then(function(){
+    toast('ফি আদায় সংরক্ষণ করা হয়েছে!');
+    document.getElementById('feeRemark').value = '';
+    renderFeeDues();
+    renderDashboard();
+  });
+}
+
+/* ---------- বাড়ির কাজ (বিষয়ভিত্তিক) ---------- */
+function fillHwClasses(){
+  var sel = document.getElementById('hwdClass');
+  if(!sel) return;
+  var cur = sel.value;
+  sel.innerHTML = classList().map(function(c){ return '<option>' + esc(c) + '</option>'; }).join('');
+  if(cur) sel.value = cur;
+  if(!document.getElementById('hwdDate').value) document.getElementById('hwdDate').value = todayISO();
+  fillHwSubjects();
+}
+function fillHwSubjects(){
+  var cls = document.getElementById('hwdClass').value;
+  var subs = arr(S.examSubjects).filter(function(x){ return !arr(x.classes).length || x.classes.indexOf(cls) !== -1; });
+  var sel = document.getElementById('hwdSubject');
+  sel.innerHTML = subs.length
+    ? subs.map(function(x){ return '<option>' + esc(x.name) + '</option>'; }).join('')
+    : '<option value="">-- বিষয় যোগ করা হয়নি --</option>';
+}
+function saveHwDaily(){
+  var cls = document.getElementById('hwdClass').value;
+  var subject = document.getElementById('hwdSubject').value;
+  var task = document.getElementById('hwdTask').value.trim();
+  var date = document.getElementById('hwdDate').value || todayISO();
+  if(!cls || !subject){ toast('শ্রেণী ও বিষয় নির্বাচন করুন'); return; }
+  if(!task){ toast('বাড়ির কাজ লিখুন'); return; }
+  var list = arr(S.hwDailyList).slice();
+  var id = list.length ? Math.max.apply(null, list.map(function(h){ return h.id || 0; })) + 1 : 1;
+  list.push({ id: id, cls: cls, subject: subject, task: task,
+    khata: document.getElementById('hwdKhata').checked, date: bnDate(date), ts: Date.now(),
+    teacher: me().name || 'শিক্ষক', status: 'সম্পন্ন' });
+  saveKeys({ hwDailyList: list }).then(function(){
+    document.getElementById('hwdTask').value = '';
+    document.getElementById('hwdKhata').checked = false;
+    toast('বাড়ির কাজ সংরক্ষণ করা হয়েছে!');
+    renderHwDailyTable(); renderHwList(); renderDashboard();
+  });
+}
+function renderHwDailyTable(){
+  var body = document.getElementById('subject-hw-body');
+  var list = arr(S.hwDailyList).slice().reverse();
+  body.innerHTML = list.length ? list.map(function(h, i){
+    return '<tr><td>' + bn(i+1) + '</td><td>' + esc(h.cls) + '</td><td style="color:var(--blue-dark)">' + esc(h.subject) + '</td><td>' + esc(h.date) + '</td>' +
+      '<td class="status-run">' + esc(h.status || 'চলমান') + '</td><td>' + esc(h.teacher || '-') + '</td>' +
+      '<td><span class="icon-btn icon-del" onclick="deleteHwDaily(' + h.id + ')">🗑</span></td></tr>';
+  }).join('') : '<tr><td colspan="7" class="empty-row">কোন তথ্য পাওয়া যায়নি</td></tr>';
+}
+function deleteHwDaily(id){
+  if(!confirm('মুছে ফেলতে চান?')) return;
+  var list = arr(S.hwDailyList).filter(function(h){ return h.id !== id; });
+  saveKeys({ hwDailyList: list }).then(function(){ toast('মুছে ফেলা হয়েছে'); renderHwDailyTable(); renderHwList(); });
+}
+
+/* ---------- বাড়ির কাজ (আবাসিক) ---------- */
+function renderHwrStudents(){
+  var box = document.getElementById('hwrStudents');
+  var students = arr(S.students);
+  box.innerHTML = students.length ? students.map(function(st){
+    return '<label style="display:block;font-size:14px;padding:4px 0;"><input type="checkbox" class="hwr-stu-check" value="' + st.id + '"> ' + esc(st.name) + ' <small style="color:var(--muted)">(' + esc(st.cls) + ')</small></label>';
+  }).join('') : '<div class="empty-row">কোনো শিক্ষার্থী নেই</div>';
+}
+function saveHwResidential(){
+  var category = (document.querySelector('input[name="hwrCat"]:checked') || {}).value || '';
+  var comment = document.getElementById('hwrComment').value.trim();
+  var ids = Array.prototype.map.call(document.querySelectorAll('.hwr-stu-check:checked'), function(c){ return parseInt(c.value); });
+  if(!comment){ toast('মন্তব্য লিখুন'); return; }
+  if(!ids.length){ toast('অন্তত একজন শিক্ষার্থী নির্বাচন করুন'); return; }
+  var list = arr(S.hwResidentialList).slice();
+  var id = list.length ? Math.max.apply(null, list.map(function(h){ return h.id || 0; })) + 1 : 1;
+  list.push({ id: id, category: category, comment: comment, students: ids, date: bnDate(todayISO()),
+    ts: Date.now(), teacher: me().name || 'শিক্ষক', status: 'সম্পন্ন', branch: 'আবাসিক' });
+  saveKeys({ hwResidentialList: list }).then(function(){
+    document.getElementById('hwrComment').value = '';
+    document.querySelectorAll('.hwr-stu-check').forEach(function(c){ c.checked = false; });
+    toast('আবাসিক বাড়ির কাজ সংরক্ষণ করা হয়েছে!');
+    renderHwList();
+    goto('hw-list');
+  });
+}
+
+/* ---------- বাড়ির কাজের তালিকা ---------- */
+function renderHwList(){
+  var filter = (document.querySelector('input[name="hwtype"]:checked') || {}).value || '';
+  var daily = arr(S.hwDailyList).map(function(h){ return { type:'daily', id:h.id, title:h.subject, cls:h.cls, desc:h.task, date:h.date, teacher:h.teacher, status:h.status }; });
+  var res = arr(S.hwResidentialList).map(function(h){
+    var names = arr(h.students).map(function(sid){ var st = arr(S.students).find(function(x){ return x.id === sid; }); return st ? st.name : sid; });
+    return { type:'res', id:h.id, title:h.category || 'আবাসিক', cls:'আবাসিক', desc:h.comment + ' — ' + names.join(', '), date:h.date, teacher:h.teacher, status:h.status };
+  });
+  var all = daily.concat(res).filter(function(x){ return !filter || x.type === filter; }).reverse();
+
+  document.getElementById('hwListCards').innerHTML = all.length ? all.slice(0, 10).map(function(h, i){
+    return '<div class="hw-item"><div class="top"><span class="subj">' + bn(i+1) + '. ' + esc(h.title) + '</span>' +
+      '<span style="color:#374151;">' + esc(h.date) + '</span><span class="status">' + esc(h.status || 'চলমান') + '</span>' +
+      '<span style="color:#374151;">' + esc(h.teacher || '-') + '</span></div><div class="desc">' + esc(h.desc) + '</div></div>';
+  }).join('') : '<div class="empty-row">কোন তথ্য পাওয়া যায়নি</div>';
+
+  document.getElementById('hwListBody').innerHTML = all.length ? all.map(function(h){
+    return '<tr><td>' + esc(h.teacher || '-') + '</td><td style="text-align:right;">' + esc(h.cls) + ' / ' + esc(h.title) + '</td>' +
+      '<td style="text-align:right;">' + esc(h.date) + '</td>' +
+      '<td style="text-align:right;"><span class="icon-btn icon-del" onclick="deleteHw(\'' + h.type + '\',' + h.id + ')">🗑</span></td></tr>';
+  }).join('') : '<tr><td colspan="4" class="empty-row">কোন তথ্য পাওয়া যায়নি</td></tr>';
+}
+function deleteHw(type, id){
+  if(!confirm('মুছে ফেলতে চান?')) return;
+  var keys = {};
+  if(type === 'daily') keys.hwDailyList = arr(S.hwDailyList).filter(function(h){ return h.id !== id; });
+  else keys.hwResidentialList = arr(S.hwResidentialList).filter(function(h){ return h.id !== id; });
+  saveKeys(keys).then(function(){ toast('মুছে ফেলা হয়েছে'); renderHwList(); renderHwDailyTable(); });
+}
+
+/* ---------- মেসেজিং ---------- */
+function msgCard(m, who, name){
+  return '<div style="border:1px solid var(--line);border-radius:8px;padding:14px;margin-bottom:10px;font-size:14px;">' +
+    '<div style="display:flex;justify-content:space-between;margin-bottom:8px;">' +
+    '<strong style="color:#1f2430;">' + who + ': ' + esc(name) + '</strong>' +
+    '<span style="color:var(--muted);font-size:13px;">' + new Date(m.createdAt).toLocaleDateString('bn-BD') + '</span></div>' +
+    (m.subject ? '<div style="color:#2f7dd9;margin-bottom:6px;"><strong>বিষয়:</strong> ' + esc(m.subject) + '</div>' : '') +
+    '<div style="color:#374151;background:#f9fafb;padding:10px;border-radius:6px;">' + esc(m.body) + '</div></div>';
+}
+function loadTeacherInbox(){
+  return window.NQAuth.getJSON('/api/messages/inbox').then(function(data){
+    var list = (data && data.messages) || [];
+    var box = document.getElementById('teacher-inbox');
+    document.getElementById('msgBadge').textContent = bn(list.filter(function(m){ return !m.read; }).length);
+    box.innerHTML = list.length ? list.map(function(m){ return msgCard(m, 'থেকে', (m.fromUserId && m.fromUserId.name) || 'অজানা'); }).join('')
+      : '<div style="text-align:center;color:var(--muted);padding:20px;">কোন মেসেজ নেই</div>';
+  }).catch(function(){
+    var box = document.getElementById('teacher-inbox');
+    if(box) box.innerHTML = '<div style="color:#ef4444;padding:20px;">সংযোগ ত্রুটি</div>';
+  });
+}
+function loadTeacherSent(){
+  return window.NQAuth.getJSON('/api/messages/sent').then(function(data){
+    var list = (data && data.messages) || [];
+    var box = document.getElementById('teacher-sent');
+    box.innerHTML = list.length ? list.map(function(m){ return msgCard(m, 'প্রাপক', (m.toUserId && m.toUserId.name) || 'অজানা'); }).join('')
+      : '<div style="text-align:center;color:var(--muted);padding:20px;">কোন পাঠানো মেসেজ নেই</div>';
+  }).catch(function(){
+    var box = document.getElementById('teacher-sent');
+    if(box) box.innerHTML = '<div style="color:#ef4444;padding:20px;">সংযোগ ত্রুটি</div>';
+  });
+}
+function sendTeacherMessage(){
+  var toUserId = document.getElementById('teacher-msg-to').value;
+  var subject = document.getElementById('teacher-msg-subject').value.trim();
+  var body = document.getElementById('teacher-msg-body').value.trim();
+  if(!toUserId || !body){ toast('প্রাপক এবং বার্তা প্রয়োজন'); return; }
+  window.NQAuth.postJSON('/api/messages/send', { toUserId: toUserId, subject: subject, body: body })
+    .then(function(){
       document.getElementById('teacher-msg-subject').value = '';
       document.getElementById('teacher-msg-body').value = '';
+      toast('বার্তা পাঠানো হয়েছে');
       loadTeacherSent();
-    } catch (e) {
-      console.error('মেসেজ পাঠানোর ত্রুটি:', e);
-      alert('মেসেজ পাঠাতে ব্যর্থ হয়েছে');
-    }
-  }
+    })
+    .catch(function(e){ toast(e.message || 'মেসেজ পাঠাতে ব্যর্থ'); });
+}
 
-  // মেসেজ ভিউ দেখার সময় লোড করুন
-  document.addEventListener('DOMContentLoaded', function() {
-    const origGoto = window.goto;
-    window.goto = function(name) {
-      if (name === 'messages') {
-        setTimeout(() => {
-          loadTeacherInbox();
-          loadTeacherSent();
-        }, 100);
-      }
-      origGoto(name);
-    };
-  });
+/* ---------- পাসওয়ার্ড পরিবর্তন ---------- */
+function changeTeacherPassword(){
+  var cur = document.getElementById('pwCurrent').value;
+  var n1 = document.getElementById('pwNew').value;
+  var n2 = document.getElementById('pwNew2').value;
+  if(!cur || !n1){ toast('সব ঘর পূরণ করুন'); return; }
+  if(n1 !== n2){ toast('নতুন পাসওয়ার্ড দুটি মিলছে না'); return; }
+  window.NQAuth.postJSON('/api/auth/change-password', { currentPassword: cur, newPassword: n1 })
+    .then(function(){
+      ['pwCurrent','pwNew','pwNew2'].forEach(function(id){ document.getElementById(id).value = ''; });
+      toast('পাসওয়ার্ড পরিবর্তন করা হয়েছে');
+    })
+    .catch(function(e){ toast(e.message || 'পরিবর্তন ব্যর্থ'); });
+}
+
+document.addEventListener('DOMContentLoaded', boot);
 </script>
 
 </body>

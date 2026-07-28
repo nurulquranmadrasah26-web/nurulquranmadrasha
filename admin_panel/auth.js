@@ -166,6 +166,33 @@
       window.location.href = LOGIN_URL;
     },
 
+    // JSON হেল্পার — এডমিন প্যানেলের ডেটা স্টোর পড়া/লেখা
+    getJSON: function (path) {
+      return NQAuth.authFetch(path).then(function (r) {
+        if (!r.ok) throw new Error(path + ' -> ' + r.status);
+        return r.json();
+      });
+    },
+    postJSON: function (path, body, method) {
+      return NQAuth.authFetch(path, {
+        method: method || 'POST',
+        body: JSON.stringify(body || {})
+      }).then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (data) {
+          if (!r.ok) throw new Error(data.message || ('ত্রুটি: ' + r.status));
+          return data;
+        });
+      });
+    },
+    // এডমিন প্যানেলের পূর্ণ ডেটা স্টোর (students, hwDailyList, attendance ...)
+    loadStore: function () {
+      return NQAuth.getJSON('/api/store').catch(function () { return {}; });
+    },
+    // এক বা একাধিক স্টোর-কী সংরক্ষণ (এডমিন প্যানেলের সাথে একই ডেটা)
+    saveStore: function (keys) {
+      return NQAuth.postJSON('/api/store', { keys: keys }, 'PUT');
+    },
+
     // টোকেনসহ fetch — 401 হলে লগআউট
     authFetch: function (path, options) {
       options = options || {};
@@ -219,8 +246,11 @@
     var user = NQAuth.user || {};
     var role = NQAuth.role || '';
     
-    // শিক্ষার্থী রোলে Student পেজে রিডাইরেক্ট করা
+    var here = (window.location.pathname || '').split('/').pop().toLowerCase();
+
+    // শিক্ষার্থী রোলে Student পেজে রিডাইরেক্ট করা (ইতিমধ্যে সেখানে থাকলে নয়)
     if (role === 'student') {
+      if (here === 'student.html') return;
       // ব্যাকএন্ডে student.html থেকে শিক্ষার্থীর ড্যাশবোর্ড দেখাবে
       // কিন্তু এখানে সরাসরি student.html এ পাঠাচ্ছি (যা তার ব্যক্তিগত ড্যাশবোর্ড)
       window.location.replace('./student.html');
@@ -229,11 +259,15 @@
     
     // শিক্ষক রোলে Teacher পেজে রিডাইরেক্ট করা
     if (role === 'teacher') {
+      if (here === 'teacher.html') return;
       window.location.replace('./teacher.html');
       return;
     }
     
     // অন্যরা (Admin, SuperAdmin, Support) admin.html এ থাকবে
+    if (here === 'teacher.html' || here === 'student.html') {
+      window.location.replace('./admin.html');
+    }
   }
 
   /* ---------- বুট: গার্ড ---------- */

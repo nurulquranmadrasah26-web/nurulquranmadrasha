@@ -374,6 +374,49 @@ app.get("/api/auth/me", auth, async (req, res) => {
 });
 
 /* ------------------------------------------------------------------ */
+/*  Routes: change own password                                        */
+/* ------------------------------------------------------------------ */
+app.post("/api/auth/change-password", auth, async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body || {};
+    if (!currentPassword || !newPassword)
+      return res.status(400).json({ message: "বর্তমান ও নতুন পাসওয়ার্ড দিন" });
+    if (String(newPassword).length < 6)
+      return res.status(400).json({ message: "নতুন পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে" });
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: "ব্যবহারকারী পাওয়া যায়নি" });
+
+    const ok = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!ok) return res.status(400).json({ message: "বর্তমান পাসওয়ার্ড সঠিক নয়" });
+
+    user.passwordHash = await bcrypt.hash(newPassword, 10);
+    await user.save();
+    res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "সার্ভার ত্রুটি" });
+  }
+});
+
+/* ------------------------------------------------------------------ */
+/*  Routes: directory (messaging recipients for every logged-in user)  */
+/* ------------------------------------------------------------------ */
+app.get("/api/directory", auth, async (req, res) => {
+  try {
+    const query = { active: true, _id: { $ne: req.user.id } };
+    // শিক্ষার্থী শুধু শিক্ষক/প্রশাসনের সাথে যোগাযোগ করতে পারবে
+    if (req.user.role === "Student")
+      query.role = { $in: ["Teacher", "Admin", "Super Admin", "Support"] };
+    const users = await User.find(query).select("name uid role").sort({ name: 1 }).lean();
+    res.json(users.map((u) => ({ id: u._id, name: u.name, uid: u.uid, role: u.role })));
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "সার্ভার ত্রুটি" });
+  }
+});
+
+/* ------------------------------------------------------------------ */
 /*  Routes: image upload (Cloudinary)                                  */
 /* ------------------------------------------------------------------ */
 app.post("/api/upload", auth, upload.single("image"), async (req, res) => {
@@ -606,7 +649,14 @@ app.get("/api/store/:key", auth, async (req, res) => {
   res.json({ key: req.params.key, data: doc ? doc.data : [] });
 });
 
-app.put("/api/store/:key", auth, async (req, res) => {
+function canWriteStore(req, res, next) {
+  // শিক্ষার্থী শুধু তথ্য দেখতে পারে, পরিবর্তন করতে পারে না
+  if (req.user.role === "Student")
+    return res.status(403).json({ message: "তথ্য পরিবর্তনের অনুমতি নেই" });
+  return next();
+}
+
+app.put("/api/store/:key", auth, canWriteStore, async (req, res) => {
   if (!STORE_KEY_RE.test(req.params.key))
     return res.status(400).json({ message: "অবৈধ কী" });
   const data = req.body && "data" in req.body ? req.body.data : req.body;
@@ -693,7 +743,7 @@ app.patch("/api/messages/:id/read", auth, async (req, res) => {
 // Bulk upsert: PUT /api/store  { keys: { key1: data1, key2: data2, ... } }
 // Lets the admin panel persist the entire in-memory app state (students,
 // staff, fee, exam, routine, accounts, homework, message, etc.) in one call.
-app.put("/api/store", auth, async (req, res) => {
+app.put("/api/store", auth, canWriteStore, async (req, res) => {
   try {
     const keys = (req.body && req.body.keys) || {};
     const entries = Object.entries(keys).filter(([k]) => STORE_KEY_RE.test(k));

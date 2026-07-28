@@ -386,6 +386,8 @@
   ::-webkit-scrollbar{height:6px; width:6px;}
   ::-webkit-scrollbar-thumb{background:#d1d5db; border-radius:10px;}
 </style>
+<script src="config.js"></script>
+<script src="auth.js"></script>
 </head>
 <body>
 <div id="app">
@@ -393,10 +395,10 @@
   <header id="app-header" style="background:var(--home-grad);">
     <div class="top-row">
       <div>
-        <h1>হ্যালো, আব্দুর রউফ ! 👋</h1>
-        <div class="meta">🎫 ৪&nbsp; | &nbsp;🎓 নার্সারী&nbsp; | &nbsp;অনাবাসিক</div>
+        <h1 id="stuGreet">হ্যালো! 👋</h1>
+        <div class="meta" id="stuMeta">লোড হচ্ছে...</div>
       </div>
-      <div class="present-pill">👤 উপস্থিত</div>
+      <div class="present-pill" id="stuStatus">👤 উপস্থিত</div>
     </div>
   </header>
 
@@ -407,139 +409,40 @@
       <div class="card">
         <div class="card-head">
           <div class="title">📖 বাড়ির পড়া</div>
-          <div class="date-chip">📅 27-07-2026</div>
+          <div class="date-chip" id="stuHwDate">📅</div>
         </div>
-        <div class="hw-item">
-          <div class="hw-title">আমার বাংলা বই- ২৭/০৭/২০২৬</div>
-          <div class="hw-body">হ দিয়ে দুই টি শব্দ , সাথে খাতা লেখা</div>
-        </div>
-        <div class="hw-item">
-          <div class="hw-title">ENGLISH FOR TODAY- ২৭/০৭/২০২৬</div>
-          <div class="hw-body">X ও Y দিয়ে শব্দ ও বানান পড়া , সাথে খাতা লেখা</div>
-        </div>
-        <div class="hw-item">
-          <div class="hw-title">সাধারণ জ্ঞান- ২৭/০৭/২০২৬</div>
-          <div class="hw-body">১১ পৃষ্ঠার পড়া ,</div>
-        </div>
-        <div class="hw-item">
-          <div class="hw-title">গণিত- ২৭/০৭/২০২৬</div>
-          <div class="hw-body">২ নামতা ও ১১.১২.১৩ বানান রিভাইস , সাথে খাতা লেখা</div>
-        </div>
+        <div id="stuHomework"><div class="notice-empty"><div class="bell">📖</div><div>লোড হচ্ছে...</div></div></div>
       </div>
 
       <div class="card">
         <div class="card-head">
           <div class="title">🗂️ পরীক্ষার সিলেবাস</div>
-          <div class="select-chip">পরীক্ষা ▾</div>
         </div>
-        <div class="syllabus-item">
-          <div class="head">📁 English For Today</div>
-          <p>১। ভাগের লেটার ২। Capital letters এবং small letters , ৩। লেটার দিয়ে শব্দ অর্থ ৪। Name of seven days</p>
-        </div>
-        <div class="syllabus-item">
-          <div class="head">📁 আমার বাংলা বই</div>
-          <p>১।ভাগের বর্ণ, ২। স্বরবর্ণ ব্যঞ্জনবর্ণ, ৩।তামাযের বর্ণ ৪। অর্ধমাত্রা মাত্রাহীন বর্ণ ৫। স্বরবর্ণ ব্যঞ্জনবর্ণ দিয়ে বাক্য বা ছন্দ ৬। ছড়া</p>
-        </div>
-        <div class="syllabus-item">
-          <div class="head">📁 গণিত</div>
-          <p>জোড়-বিজোড় সংখ্যা</p>
-        </div>
-        <div class="syllabus-item">
-          <div class="head">📁 আরবী</div>
-          <p>আট ভাগের তারতিবে ২৯ হরফ সবটি।</p>
-        </div>
+        <div id="stuSyllabus"></div>
       </div>
 
       <div class="card">
         <div class="card-head">
           <div class="title">🔔 নোটিশ বোর্ড</div>
         </div>
-        <div class="notice-empty">
-          <div class="bell">🔕</div>
-          <div>কোন নোটিশ নেই</div>
-        </div>
+        <div id="stuNotices"></div>
       </div>
 
-      <div class="stat-grid">
-        <div class="stat-card"><div class="label">আজকের পরিশোধ</div><div class="value orange">৳ ০/-</div></div>
-        <div class="stat-card"><div class="label">মোট ফী</div><div class="value orange">৳ ১,২০০/-</div></div>
-        <div class="stat-card"><div class="label">মোট পরিশোধ</div><div class="value green">৳ ১,০০০/-</div></div>
-        <div class="stat-card"><div class="label">মোট বকেয়া</div><div class="value blue">৳ ২০০/- (১ মাস)</div></div>
-        <div class="stat-card"><div class="label">মোট উপস্থিত</div><div class="value green">১২৪ দিন</div></div>
-        <div class="stat-card"><div class="label">মোট অনুপস্থিত</div><div class="value orange">২ দিন</div></div>
-      </div>
+      <div class="stat-grid" id="stuStats"></div>
     </section>
 
     <!-- ROUTINE -->
     <section class="tab-panel" id="tab-routine">
       <div class="card">
-        <div class="card-head">
-          <div class="title">📅 পরীক্ষার সময়সূচী</div>
-        </div>
-        <div class="exam-banner">
-          <span class="badge-done">সমাপ্ত</span>
-          <div class="title">📅 ১ম, সাময়িক মূল্যায়ন পরিক্ষা</div>
-          <div class="sub"><span>📆 ১৯/৫/২০২৬ থেকে ২৩/৫/২০২৬</span><span>🕒 সময়: ০৮:৩০:০০</span></div>
-        </div>
-        <div class="table-scroll">
-          <table class="exam-table">
-            <thead>
-              <tr><th>#</th><th>বিষয়</th><th>তারিখ</th><th>সময়</th><th>পূর্ণমান</th><th>পাস নম্বর</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>১</td><td>আরবী</td><td>১৯/৫/২০২৬</td><td>08:30-10:30</td><td>১০০</td><td>৩৩</td></tr>
-              <tr><td>২</td><td>কালিমা ও দোয়া</td><td>১৯/৫/২০২৬</td><td>10:30-11:30</td><td>৫০</td><td>১৭</td></tr>
-              <tr><td>৩</td><td>আমার বাংলা বই</td><td>২০/��/২০২৬</td><td>08:30-10:30</td><td>১০০</td><td>৩৩</td></tr>
-              <tr><td>৪</td><td>সাধারণ জ্ঞান</td><td>২০/৫/২০২৬</td><td>10:30-11:30</td><td>১০০</td><td>৩৩</td></tr>
-              <tr><td>৫</td><td>গণিত</td><td>২১/৫/২০২৬</td><td>08:30-10:30</td><td>১০০</td><td>৩৩</td></tr>
-              <tr><td>৬</td><td>English For Today</td><td>২৩/৫/২০২৬</td><td>08:30-10:30</td><td>১০০</td><td>৩৩</td></tr>
-            </tbody>
-          </table>
-        </div>
+        <div class="card-head"><div class="title">📅 পরীক্ষার সময়সূচী</div></div>
+        <div id="stuExamRoutine"></div>
       </div>
 
       <div class="card">
         <div class="card-head">
           <div class="title">📅 ক্লাস রুটিন</div>
-          <div class="select-chip">সোমবার ▾</div>
         </div>
-        <div class="routine-hour">
-          <div class="routine-hour-head">
-            <div class="label">⏳ ১ম ঘণ্টা</div>
-            <div class="time-chip">সকাল ৮.০০ টা থেকে ৮.৫০ টা</div>
-          </div>
-          <div class="subject-row empty">কোনো ক্লাস নির্ধারিত নেই</div>
-        </div>
-        <div class="routine-hour">
-          <div class="routine-hour-head">
-            <div class="label">⏳ ২য় ঘণ্টা</div>
-            <div class="time-chip">সকাল ৮.৫০ টা থেকে ৯.২৫</div>
-          </div>
-          <div class="subject-row">
-            <div class="subj">📘 আমার বাংলা বই</div>
-            <div class="teacher">👩‍🏫 নুপুর</div>
-          </div>
-        </div>
-        <div class="routine-hour">
-          <div class="routine-hour-head">
-            <div class="label">⏳ ৩য় ঘণ্টা</div>
-            <div class="time-chip">বেলা ১০.১০ থেকে ১০.৪৫</div>
-          </div>
-          <div class="subject-row">
-            <div class="subj">📘 English For Today</div>
-            <div class="teacher">👩‍🏫 নুপুর</div>
-          </div>
-        </div>
-        <div class="routine-hour">
-          <div class="routine-hour-head">
-            <div class="label">⏳ ৪র্থ ঘণ্টা</div>
-            <div class="time-chip">বেলা ১০.১০ থেকে ১০.৪৫</div>
-          </div>
-          <div class="subject-row">
-            <div class="subj">📘 গণিত</div>
-            <div class="teacher">👨‍🏫 খাইরুল ইসলাম</div>
-          </div>
-        </div>
+        <div id="stuClassRoutine"></div>
       </div>
     </section>
 
@@ -547,11 +450,7 @@
     <section class="tab-panel" id="tab-attendance">
       <div class="card">
         <div class="card-head"><div class="title">✅ উপস্থিতির ইতিহাস</div></div>
-        <div class="empty-state">
-          <div class="icon">📈</div>
-          <h3>শীঘ্রই আসছে!</h3>
-          <p>আমরা এই ফিচারটি তৈরি করছি।</p>
-        </div>
+        <div id="stuAttendance" style="padding:14px 16px;"></div>
       </div>
     </section>
 
@@ -559,11 +458,7 @@
     <section class="tab-panel" id="tab-result">
       <div class="card">
         <div class="card-head"><div class="title">📈 পরীক্ষার ফলাফল</div></div>
-        <div class="empty-state">
-          <div class="icon">📊</div>
-          <h3>শীঘ্রই আসছে!</h3>
-          <p>আমরা এই ফিচারটি তৈরি করছি।</p>
-        </div>
+        <div id="stuResult" style="padding:14px 16px;"></div>
       </div>
     </section>
 
@@ -571,11 +466,11 @@
     <section class="tab-panel" id="tab-payment">
       <div class="card">
         <div class="card-head"><div class="title">💳 পেমেন্ট হিস্টোরি</div></div>
-        <div class="empty-state">
-          <div class="icon">💵</div>
-          <h3>শীঘ্রই আসছে!</h3>
-          <p>আমরা এই ফিচারটি তৈরি করছি।</p>
-        </div>
+        <div id="stuPayments" style="padding:14px 16px;"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="title">🧾 বকেয়া</div></div>
+        <div id="stuDues" style="padding:14px 16px;"></div>
       </div>
     </section>
 
@@ -597,7 +492,7 @@
         <div style="padding:14px 16px;">
           <div style="margin-bottom:12px;">
             <label style="display:block;font-size:12px;color:#6b7280;margin-bottom:6px;">প্রাপক</label>
-            <input type="text" id="msgToUser" placeholder="শিক্ষক বা প্রশাসকের নাম" style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;">
+            <select id="msgToUser" style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;"><option value="">-- নির্বাচন করুন --</option></select>
           </div>
           <div style="margin-bottom:12px;">
             <label style="display:block;font-size:12px;color:#6b7280;margin-bottom:6px;">বিষয়</label>
@@ -615,24 +510,24 @@
     <!-- SETTINGS -->
     <section class="tab-panel" id="tab-settings">
       <div class="card">
-        <div class="card-head"><div class="title">⚙️ সেটিংস</div></div>
-        <div class="settings-row">
-          <div class="left"><div class="icon-badge" style="background:#ef4444;">👤</div>প্রোফাইল</div>
-          <div class="chev">›</div>
+        <div class="card-head"><div class="title">👤 প্রোফাইল</div></div>
+        <div style="padding:14px 16px;font-size:14px;line-height:2;" id="stuProfile"></div>
+      </div>
+      <div class="card">
+        <div class="card-head"><div class="title">🔑 পাসওয়ার্ড পরিবর্তন</div></div>
+        <div style="padding:14px 16px;">
+          <input type="password" id="stuPwCur" placeholder="বর্তমান পাসওয়ার্ড" style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;margin-bottom:10px;">
+          <input type="password" id="stuPwNew" placeholder="নতুন পাসওয়ার্ড" style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;margin-bottom:10px;">
+          <input type="password" id="stuPwNew2" placeholder="নতুন পাসওয়ার্ড (পুনরায়)" style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;margin-bottom:10px;">
+          <button onclick="changeStudentPassword()" style="width:100%;background:#f59e0b;color:#fff;padding:10px;border:none;border-radius:8px;font-weight:600;cursor:pointer;">পরিবর্তন করুন</button>
         </div>
-        <div class="settings-row">
-          <div class="left"><div class="icon-badge" style="background:#f59e0b;">🔑</div>পাসওয়ার্ড পরিবর্তন</div>
-          <div class="chev">›</div>
-        </div>
+      </div>
+      <div class="card">
         <div class="settings-row" id="notif-row">
           <div class="left"><div class="icon-badge" style="background:#22c55e;">🔔</div>নোটিফিকেশন</div>
           <div class="toggle on" id="notif-toggle"></div>
         </div>
-        <div class="settings-row">
-          <div class="left"><div class="icon-badge" style="background:#3b82f6;">ℹ️</div>অ্যাপ তথ্য</div>
-          <div class="chev">›</div>
-        </div>
-        <div class="settings-row logout">
+        <div class="settings-row logout" onclick="NQAuth.logout()" style="cursor:pointer;">
           <div class="left"><div class="icon-badge">🚪</div>লগআউট</div>
           <div class="chev">›</div>
         </div>
@@ -653,89 +548,249 @@
 </div>
 
 <script>
-  const buttons = document.querySelectorAll('.nav-btn');
-  const panels = document.querySelectorAll('.tab-panel');
-  const header = document.getElementById('app-header');
+/* ══════════════════════════════════════════════════════════════
+   স্টুডেন্ট প্যানেল — এডমিন প্যানেলের ডেটার সাথে সরাসরি সংযুক্ত
+   ══════════════════════════════════════════════════════════════ */
+var S = {};
+var ME = null;      // স্টোরে থাকা শিক্ষার্থীর রেকর্ড
+var DIR = [];
 
-  buttons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      buttons.forEach(b => b.classList.remove('active'));
-      panels.forEach(p => p.classList.remove('active'));
-      btn.classList.add('active');
-      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
-      header.style.background = btn.dataset.grad;
-      window.scrollTo({top:0, behavior:'smooth'});
-    });
+function bn(n){ return String(n).replace(/[0-9]/g, function(d){ return '০১২৩৪৫৬৭৮৯'[d]; }); }
+function esc(t){ return String(t == null ? '' : t).replace(/[&<>"]/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
+function arr(v){ return Array.isArray(v) ? v : []; }
+function obj(v){ return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {}; }
+function todayISO(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function bnDate(iso){ var p=String(iso).split('-'); return p.length===3 ? bn(p[2]+'/'+p[1]+'/'+p[0]) : String(iso); }
+function empty(icon, text){ return '<div class="empty-state"><div class="icon">' + icon + '</div><p>' + text + '</p></div>'; }
+
+/* ---------- ট্যাব নেভিগেশন ---------- */
+var buttons = document.querySelectorAll('.nav-btn');
+var panels = document.querySelectorAll('.tab-panel');
+var header = document.getElementById('app-header');
+buttons.forEach(function(btn){
+  btn.addEventListener('click', function(){
+    buttons.forEach(function(b){ b.classList.remove('active'); });
+    panels.forEach(function(p){ p.classList.remove('active'); });
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    header.style.background = btn.dataset.grad;
+    if(btn.dataset.tab === 'messages') loadStudentInbox();
+    window.scrollTo({ top:0, behavior:'smooth' });
+  });
+});
+
+/* ---------- বুট ---------- */
+function boot(){
+  if(!window.NQAuth || !window.NQAuth.isLoggedIn()) return;
+  var notifRow = document.getElementById('notif-row');
+  if(notifRow) notifRow.addEventListener('click', function(){ document.getElementById('notif-toggle').classList.toggle('on'); });
+
+  window.NQAuth.loadStore().then(function(data){
+    S = data || {};
+    var u = window.NQAuth.user || {};
+    var students = arr(S.students);
+    ME = students.find(function(st){ return String(st.uid) === String(u.uid); })
+      || students.find(function(st){ return st.name === u.name; })
+      || students[0] || null;
+    renderHeader(u);
+    renderHome();
+    renderRoutine();
+    renderAttendance();
+    renderResult();
+    renderPayments();
+    renderProfile(u);
   });
 
-  const notifToggle = document.getElementById('notif-toggle');
-  document.getElementById('notif-row').addEventListener('click', () => {
-    notifToggle.classList.toggle('on');
+  window.NQAuth.getJSON('/api/directory').then(function(list){
+    DIR = (list || []).filter(function(x){ return x.role !== 'student'; });
+    document.getElementById('msgToUser').innerHTML = '<option value="">-- নির্বাচন করুন --</option>' +
+      DIR.map(function(x){ return '<option value="' + x.id + '">' + esc(x.name) + ' (' + esc(x.role) + ')</option>'; }).join('');
+  }).catch(function(){});
+
+  loadStudentInbox();
+}
+
+function renderHeader(u){
+  document.getElementById('stuGreet').textContent = 'হ্যালো, ' + (ME ? ME.name : (u.name || 'শিক্ষার্থী')) + ' ! 👋';
+  document.getElementById('stuMeta').innerHTML = ME
+    ? '🎫 ' + bn(ME.id) + ' &nbsp;|&nbsp; 🎓 ' + esc(ME.cls) + ' &nbsp;|&nbsp; ' + esc(ME.type || 'অনাবাসিক')
+    : 'তথ্য পাওয়া যায়নি';
+  var st = ME ? (obj(S.attendance)[ME.id] || 'present') : 'present';
+  var map = { present:'👤 উপস্থিত', absent:'🚫 অনুপস্থিত', leave:'🌴 ছুটিতে' };
+  document.getElementById('stuStatus').textContent = map[st] || map.present;
+}
+
+/* ---------- হোম ---------- */
+function renderHome(){
+  document.getElementById('stuHwDate').textContent = '📅 ' + bnDate(todayISO());
+
+  var cls = ME ? ME.cls : '';
+  var hw = arr(S.hwDailyList).filter(function(h){ return h.cls === cls; }).slice(-8).reverse();
+  var resHw = arr(S.hwResidentialList).filter(function(h){ return ME && arr(h.students).indexOf(ME.id) !== -1; }).slice(-5).reverse();
+  var box = document.getElementById('stuHomework');
+  var html = hw.map(function(h){
+    return '<div class="hw-item"><div class="hw-title">' + esc(h.subject) + '- ' + esc(h.date) + '</div>' +
+      '<div class="hw-body">' + esc(h.task) + (h.khata ? ' , সাথে খাতা লেখা' : '') + '</div></div>';
+  }).concat(resHw.map(function(h){
+    return '<div class="hw-item"><div class="hw-title">' + esc(h.category || 'আবাসিক') + '- ' + esc(h.date) + '</div>' +
+      '<div class="hw-body">' + esc(h.comment) + '</div></div>';
+  })).join('');
+  box.innerHTML = html || '<div class="notice-empty"><div class="bell">📖</div><div>কোনো বাড়ির পড়া নেই</div></div>';
+
+  var syll = arr(S.syllabusList).filter(function(x){ return !x.cls || x.cls === cls; });
+  document.getElementById('stuSyllabus').innerHTML = syll.length ? syll.map(function(x){
+    return '<div class="syllabus-item"><div class="head">📁 ' + esc(x.subject || x.title || '-') + '</div><p>' + esc(x.details || x.text || '') + '</p></div>';
+  }).join('') : '<div class="notice-empty"><div class="bell">🗂️</div><div>সিলেবাস পাওয়া যায়নি</div></div>';
+
+  var notices = arr(S.notices).slice(-6).reverse();
+  document.getElementById('stuNotices').innerHTML = notices.length ? notices.map(function(n){
+    return '<div class="hw-item"><div class="hw-title">' + esc(n.title) + '</div><div class="hw-body">' + esc(n.desc || '') + '</div></div>';
+  }).join('') : '<div class="notice-empty"><div class="bell">🔕</div><div>কোন নোটিশ নেই</div></div>';
+
+  var pays = arr(S.payments).filter(function(p){ return ME && p.student === ME.name; });
+  var today = bnDate(todayISO());
+  var todayPaid = pays.filter(function(p){ return p.date === today; }).reduce(function(t,p){ return t + (Number(p.amount)||0); }, 0);
+  var totalPaid = pays.reduce(function(t,p){ return t + (Number(p.amount)||0); }, 0);
+  var dues = ME ? arr(obj(S.studentDues)[ME.id]) : [];
+  var totalDue = dues.reduce(function(t,d){ return t + (Number(d.amount)||0); }, 0);
+  var hist = ME ? arr(obj(S.attendanceHistory)[ME.id]) : [];
+  var presentDays = hist.filter(function(x){ return x.status === 'present'; }).length;
+  var absentDays = hist.filter(function(x){ return x.status === 'absent'; }).length;
+
+  document.getElementById('stuStats').innerHTML = [
+    ['আজকের পরিশোধ', '৳ ' + bn(todayPaid) + '/-', 'orange'],
+    ['মোট ফী', '৳ ' + bn(totalPaid + totalDue) + '/-', 'orange'],
+    ['মোট পরিশোধ', '৳ ' + bn(totalPaid) + '/-', 'green'],
+    ['মোট বকেয়া', '৳ ' + bn(totalDue) + '/- (' + bn(dues.length) + ')', 'blue'],
+    ['মোট উপস্থিত', bn(presentDays) + ' দিন', 'green'],
+    ['মোট অনুপস্থিত', bn(absentDays) + ' দিন', 'orange']
+  ].map(function(x){
+    return '<div class="stat-card"><div class="label">' + x[0] + '</div><div class="value ' + x[2] + '">' + x[1] + '</div></div>';
+  }).join('');
+}
+
+/* ---------- রুটিন ---------- */
+function renderRoutine(){
+  var cls = ME ? ME.cls : '';
+  var exams = arr(S.examRoutines).filter(function(e){ return !e.cls || e.cls === cls; });
+  document.getElementById('stuExamRoutine').innerHTML = exams.length ? exams.map(function(e){
+    var rows = arr(e.items).map(function(it, i){
+      return '<tr><td>' + bn(i+1) + '</td><td>' + esc(it.subject) + '</td><td>' + esc(it.date || '-') + '</td><td>' + esc(it.time || '-') + '</td><td>' + bn(it.fullMark || 100) + '</td><td>' + bn(it.passMark || 33) + '</td></tr>';
+    }).join('');
+    return '<div class="exam-banner"><div class="title">📅 ' + esc(e.name || 'পরীক্ষা') + '</div>' +
+      '<div class="sub"><span>📆 ' + esc(e.from || '-') + ' থেকে ' + esc(e.to || '-') + '</span></div></div>' +
+      '<div class="table-scroll"><table class="exam-table"><thead><tr><th>#</th><th>বিষয়</th><th>তারিখ</th><th>সময়</th><th>পূর্ণমান</th><th>পাস নম্বর</th></tr></thead><tbody>' +
+      (rows || '<tr><td colspan="6">তথ্য নেই</td></tr>') + '</tbody></table></div>';
+  }).join('') : empty('📅', 'পরীক্ষার সময়সূচী প্রকাশ করা হয়নি');
+
+  var routine = arr(S.dailyRoutines).find(function(r){ return r.className === cls; });
+  var slots = arr(S.crTimeSlots);
+  var teachers = arr(S.teachers);
+  document.getElementById('stuClassRoutine').innerHTML = (routine && arr(routine.items).length)
+    ? routine.items.map(function(it){
+        var slot = slots.find(function(x){ return x.id === it.slotId; });
+        var t = teachers.find(function(x){ return x.id === it.teacherId; });
+        return '<div class="routine-hour"><div class="routine-hour-head"><div class="label">⏳ ' + esc(slot ? slot.name || slot.label : 'ঘণ্টা') + '</div>' +
+          '<div class="time-chip">' + esc(slot ? slot.label || '' : '') + '</div></div>' +
+          '<div class="subject-row"><div class="subj">📘 ' + esc(it.subject || '-') + '</div><div class="teacher">👩‍🏫 ' + esc(t ? t.name : '-') + '</div></div></div>';
+      }).join('')
+    : empty('📅', 'ক্লাস রুটিন পাওয়া যায়নি');
+}
+
+/* ---------- হাজিরা ---------- */
+function renderAttendance(){
+  var hist = ME ? arr(obj(S.attendanceHistory)[ME.id]) : [];
+  var label = { present:'উপস্থিত', absent:'অনুপস্থিত', leave:'ছুটিতে' };
+  document.getElementById('stuAttendance').innerHTML = hist.length
+    ? '<table class="exam-table" style="width:100%"><thead><tr><th>#</th><th>তারিখ</th><th>অবস্থা</th></tr></thead><tbody>' +
+      hist.slice().reverse().map(function(x, i){ return '<tr><td>' + bn(i+1) + '</td><td>' + esc(x.date) + '</td><td>' + (label[x.status] || esc(x.status)) + '</td></tr>'; }).join('') +
+      '</tbody></table>'
+    : empty('📈', 'উপস্থিতির কোনো রেকর্ড নেই');
+}
+
+/* ---------- ফলাফল ---------- */
+function renderResult(){
+  var res = arr(S.results).filter(function(r){ return ME && (r.studentId === ME.id || r.student === ME.name); });
+  document.getElementById('stuResult').innerHTML = res.length
+    ? res.map(function(r){
+        return '<div class="hw-item"><div class="hw-title">' + esc(r.exam || 'পরীক্ষা') + '</div>' +
+          '<div class="hw-body">প্রাপ্ত নম্বর: ' + bn(r.total != null ? r.total : '-') + ' | গ্রেড: ' + esc(r.grade || '-') + ' | অবস্থান: ' + bn(r.position != null ? r.position : '-') + '</div></div>';
+      }).join('')
+    : empty('📊', 'কোনো ফলাফল প্রকাশ করা হয়নি');
+}
+
+/* ---------- পেমেন্ট ---------- */
+function renderPayments(){
+  var pays = arr(S.payments).filter(function(p){ return ME && p.student === ME.name; }).slice().reverse();
+  document.getElementById('stuPayments').innerHTML = pays.length
+    ? '<table class="exam-table" style="width:100%"><thead><tr><th>#</th><th>তারিখ</th><th>মাস</th><th>টাকা</th></tr></thead><tbody>' +
+      pays.map(function(p,i){ return '<tr><td>' + bn(i+1) + '</td><td>' + esc(p.date) + '</td><td>' + esc(p.month || '-') + '</td><td>' + bn(p.amount) + '</td></tr>'; }).join('') +
+      '</tbody></table>'
+    : empty('💵', 'কোনো পেমেন্ট রেকর্ড নেই');
+
+  var dues = ME ? arr(obj(S.studentDues)[ME.id]) : [];
+  document.getElementById('stuDues').innerHTML = dues.length
+    ? dues.map(function(d){
+        return '<div style="display:flex;justify-content:space-between;border-bottom:1px solid #e5e7eb;padding:8px 0;font-size:14px;">' +
+          '<span>' + esc(d.label) + ' <small style="color:#9ca3af">' + esc(d.month || '') + '</small></span><strong>৳ ' + bn(d.amount) + '</strong></div>';
+      }).join('')
+    : empty('✅', 'কোনো বকেয়া নেই');
+}
+
+/* ---------- প্রোফাইল ও পাসওয়ার্ড ---------- */
+function renderProfile(u){
+  document.getElementById('stuProfile').innerHTML =
+    '<div><strong>নাম:</strong> ' + esc(ME ? ME.name : u.name) + '</div>' +
+    '<div><strong>আইডি:</strong> ' + esc(u.uid || (ME ? ME.id : '-')) + '</div>' +
+    '<div><strong>শ্রেণী:</strong> ' + esc(ME ? ME.cls : '-') + '</div>' +
+    '<div><strong>মোবাইল:</strong> ' + esc(ME ? (ME.mobile || '-') : '-') + '</div>' +
+    '<div><strong>অভিভাবক:</strong> ' + esc(ME ? (ME.father || ME.guardian || '-') : '-') + '</div>';
+}
+function changeStudentPassword(){
+  var cur = document.getElementById('stuPwCur').value;
+  var n1 = document.getElementById('stuPwNew').value;
+  var n2 = document.getElementById('stuPwNew2').value;
+  if(!cur || !n1){ alert('সব ঘর পূরণ করুন'); return; }
+  if(n1 !== n2){ alert('নতুন পাসওয়ার্ড দুটি মিলছে না'); return; }
+  window.NQAuth.postJSON('/api/auth/change-password', { currentPassword: cur, newPassword: n1 })
+    .then(function(){ ['stuPwCur','stuPwNew','stuPwNew2'].forEach(function(id){ document.getElementById(id).value=''; }); alert('পাসওয়ার্ড পরিবর্তন করা হয়েছে'); })
+    .catch(function(e){ alert(e.message || 'পরিবর্তন ব্যর্থ'); });
+}
+
+/* ---------- মেসেজ ---------- */
+function loadStudentInbox(){
+  if(!window.NQAuth || !window.NQAuth.isLoggedIn()) return;
+  return window.NQAuth.getJSON('/api/messages/inbox').then(function(data){
+    var list = (data && data.messages) || [];
+    var c = document.getElementById('inbox-container');
+    c.innerHTML = list.length ? list.map(function(m){
+      return '<div style="border-bottom:1px solid #e5e7eb;padding:12px 0;font-size:14px;">' +
+        '<div style="display:flex;justify-content:space-between;margin-bottom:4px;">' +
+        '<strong style="color:#1f2937;">' + esc((m.fromUserId && m.fromUserId.name) || 'অজানা') + '</strong>' +
+        '<span style="color:#9ca3af;font-size:12px;">' + new Date(m.createdAt).toLocaleDateString('bn-BD') + '</span></div>' +
+        (m.subject ? '<div style="color:#6b7280;font-size:13px;margin-bottom:4px;"><strong>বিষয়:</strong> ' + esc(m.subject) + '</div>' : '') +
+        '<div style="color:#374151;">' + esc(m.body) + '</div></div>';
+    }).join('') : '<div style="text-align:center;color:#9ca3af;padding:20px;">কোন মেসেজ নেই</div>';
+  }).catch(function(){
+    document.getElementById('inbox-container').innerHTML = '<div style="text-align:center;color:#ef4444;padding:20px;">সংযোগ ত্রুটি</div>';
   });
-
-  /* ═══════════ মেসেজ সিস্টেম ═══════════ */
-  async function loadStudentInbox() {
-    try {
-      const res = await fetch('/api/messages/inbox', {
-        headers: {
-          'Authorization': 'Bearer ' + localStorage.getItem('auth_token')
-        }
-      });
-      const data = await res.json();
-      const container = document.getElementById('inbox-container');
-
-      if (!data.ok || !data.messages || data.messages.length === 0) {
-        container.innerHTML = '<div style="text-align:center;color:#9ca3af;padding:20px;">কোন মেসেজ নেই</div>';
-        return;
-      }
-
-      container.innerHTML = data.messages.map((m, i) => `
-        <div style="border-bottom:1px solid #e5e7eb;padding:12px 0;font-size:14px;">
-          <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
-            <strong style="color:#1f2937;">${m.fromUserId?.name || 'অজানা'}</strong>
-            <span style="color:#9ca3af;font-size:12px;">${new Date(m.createdAt).toLocaleDateString('bn-BD')}</span>
-          </div>
-          ${m.subject ? '<div style="color:#6b7280;font-size:13px;margin-bottom:4px;"><strong>বিষয়:</strong> ' + m.subject + '</div>' : ''}
-          <div style="color:#374151;">${m.body}</div>
-        </div>
-      `).join('');
-    } catch (e) {
-      console.error('ইনবক্স লোড ত্রুটি:', e);
-      document.getElementById('inbox-container').innerHTML = '<div style="text-align:center;color:#ef4444;padding:20px;">সংযোগ ত্রুটি</div>';
-    }
-  }
-
-  async function sendStudentMessage() {
-    try {
-      const toUser = document.getElementById('msgToUser').value.trim();
-      const subject = document.getElementById('msgSubject').value.trim();
-      const body = document.getElementById('msgBody').value.trim();
-
-      if (!toUser || !body) {
-        alert('প্রাপক এবং বার্তা প্রয়োজন');
-        return;
-      }
-
-      // নোট: আসল ইমপ্লিমেন্টেশনে এখানে ইউজার খুঁজে বের করতে হবে
-      // এখানে শুধু ডেমো
-      alert('বার্তা পাঠানো হয়েছে (ডেমো মোড)');
-      document.getElementById('msgToUser').value = '';
+}
+function sendStudentMessage(){
+  var toUserId = document.getElementById('msgToUser').value;
+  var subject = document.getElementById('msgSubject').value.trim();
+  var body = document.getElementById('msgBody').value.trim();
+  if(!toUserId || !body){ alert('প্রাপক এবং বার্তা প্রয়োজন'); return; }
+  window.NQAuth.postJSON('/api/messages/send', { toUserId: toUserId, subject: subject, body: body })
+    .then(function(){
       document.getElementById('msgSubject').value = '';
       document.getElementById('msgBody').value = '';
-    } catch (e) {
-      console.error('মেসেজ পাঠানোর ত্রুটি:', e);
-    }
-  }
+      alert('বার্তা পাঠানো হয়েছে');
+      loadStudentInbox();
+    })
+    .catch(function(e){ alert(e.message || 'মেসেজ পাঠাতে ব্যর্থ'); });
+}
 
-  // মেসেজ ট্যাবে ক্লিক হলে ইনবক্স লোড করুন
-  const navBtns = document.querySelectorAll('.nav-btn');
-  navBtns.forEach(btn => {
-    btn.addEventListener('click', function() {
-      if (this.dataset.tab === 'messages') {
-        setTimeout(loadStudentInbox, 100);
-      }
-    });
-  });
+document.addEventListener('DOMContentLoaded', boot);
 </script>
 
 </body>
