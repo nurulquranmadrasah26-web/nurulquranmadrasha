@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>স্টুডেন্ট প্যানেল</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --home-grad: linear-gradient(120deg,#16a34a,#a3e635);
+    --routine-grad: linear-gradient(120deg,#2563eb,#7c3aed 55%,#dc2626);
+    --attendance-grad: linear-gradient(120deg,#16a34a,#4ade80);
+    --result-grad: linear-gradient(120deg,#f59e0b,#facc15,#4ade80);
+    --payment-grad: linear-gradient(120deg,#2563eb,#7c3aed 55%,#dc2626);
+    --settings-grad: linear-gradient(120deg,#2563eb,#7c3aed 55%,#dc2626);
+    --ink:#1f2937;
+    --muted:#6b7280;
+    --card-bg:#ffffff;
+    --page-bg:#eef4ef;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Hind Siliguri', sans-serif;
+    background:var(--page-bg);
+    color:var(--ink);
+    display:flex;
+    justify-content:center;
+  }
+  #app{
+    width:100%;
+    max-width:480px;
+    min-height:100vh;
+    background:var(--page-bg);
+    position:relative;
+    padding-bottom:78px;
+    box-shadow:0 0 40px rgba(0,0,0,0.08);
+  }
+  header{
+    padding:20px 20px 34px;
+    color:#fff;
+    border-radius:0 0 22px 22px;
+    transition:background 0.35s ease;
+  }
+  header .top-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+  }
+  header h1{
+    margin:0;
+    font-size:22px;
+    font-weight:700;
+  }
+  header .meta{
+    margin-top:6px;
+    font-size:13.5px;
+    opacity:0.95;
+    display:flex;
+    gap:6px;
+    align-items:center;
+  }
+  .present-pill{
+    background:rgba(255,255,255,0.22);
+    border:1px solid rgba(255,255,255,0.4);
+    border-radius:999px;
+    padding:8px 14px;
+    font-size:13px;
+    font-weight:600;
+    color:#fff;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    white-space:nowrap;
+  }
+  main{
+    padding:16px 16px 8px;
+    margin-top:-18px;
+  }
+  .card{
+    background:var(--card-bg);
+    border-radius:16px;
+    box-shadow:0 4px 18px rgba(30,41,59,0.06);
+    margin-bottom:16px;
+    overflow:hidden;
+  }
+  .card-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 16px;
+    border-bottom:1px solid #eef0f2;
+    font-weight:600;
+    font-size:15.5px;
+  }
+  .card-head .title{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .date-chip, .select-chip{
+    background:#fdf3e0;
+    border-radius:10px;
+    padding:6px 12px;
+    font-size:12.5px;
+    font-weight:600;
+    color:#92650f;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .hw-item{border-bottom:1px solid #f3f4f6;}
+  .hw-item:last-child{border-bottom:none;}
+  .hw-title{
+    background:#16a34a;
+    color:#fff;
+    padding:10px 16px;
+    font-size:14px;
+    font-weight:600;
+  }
+  .hw-body{
+    padding:12px 16px 16px;
+    font-size:14px;
+    color:#374151;
+  }
+  .syllabus-item{
+    border-left:4px solid #3b82f6;
+    background:#f8fbff;
+    border-radius:10px;
+    padding:12px 14px;
+    margin:12px 14px;
+  }
+  .syllabus-item .head{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-weight:600;
+    margin-bottom:4px;
+    color:#1e3a8a;
+  }
+  .syllabus-item p{
+    margin:0;
+    font-size:13.5px;
+    color:#4b5563;
+    line-height:1.5;
+  }
+  .empty-state{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:70px 20px;
+    text-align:center;
+    color:#374151;
+    background:linear-gradient(160deg,#e9f1fb,#eef7ec);
+  }
+  .empty-state .icon{
+    font-size:52px;
+    margin-bottom:14px;
+  }
+  .empty-state h3{
+    margin:0 0 6px;
+    font-size:19px;
+    font-weight:700;
+  }
+  .empty-state p{
+    margin:0;
+    color:#6b7280;
+    font-size:14px;
+  }
+  .notice-empty{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:40px 10px 30px;
+    color:#9ca3af;
+  }
+  .notice-empty .bell{
+    font-size:40px;
+    margin-bottom:10px;
+    opacity:0.6;
+  }
+  .stat-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+    margin-top:4px;
+  }
+  .stat-card{
+    background:#fff;
+    border-radius:14px;
+    padding:14px 16px;
+    border-left:4px solid #ef4444;
+    box-shadow:0 2px 10px rgba(30,41,59,0.05);
+  }
+  .stat-card .label{
+    font-size:12.5px;
+    color:#6b7280;
+    margin-bottom:4px;
+  }
+  .stat-card .value{
+    font-size:19px;
+    font-weight:700;
+  }
+  .value.orange{color:#f59e0b;}
+  .value.blue{color:#2563eb;}
+  .value.green{color:#16a34a;}
+
+  /* Exam schedule */
+  .exam-banner{
+    background:linear-gradient(90deg,#f97316,#eab308);
+    color:#fff;
+    padding:14px 16px;
+    position:relative;
+  }
+  .exam-banner .title{font-weight:700; font-size:15px; display:flex; align-items:center; gap:6px;}
+  .exam-banner .sub{font-size:12.5px; margin-top:6px; display:flex; gap:14px; flex-wrap:wrap; opacity:0.95;}
+  .badge-done{
+    position:absolute;
+    top:14px; right:16px;
+    background:#fff;
+    color:#dc2626;
+    font-size:11.5px;
+    font-weight:700;
+    padding:4px 10px;
+    border-radius:999px;
+  }
+  table.exam-table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:12.5px;
+  }
+  table.exam-table th{
+    background:#f3f4f6;
+    text-align:left;
+    padding:9px 10px;
+    font-weight:600;
+    color:#374151;
+    white-space:nowrap;
+  }
+  table.exam-table td{
+    padding:9px 10px;
+    border-top:1px solid #f3f4f6;
+    color:#374151;
+    white-space:nowrap;
+  }
+  table.exam-table tr:nth-child(even) td{background:#fafafa;}
+  .table-scroll{overflow-x:auto;}
+
+  .routine-hour{
+    padding:14px 16px;
+  }
+  .routine-hour + .routine-hour{border-top:1px solid #f3f4f6;}
+  .routine-hour-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:8px;
+  }
+  .routine-hour-head .label{
+    font-weight:600;
+    color:#4338ca;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .time-chip{
+    background:#eef2ff;
+    color:#4338ca;
+    font-size:11.5px;
+    padding:5px 10px;
+    border-radius:8px;
+    white-space:nowrap;
+  }
+  .subject-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:#f9fafb;
+    border-radius:10px;
+    padding:10px 12px;
+  }
+  .subject-row .subj{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-weight:600;
+    font-size:14px;
+    color:#1f2937;
+  }
+  .subject-row .teacher{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    font-size:12.5px;
+    color:#7c3aed;
+  }
+  .subject-row.empty{color:#9ca3af; font-size:13px; justify-content:center;}
+
+  /* settings */
+  .settings-row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:16px;
+    border-bottom:1px solid #f3f4f6;
+    cursor:pointer;
+  }
+  .settings-row:last-child{border-bottom:none;}
+  .settings-row .left{
+    display:flex;
+    align-items:center;
+    gap:14px;
+    font-size:15px;
+    font-weight:500;
+  }
+  .icon-badge{
+    width:34px; height:34px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:16px;
+    color:#fff;
+  }
+  .chev{color:#c7ccd4; font-size:16px;}
+  .logout .left{color:#dc2626;}
+  .logout .icon-badge{background:#fee2e2; color:#dc2626;}
+  .toggle{
+    width:42px; height:24px;
+    background:#d1d5db;
+    border-radius:999px;
+    position:relative;
+    transition:background 0.2s;
+    flex-shrink:0;
+  }
+  .toggle.on{background:#22c55e;}
+  .toggle::after{
+    content:'';
+    position:absolute;
+    top:2px; left:2px;
+    width:20px; height:20px;
+    background:#fff;
+    border-radius:50%;
+    transition:left 0.2s;
+    box-shadow:0 1px 3px rgba(0,0,0,0.3);
+  }
+  .toggle.on::after{left:20px;}
+
+  /* bottom nav */
+  nav.bottom{
+    position:fixed;
+    bottom:0; left:50%;
+    transform:translateX(-50%);
+    width:100%;
+    max-width:480px;
+    background:#fff;
+    display:flex;
+    justify-content:space-around;
+    padding:8px 4px 10px;
+    box-shadow:0 -4px 16px rgba(0,0,0,0.08);
+    border-radius:16px 16px 0 0;
+  }
+  nav.bottom button{
+    background:none;
+    border:none;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:3px;
+    font-family:inherit;
+    font-size:11px;
+    font-weight:600;
+    color:#374151;
+    cursor:pointer;
+    padding:4px 6px;
+  }
+  nav.bottom button .icon{font-size:20px; line-height:1;}
+  nav.bottom button.active{color:#e0562b;}
+  nav.bottom button.active .icon{filter:none;}
+
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  ::-webkit-scrollbar{height:6px; width:6px;}
+  ::-webkit-scrollbar-thumb{background:#d1d5db; border-radius:10px;}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <header id="app-header" style="background:var(--home-grad);">
+    <div class="top-row">
+      <div>
+        <h1>হ্যালো, আব্দুর রউফ ! 👋</h1>
+        <div class="meta">🎫 ৪&nbsp; | &nbsp;🎓 নার্সারী&nbsp; | &nbsp;অনাবাসিক</div>
+      </div>
+      <div class="present-pill">👤 উপস্থিত</div>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- HOME -->
+    <section class="tab-panel active" id="tab-home">
+      <div class="card">
+        <div class="card-head">
+          <div class="title">📖 বাড়ির পড়া</div>
+          <div class="date-chip">📅 27-07-2026</div>
+        </div>
+        <div class="hw-item">
+          <div class="hw-title">আমার বাংলা বই- ২৭/০৭/২০২৬</div>
+          <div class="hw-body">হ দিয়ে দুই টি শব্দ , সাথে খাতা লেখা</div>
+        </div>
+        <div class="hw-item">
+          <div class="hw-title">ENGLISH FOR TODAY- ২৭/০৭/২০২৬</div>
+          <div class="hw-body">X ও Y দিয়ে শব্দ ও বানান পড়া , সাথে খাতা লেখা</div>
+        </div>
+        <div class="hw-item">
+          <div class="hw-title">সাধারণ জ্ঞান- ২৭/০৭/২০২৬</div>
+          <div class="hw-body">১১ পৃষ্ঠার পড়া ,</div>
+        </div>
+        <div class="hw-item">
+          <div class="hw-title">গণিত- ২৭/০৭/২০২৬</div>
+          <div class="hw-body">২ নামতা ও ১১.১২.১৩ বানান রিভাইস , সাথে খাতা লেখা</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="title">🗂️ পরীক্ষার সিলেবাস</div>
+          <div class="select-chip">পরীক্ষা ▾</div>
+        </div>
+        <div class="syllabus-item">
+          <div class="head">📁 English For Today</div>
+          <p>১। ভাগের লেটার ২। Capital letters এবং small letters , ৩। লেটার দিয়ে শব্দ অর্থ ৪। Name of seven days</p>
+        </div>
+        <div class="syllabus-item">
+          <div class="head">📁 আমার বাংলা বই</div>
+          <p>১।ভাগের বর্ণ, ২। স্বরবর্ণ ব্যঞ্জনবর্ণ, ৩।তামাযের বর্ণ ৪। অর্ধমাত্রা মাত্রাহীন বর্ণ ৫। স্বরবর্ণ ব্যঞ্জনবর্ণ দিয়ে বাক্য বা ছন্দ ৬। ছড়া</p>
+        </div>
+        <div class="syllabus-item">
+          <div class="head">📁 গণিত</div>
+          <p>জোড়-বিজোড় সংখ্যা</p>
+        </div>
+        <div class="syllabus-item">
+          <div class="head">📁 আরবী</div>
+          <p>আট ভাগের তারতিবে ২৯ হরফ সবটি।</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="title">🔔 নোটিশ বোর্ড</div>
+        </div>
+        <div class="notice-empty">
+          <div class="bell">🔕</div>
+          <div>কোন নোটিশ নেই</div>
+        </div>
+      </div>
+
+      <div class="stat-grid">
+        <div class="stat-card"><div class="label">আজকের পরিশোধ</div><div class="value orange">৳ ০/-</div></div>
+        <div class="stat-card"><div class="label">মোট ফী</div><div class="value orange">৳ ১,২০০/-</div></div>
+        <div class="stat-card"><div class="label">মোট পরিশোধ</div><div class="value green">৳ ১,০০০/-</div></div>
+        <div class="stat-card"><div class="label">মোট বকেয়া</div><div class="value blue">৳ ২০০/- (১ মাস)</div></div>
+        <div class="stat-card"><div class="label">মোট উপস্থিত</div><div class="value green">১২৪ দিন</div></div>
+        <div class="stat-card"><div class="label">মোট অনুপস্থিত</div><div class="value orange">২ দিন</div></div>
+      </div>
+    </section>
+
+    <!-- ROUTINE -->
+    <section class="tab-panel" id="tab-routine">
+      <div class="card">
+        <div class="card-head">
+          <div class="title">📅 পরীক্ষার সময়সূচী</div>
+        </div>
+        <div class="exam-banner">
+          <span class="badge-done">সমাপ্ত</span>
+          <div class="title">📅 ১ম, সাময়িক মূল্যায়ন পরিক্ষা</div>
+          <div class="sub"><span>📆 ১৯/৫/২০২৬ থেকে ২৩/৫/২০২৬</span><span>🕒 সময়: ০৮:৩০:০০</span></div>
+        </div>
+        <div class="table-scroll">
+          <table class="exam-table">
+            <thead>
+              <tr><th>#</th><th>বিষয়</th><th>তারিখ</th><th>সময়</th><th>পূর্ণমান</th><th>পাস নম্বর</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>১</td><td>আরবী</td><td>১৯/৫/২০২৬</td><td>08:30-10:30</td><td>১০০</td><td>৩৩</td></tr>
+              <tr><td>২</td><td>কালিমা ও দোয়া</td><td>১৯/৫/২০২৬</td><td>10:30-11:30</td><td>৫০</td><td>১৭</td></tr>
+              <tr><td>৩</td><td>আমার বাংলা বই</td><td>২০/৫/২০২৬</td><td>08:30-10:30</td><td>১০০</td><td>৩৩</td></tr>
+              <tr><td>৪</td><td>সাধারণ জ্ঞান</td><td>২০/৫/২০২৬</td><td>10:30-11:30</td><td>১০০</td><td>৩৩</td></tr>
+              <tr><td>৫</td><td>গণিত</td><td>২১/৫/২০২৬</td><td>08:30-10:30</td><td>১০০</td><td>৩৩</td></tr>
+              <tr><td>৬</td><td>English For Today</td><td>২৩/৫/২০২৬</td><td>08:30-10:30</td><td>১০০</td><td>৩৩</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <div class="title">📅 ক্লাস রুটিন</div>
+          <div class="select-chip">সোমবার ▾</div>
+        </div>
+        <div class="routine-hour">
+          <div class="routine-hour-head">
+            <div class="label">⏳ ১ম ঘণ্টা</div>
+            <div class="time-chip">সকাল ৮.০০ টা থেকে ৮.৫০ টা</div>
+          </div>
+          <div class="subject-row empty">কোনো ক্লাস নির্ধারিত নেই</div>
+        </div>
+        <div class="routine-hour">
+          <div class="routine-hour-head">
+            <div class="label">⏳ ২য় ঘণ্টা</div>
+            <div class="time-chip">সকাল ৮.৫০ টা থেকে ৯.২৫</div>
+          </div>
+          <div class="subject-row">
+            <div class="subj">📘 আমার বাংলা বই</div>
+            <div class="teacher">👩‍🏫 নুপুর</div>
+          </div>
+        </div>
+        <div class="routine-hour">
+          <div class="routine-hour-head">
+            <div class="label">⏳ ৩য় ঘণ্টা</div>
+            <div class="time-chip">বেলা ১০.১০ থেকে ১০.৪৫</div>
+          </div>
+          <div class="subject-row">
+            <div class="subj">📘 English For Today</div>
+            <div class="teacher">👩‍🏫 নুপুর</div>
+          </div>
+        </div>
+        <div class="routine-hour">
+          <div class="routine-hour-head">
+            <div class="label">⏳ ৪র্থ ঘণ্টা</div>
+            <div class="time-chip">বেলা ১০.১০ থেকে ১০.৪৫</div>
+          </div>
+          <div class="subject-row">
+            <div class="subj">📘 গণিত</div>
+            <div class="teacher">👨‍🏫 খাইরুল ইসলাম</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ATTENDANCE -->
+    <section class="tab-panel" id="tab-attendance">
+      <div class="card">
+        <div class="card-head"><div class="title">✅ উপস্থিতির ইতিহাস</div></div>
+        <div class="empty-state">
+          <div class="icon">📈</div>
+          <h3>শীঘ্রই আসছে!</h3>
+          <p>আমরা এই ফিচারটি তৈরি করছি।</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- RESULT -->
+    <section class="tab-panel" id="tab-result">
+      <div class="card">
+        <div class="card-head"><div class="title">📈 পরীক্ষার ফলাফল</div></div>
+        <div class="empty-state">
+          <div class="icon">📊</div>
+          <h3>শীঘ্রই আসছে!</h3>
+          <p>আমরা এই ফিচারটি তৈরি করছি।</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PAYMENT -->
+    <section class="tab-panel" id="tab-payment">
+      <div class="card">
+        <div class="card-head"><div class="title">💳 পেমেন্ট হিস্টোরি</div></div>
+        <div class="empty-state">
+          <div class="icon">💵</div>
+          <h3>শীঘ্রই আসছে!</h3>
+          <p>আমরা এই ফিচারটি তৈরি করছি।</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section class="tab-panel" id="tab-settings">
+      <div class="card">
+        <div class="card-head"><div class="title">⚙️ সেটিংস</div></div>
+        <div class="settings-row">
+          <div class="left"><div class="icon-badge" style="background:#ef4444;">👤</div>প্রোফাইল</div>
+          <div class="chev">›</div>
+        </div>
+        <div class="settings-row">
+          <div class="left"><div class="icon-badge" style="background:#f59e0b;">🔑</div>পাসওয়ার্ড পরিবর্তন</div>
+          <div class="chev">›</div>
+        </div>
+        <div class="settings-row" id="notif-row">
+          <div class="left"><div class="icon-badge" style="background:#22c55e;">🔔</div>নোটিফিকেশন</div>
+          <div class="toggle on" id="notif-toggle"></div>
+        </div>
+        <div class="settings-row">
+          <div class="left"><div class="icon-badge" style="background:#3b82f6;">ℹ️</div>অ্যাপ তথ্য</div>
+          <div class="chev">›</div>
+        </div>
+        <div class="settings-row logout">
+          <div class="left"><div class="icon-badge">🚪</div>লগআউট</div>
+          <div class="chev">›</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="bottom">
+    <button class="nav-btn active" data-tab="home" data-grad="var(--home-grad)"><span class="icon">🏠</span>হোম</button>
+    <button class="nav-btn" data-tab="routine" data-grad="var(--routine-grad)"><span class="icon">📅</span>রুটিন</button>
+    <button class="nav-btn" data-tab="attendance" data-grad="var(--attendance-grad)"><span class="icon">✅</span>হাজিরা</button>
+    <button class="nav-btn" data-tab="result" data-grad="var(--result-grad)"><span class="icon">📈</span>ফলাফল</button>
+    <button class="nav-btn" data-tab="payment" data-grad="var(--payment-grad)"><span class="icon">💳</span>পেমেন্ট</button>
+    <button class="nav-btn" data-tab="settings" data-grad="var(--settings-grad)"><span class="icon">⚙️</span>সেটিংস</button>
+  </nav>
+
+</div>
+
+<script>
+  const buttons = document.querySelectorAll('.nav-btn');
+  const panels = document.querySelectorAll('.tab-panel');
+  const header = document.getElementById('app-header');
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      buttons.forEach(b => b.classList.remove('active'));
+      panels.forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+      header.style.background = btn.dataset.grad;
+      window.scrollTo({top:0, behavior:'smooth'});
+    });
+  });
+
+  const notifToggle = document.getElementById('notif-toggle');
+  document.getElementById('notif-row').addEventListener('click', () => {
+    notifToggle.classList.toggle('on');
+  });
+</script>
+
+</body>
+</html>

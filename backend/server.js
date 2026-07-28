@@ -149,6 +149,19 @@ const studentSchema = new mongoose.Schema(
 );
 const Student = mongoose.model("Student", studentSchema);
 
+// Message schema (ব্যবহারকারীদের মধ্যে মেসেজ)
+const messageSchema = new mongoose.Schema(
+  {
+    fromUserId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    toUserId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    subject: { type: String, default: "" },
+    body: { type: String, required: true },
+    read: { type: Boolean, default: false },
+  },
+  { timestamps: true }
+);
+const Message = mongoose.model("Message", messageSchema);
+
 // Generic store: one document per (collection) holding the admin panel data array.
 const storeSchema = new mongoose.Schema(
   {
@@ -219,7 +232,7 @@ async function seedDefaultStudents() {
       name: "ফাতিমা খান",
       rollNo: "002",
       className: "প্রথম বর্ষ",
-      fatherName: "খান সাহেব",
+      fatherName: "খান সা��েব",
       motherName: "আয়শা খান",
       mobileNo: "01712345672",
       address: "চট্টগ্রাম",
@@ -603,6 +616,78 @@ app.put("/api/store/:key", auth, async (req, res) => {
     { upsert: true, new: true }
   );
   res.json({ ok: true, key: doc.key });
+});
+
+/* ------------------------------------------------------------------ */
+/*  Message API (মেসেজিং সিস্টেম)                                      */
+/* ------------------------------------------------------------------ */
+// পোস্ট মেসেজ (ব্যবহারকারী থেকে ব্যবহারকারীকে)
+app.post("/api/messages/send", auth, async (req, res) => {
+  try {
+    const { toUserId, subject, body } = req.body;
+    if (!toUserId || !body) {
+      return res.status(400).json({ message: "প্রাপক এবং বার্তা প্রয়োজন" });
+    }
+    
+    // যাচাই করুন যে প্রাপক বিদ্যমান
+    const toUser = await User.findById(toUserId);
+    if (!toUser) {
+      return res.status(404).json({ message: "ব্যবহারকারী পাওয়া যায়নি" });
+    }
+    
+    const msg = new Message({
+      fromUserId: req.user.id,
+      toUserId,
+      subject: subject || "",
+      body
+    });
+    await msg.save();
+    res.json({ ok: true, message: msg });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "মেসেজ পাঠাতে ব্যর্থ" });
+  }
+});
+
+// আমার পাঠানো মেসেজ পান
+app.get("/api/messages/sent", auth, async (req, res) => {
+  try {
+    const messages = await Message.find({ fromUserId: req.user.id })
+      .populate("toUserId", "name uid role")
+      .sort({ createdAt: -1 });
+    res.json({ ok: true, messages });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "মেসেজ আনতে ব্যর্থ" });
+  }
+});
+
+// আমার গৃহীত মেসেজ পান
+app.get("/api/messages/inbox", auth, async (req, res) => {
+  try {
+    const messages = await Message.find({ toUserId: req.user.id })
+      .populate("fromUserId", "name uid role")
+      .sort({ createdAt: -1 });
+    res.json({ ok: true, messages });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "ইনবক্স আনতে ব্যর্থ" });
+  }
+});
+
+// মেসেজ পড়া হিসেবে চিহ্নিত করুন
+app.patch("/api/messages/:id/read", auth, async (req, res) => {
+  try {
+    const msg = await Message.findByIdAndUpdate(
+      req.params.id,
+      { read: true },
+      { new: true }
+    );
+    res.json({ ok: true, message: msg });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "আপডেট করতে ব্যর্থ" });
+  }
 });
 
 // Bulk upsert: PUT /api/store  { keys: { key1: data1, key2: data2, ... } }

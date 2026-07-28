@@ -212,12 +212,40 @@
     });
   }
 
+  /* ---------- রোল-ভিত্তিক রিডাইরেক্ট ---------- */
+  function handleRoleBasedRedirect() {
+    if (!NQAuth.isLoggedIn()) return; // পরে চেক হবে
+    
+    var user = NQAuth.user || {};
+    var role = NQAuth.role || '';
+    
+    // শিক্ষার্থী রোলে Student পেজে রিডাইরেক্ট করা
+    if (role === 'student') {
+      // ব্যাকএন্ডে student.html থেকে শিক্ষার্থীর ড্যাশবোর্ড দেখাবে
+      // কিন্তু এখানে সরাসরি student.html এ পাঠাচ্ছি (যা তার ব্যক্তিগত ড্যাশবোর্ড)
+      window.location.replace('./student.html');
+      return;
+    }
+    
+    // শিক্ষক রোলে Teacher পেজে রিডাইরেক্ট করা
+    if (role === 'teacher') {
+      window.location.replace('./teacher.html');
+      return;
+    }
+    
+    // অন্যরা (Admin, SuperAdmin, Support) admin.html এ থাকবে
+  }
+
   /* ---------- বুট: গার্ড ---------- */
   document.addEventListener('DOMContentLoaded', function () {
     if (!NQAuth.isLoggedIn()) {
       window.location.replace(LOGIN_URL);
       return;
     }
+    
+    // রোল-ভিত্তিক রিডাইরেক্ট
+    handleRoleBasedRedirect();
+    
     applyRoleUI();
   });
 })();
