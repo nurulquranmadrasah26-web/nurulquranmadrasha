@@ -4074,9 +4074,32 @@
       <div><span class="k">ইনভয়েস ID:</span> <b>N/A</b></div>
     </div>
     <div class="popup-divider"></div>
+    <div class="popup-info-grid" id="admResLoginBox">
+      <div><span class="k">লগইন আইডি:</span> <b id="admResLoginId">-</b></div>
+      <div><span class="k">পাসওয়ার্ড:</span> <b id="admResLoginPass">-</b></div>
+    </div>
+    <div style="text-align:left;font-size:12px;color:#777;margin-bottom:8px;" id="admResLoginNote">শিক্ষার্থী এই আইডি ও পাসওয়ার্ড দিয়ে লগইন করতে পারবে — অনুগ্রহ করে সংরক্ষণ করুন।</div>
+    <div class="popup-divider"></div>
     <div style="text-align:left;font-size:13px;color:#555;margin-bottom:8px;">প্রিন্ট অপশন:</div>
     <button class="popup-print-btn" onclick="admSuccessPrint()">স্টুডেন্ট প্রিন্ট করুন</button>
     <button class="popup-print-btn" style="background:#2e7d32;margin-top:8px;" onclick="admSuccessPrintReceipt()">ফি রশিদ প্রিন্ট করুন</button>
+  </div>
+</div>
+
+<!-- Login credentials popup (staff/teacher recruitment) -->
+<div class="form-modal-overlay" id="loginCredModal">
+  <div class="form-modal popup-modal">
+    <button class="popup-close" onclick="closeModal('loginCredModal')"><svg class="btn-ic solo" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round"><line x1="4" y1="4" x2="20" y2="20"/><line x1="20" y1="4" x2="4" y2="20"/></svg></button>
+    <div class="popup-icon-circle ok">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#2e7d32" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <div class="popup-banner ok" id="credBanner">লগইন তথ্য তৈরি হয়েছে</div>
+    <div class="popup-info-grid">
+      <div><span class="k">লগইন আইডি:</span> <b id="credUid">-</b></div>
+      <div><span class="k">পাসওয়ার্ড:</span> <b id="credPass">-</b></div>
+    </div>
+    <div style="text-align:left;font-size:12px;color:#777;margin:8px 0;" id="credNote">এই তথ্য দিয়ে তিনি লগইন করতে পারবেন — অনুগ্রহ করে সংরক্ষণ করুন।</div>
+    <button class="popup-print-btn" onclick="closeModal('loginCredModal')">ঠিক আছে</button>
   </div>
 </div>
 
@@ -4979,7 +5002,7 @@ function resetStaffAdmission() {
   const photoInput = document.getElementById('sfPhoto'); if (photoInput) photoInput.value = '';
 }
 
-function saveStaffAdmission() {
+async function saveStaffAdmission() {
   const name = document.getElementById('sfName').value.trim();
   const mobile = document.getElementById('sfMobile').value.trim();
   const position = document.getElementById('sfPosition').value;
@@ -5002,8 +5025,29 @@ function saveStaffAdmission() {
 
   resetStaffAdmission();
   renderTeachers();
-  showToast('নিয়োগ সফলভাবে সংরক্ষিত হয়েছে!');
+  if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
   showPage('teachers');
+
+  // ── শিক্ষকের জন্য স্বয়ংক্রিয় লগইন আইডি ও পাসওয়ার্ড তৈরি ──
+  // আইডি: শিক্ষকের নাম, পাসওয়ার্ড: শিক্ষকের মোবাইল নম্বর
+  const acct = await createTeacherLoginAccount(name, mobile);
+  const banner = document.getElementById('credBanner');
+  const noteEl = document.getElementById('credNote');
+  if (acct && acct.uid) {
+    banner.textContent = 'নিয়োগ ও লগইন আইডি তৈরি সম্পন্ন হয়েছে';
+    banner.className = 'popup-banner ok';
+    document.getElementById('credUid').textContent = acct.uid;
+    document.getElementById('credPass').textContent = acct.password;
+    noteEl.textContent = 'শিক্ষক এই আইডি ও পাসওয়ার্ড দিয়ে লগইন করতে পারবেন — অনুগ্রহ করে সংরক্ষণ করুন।';
+    noteEl.style.color = '#777';
+  } else {
+    banner.textContent = 'নিয়োগ সংরক্ষিত হয়েছে, তবে লগইন আইডি তৈরি ব্যর্থ হয়েছে';
+    document.getElementById('credUid').textContent = '-';
+    document.getElementById('credPass').textContent = '-';
+    noteEl.textContent = (acct && acct.error) || 'লগইন আইডি তৈরি করা যায়নি';
+    noteEl.style.color = '#c0392b';
+  }
+  openModal('loginCredModal');
 }
 
 function admissionNext() {
@@ -5218,7 +5262,7 @@ function todayAdmDateBn() {
   return `${bn(dd)}-${bn(mm)}-${bn(yyyy)}`;
 }
 
-function saveAdmissionFee() {
+async function saveAdmissionFee() {
   let totalOriginal = 0, totalSelected = 0, totalDiscount = 0, totalPaidRows = 0, totalDue = 0;
   const feeBreakdown = [];
   admSelectedFees.forEach(id => {
@@ -5309,6 +5353,25 @@ function saveAdmissionFee() {
   document.getElementById('admResClass').textContent = admStudentData.cls;
   document.getElementById('admResPaid').textContent = bnTaka(paidTotal);
   document.getElementById('admResDue').textContent = bnTaka(finalDue);
+
+  // ── শিক্ষার্থীর জন্য স্বয়ংক্রিয় লগইন আইডি ও পাসওয়ার্ড তৈরি ──
+  // আইডি: 01, 02, 03 ... (ক্রমিক), পাসওয়ার্ড: অভিভাবকের মোবাইল নম্বর
+  const acct = await createStudentLoginAccount(id, admStudentData.name, admStudentData.guardianMobile);
+  const loginIdEl = document.getElementById('admResLoginId');
+  const loginPassEl = document.getElementById('admResLoginPass');
+  const loginNoteEl = document.getElementById('admResLoginNote');
+  if (acct && acct.uid) {
+    loginIdEl.textContent = acct.uid;
+    loginPassEl.textContent = acct.password;
+    loginNoteEl.textContent = 'শিক্ষার্থী এই আইডি ও পাসওয়ার্ড দিয়ে লগইন করতে পারবে — অনুগ্রহ করে সংরক্ষণ করুন।';
+    loginNoteEl.style.color = '#777';
+  } else {
+    loginIdEl.textContent = '-';
+    loginPassEl.textContent = '-';
+    loginNoteEl.textContent = (acct && acct.error) || 'লগইন আইডি তৈরি করা যায়নি';
+    loginNoteEl.style.color = '#c0392b';
+  }
+
   openModal('admSuccessModal');
 }
 
@@ -5620,6 +5683,57 @@ async function saveUser() {
   } finally {
     if (btn) btn.style.pointerEvents = '';
   }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   ভর্তি/নিয়োগের সময় স্বয়ংক্রিয়ভাবে লগইন অ্যাকাউন্ট তৈরি
+   ------------------------------------------------------------------
+   শিক্ষার্থী  -> আইডি: 01, 02, 03 ... (ক্রমিক), পাসওয়ার্ড: অভিভাবকের মোবাইল
+   শিক্ষক     -> আইডি: শিক্ষকের নাম,         পাসওয়ার্ড: শিক্ষকের মোবাইল
+   এই ফাংশনগুলো ব্যাকএন্ডের /api/users (POST) কল করে; আইডি আগে থেকেই
+   ব্যবহৃত হয়ে থাকলে (409) পরবর্তী উপলব্ধ আইডি ধরে আবার চেষ্টা করে।
+   ════════════════════════════════════════════════════════════════ */
+async function createStudentLoginAccount(startId, name, guardianMobile) {
+  if (!guardianMobile) {
+    return { error: 'অভিভাবকের মোবাইল নম্বর না থাকায় লগইন আইডি তৈরি করা যায়নি' };
+  }
+  let n = Math.max(1, parseInt(startId) || 1);
+  for (let attempt = 0; attempt < 25; attempt++) {
+    const uid = String(n).padStart(2, '0');
+    const payload = { name, uid, mobile: guardianMobile, password: guardianMobile, role: 'Student' };
+    try {
+      const res = await window.NQAuth.authFetch('/api/users', { method: 'POST', body: JSON.stringify(payload) });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) return { uid, password: guardianMobile };
+      if (res.status === 409) { n++; continue; }
+      return { error: data.message || 'লগইন আইডি তৈরি ব্যর্থ হয়েছে' };
+    } catch (e) {
+      console.error('[v0] createStudentLoginAccount error:', e);
+      return { error: e.message || 'সার্ভারের সাথে সংযোগ করা যায়নি' };
+    }
+  }
+  return { error: 'ইউনিক আইডি নির্ধারণ করা যায়নি' };
+}
+
+async function createTeacherLoginAccount(name, mobile) {
+  if (!mobile) {
+    return { error: 'মোবাইল নম্বর না থাকায় লগইন আইডি তৈরি করা যায়নি' };
+  }
+  let uid = name;
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const payload = { name, uid, mobile, password: mobile, role: 'Teacher' };
+    try {
+      const res = await window.NQAuth.authFetch('/api/users', { method: 'POST', body: JSON.stringify(payload) });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) return { uid, password: mobile };
+      if (res.status === 409) { attempt++; uid = name + ' ' + (attempt + 1); continue; }
+      return { error: data.message || 'লগইন আইডি তৈরি ব্যর্থ হয়েছে' };
+    } catch (e) {
+      console.error('[v0] createTeacherLoginAccount error:', e);
+      return { error: e.message || 'সার্ভারের সাথে সংযোগ করা যায়নি' };
+    }
+  }
+  return { error: 'ইউনিক আইডি নির্ধারণ করা যায়নি' };
 }
 
 /* ─── Render functions ─── */
