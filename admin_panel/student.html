@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#0b3d24">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="নুরুল কোরআন">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="./icons/favicon.png">
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>স্টুডেন্ট প্যানেল</title>
@@ -398,7 +408,10 @@
         <h1 id="stuGreet">হ্যালো! 👋</h1>
         <div class="meta" id="stuMeta">লোড হচ্ছে...</div>
       </div>
-      <div class="present-pill" id="stuStatus">👤 উপস্থিত</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span id="nqBellHost"></span>
+        <div class="present-pill" id="stuStatus">👤 উপস্থিত</div>
+      </div>
     </div>
   </header>
 
@@ -514,6 +527,15 @@
         <div style="padding:14px 16px;font-size:14px;line-height:2;" id="stuProfile"></div>
       </div>
       <div class="card">
+        <div class="card-head"><div class="title">🔔 নোটিফিকেশন ও অ্যাপ</div></div>
+        <div style="padding:14px 16px;">
+          <button id="nqPushBtn" type="button" style="width:100%;background:#16a34a;color:#fff;padding:11px;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:10px;">🔔 নোটিফিকেশন চালু করুন</button>
+          <button type="button" onclick="window.NQPwa && window.NQPwa.show()" style="width:100%;background:#0b3d24;color:#fff;padding:11px;border:none;border-radius:8px;font-weight:600;cursor:pointer;">📲 অ্যাপ ইনস্টল করুন</button>
+          <div style="font-size:12.5px;color:#6b7280;margin-top:8px;line-height:1.7;">নোটিফিকেশন চালু থাকলে নতুন বাড়ির কাজ, বেতনের বকেয়া ও নোটিশ সরাসরি ফোনে পৌঁছে যাবে।</div>
+        </div>
+      </div>
+      <div class="card">
+
         <div class="card-head"><div class="title">🔑 পাসওয়ার্ড পরিবর্তন</div></div>
         <div style="padding:14px 16px;">
           <input type="password" id="stuPwCur" placeholder="বর্তমান পাসওয়ার্ড" style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;margin-bottom:10px;">
@@ -608,6 +630,30 @@ function boot(){
   }).catch(function(){});
 
   loadStudentInbox();
+
+  /* ---------- নোটিফিকেশন (বাড়ির কাজ / বেতন / নোটিশ) ---------- */
+  if (window.NQNotify) {
+    window.NQNotify.mountBell(document.getElementById('nqBellHost'));
+    var pushBtn = document.getElementById('nqPushBtn');
+    if (pushBtn) {
+      window.NQNotify.isPushOn().then(function (on) {
+        pushBtn.textContent = on ? '🔔 নোটিফিকেশন চালু আছে' : '🔔 নোটিফিকেশন চালু করুন';
+        pushBtn.dataset.on = on ? '1' : '';
+      });
+      pushBtn.addEventListener('click', function () {
+        if (pushBtn.dataset.on) {
+          window.NQNotify.disablePush().then(function () {
+            pushBtn.dataset.on = ''; pushBtn.textContent = '🔔 নোটিফিকেশন চালু করুন';
+          });
+          return;
+        }
+        window.NQNotify.enablePush().then(function () {
+          pushBtn.dataset.on = '1'; pushBtn.textContent = '🔔 নোটিফিকেশন চালু আছে';
+          alert('নোটিফিকেশন চালু হয়েছে — নতুন বাড়ির কাজ দিলেই জানানো হবে।');
+        }).catch(function (e) { alert(e.message || 'নোটিফিকেশন চালু করা যায়নি'); });
+      });
+    }
+  }
 }
 
 function renderHeader(u){
@@ -793,5 +839,7 @@ function sendStudentMessage(){
 document.addEventListener('DOMContentLoaded', boot);
 </script>
 
+<script src="pwa-install.js"></script>
+<script src="nq-notify.js"></script>
 </body>
 </html>

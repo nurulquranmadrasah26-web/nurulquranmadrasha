@@ -762,6 +762,173 @@ app.put("/api/store", auth, canWriteStore, async (req, res) => {
 });
 
 /* ------------------------------------------------------------------ */
+/*  Notification API (বাড়ির কাজ / বেতন / নোটিশ — অভিভাবক ও শিক্ষার্থী)  */
+/* ------------------------------------------------------------------ */
+const notificationSchema = new mongoose.Schema(
+  {
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
+    title: { type: String, required: true },
+    body: { type: String, default: "" },
+    url: { type: String, default: "" },
+    type: { type: String, default: "general" }, // homework | fee | salary | notice | general
+    read: { type: Boolean, default: false },
+  },
+  { timestamps: true }
+);
+const Notification = mongoose.model("Notification", notificationSchema);
+
+// Web Push সাবস্ক্রিপশন (প্রতি ডিভাইস একটি)
+const pushSubSchema = new mongoose.Schema(
+  {
+    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
+    endpoint: { type: String, required: true, unique: true },
+    keys: { type: mongoose.Schema.Types.Mixed, default: {} },
+  },
+  { timestamps: true }
+);
+const PushSub = mongoose.model("PushSub", pushSubSchema);
+
+/* web-push ঐচ্ছিক — VAPID কী না থাকলে শুধু ইন-অ্যাপ নোটিফিকেশন কাজ করবে */
+let webpush = null;
+const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY || "";
+const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || "";
+try {
+  if (VAPID_PUBLIC_KEY && VAPID_PRIVATE_KEY) {
+    webpush = require("web-push");
+    webpush.setVapidDetails(
+      process.env.VAPID_SUBJECT || "mailto:admin@nurulquran.local",
+      VAPID_PUBLIC_KEY,
+      VAPID_PRIVATE_KEY
+    );
+    console.log("[push] web push সক্রিয়");
+  } else {
+    console.log("[push] VAPID কী নেই — শুধু ইন-অ্যাপ নোটিফিকেশন চালু");
+  }
+} catch (e) {
+  console.warn("[push] web-push প্যাকেজ পাওয়া যায়নি:", e.message);
+}
+
+app.get("/api/push/public-key", auth, (_req, res) =>
+  res.json({ key: VAPID_PUBLIC_KEY || null })
+);
+
+app.post("/api/push/subscribe", auth, async (req, res) => {
+  try {
+    const sub = (req.body && req.body.subscription) || req.body;
+    if (!sub || !sub.endpoint) return res.status(400).json({ message: "সাবস্ক্রিপশন প্রয়োজন" });
+    await PushSub.findOneAndUpdate(
+      { endpoint: sub.endpoint },
+      { userId: req.user.id, endpoint: sub.endpoint, keys: sub.keys || {} },
+      { upsert: true }
+    );
+    res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "সার্ভার ত্রুটি" });
+  }
+});
+
+app.post("/api/push/unsubscribe", auth, async (req, res) => {
+  const endpoint = (req.body && req.body.endpoint) || "";
+  if (endpoint) await PushSub.deleteOne({ endpoint });
+  res.json({ ok: true });
+});
+
+// একজন ব্যবহারকারীর কাছে পুশ পাঠানো (নীরবে ব্যর্থ হতে পারে)
+async function pushToUser(userId, payload) {
+  if (!webpush) return;
+  const subs = await PushSub.find({ userId }).lean();
+  await Promise.all(
+    subs.map((s) =>
+      webpush
+        .sendNotification(
+          { endpoint: s.endpoint, keys: s.keys },
+          JSON.stringify(payload)
+        )
+        .catch(async (err) => {
+          if (err && (err.statusCode === 404 || err.statusCode === 410)) {
+            await PushSub.deleteOne({ endpoint: s.endpoint });
+          }
+        })
+    )
+  );
+}
+
+// নিজের নোটিফিকেশন তালিকা
+app.get("/api/notifications", auth, async (req, res) => {
+  try {
+    const items = await Notification.find({ userId: req.user.id })
+      .sort({ createdAt: -1 })
+      .limit(60)
+      .lean();
+    res.json({
+      ok: true,
+      items: items.map((n) => ({
+        id: n._id,
+        title: n.title,
+        body: n.body,
+        url: n.url,
+        type: n.type,
+        read: n.read,
+        createdAt: n.createdAt,
+      })),
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "নোটিফিকেশন আনতে ব্যর্থ" });
+  }
+});
+
+app.patch("/api/notifications/:id/read", auth, async (req, res) => {
+  await Notification.updateOne({ _id: req.params.id, userId: req.user.id }, { read: true });
+  res.json({ ok: true });
+});
+
+app.post("/api/notifications/read-all", auth, async (req, res) => {
+  await Notification.updateMany({ userId: req.user.id, read: false }, { read: true });
+  res.json({ ok: true });
+});
+
+/* নোটিফিকেশন পাঠান (শিক্ষক/অ্যাডমিন)
+   body: { uids: ["01","02"], roles: ["Student"], title, body, url, type } */
+app.post("/api/notifications/send", auth, canWriteStore, async (req, res) => {
+  try {
+    const { uids, roles, title, body, url, type } = req.body || {};
+    if (!title) return res.status(400).json({ message: "শিরোনাম প্রয়োজন" });
+
+    const or = [];
+    if (Array.isArray(uids) && uids.length)
+      or.push({ uid: { $in: uids.map((u) => String(u).trim()) } });
+    if (Array.isArray(roles) && roles.length) or.push({ role: { $in: roles } });
+    if (!or.length) return res.status(400).json({ message: "প্রাপক নির্বাচন করুন" });
+
+    const users = await User.find({ active: true, $or: or }).select("_id").lean();
+    if (!users.length) return res.json({ ok: true, sent: 0 });
+
+    const docs = users.map((u) => ({
+      userId: u._id,
+      title,
+      body: body || "",
+      url: url || "",
+      type: type || "general",
+    }));
+    await Notification.insertMany(docs);
+
+    // ব্যাকগ্রাউন্ড পুশ (ব্লক করবে না)
+    Promise.all(
+      users.map((u) =>
+        pushToUser(u._id, { title, body: body || "", url: url || "", tag: (type || "general") + "-" + Date.now() })
+      )
+    ).catch(() => {});
+
+    res.json({ ok: true, sent: users.length });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "নোটিফিকেশন পাঠাতে ব্যর্থ" });
+  }
+});
+
+/* ------------------------------------------------------------------ */
 /*  Start                                                              */
 /* ------------------------------------------------------------------ */
 async function start() {

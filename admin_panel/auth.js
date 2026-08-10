@@ -106,7 +106,9 @@
     staffleaveapply: 'staff', staffleaveadmin: 'staff', staffclassschedule: 'staff', staffdesignation: 'staff',
     // ফি
     feedash: 'fee', feeadd: 'fee', feelist: 'fee', duelist: 'fee', adai: 'fee',
-    duedetail: 'fee', collectiondetail: 'fee',
+    duedetail: 'fee', collectiondetail: 'fee', monthlyFee: 'fee',
+    // স্বয়ংক্রিয় বেতন শীট ও লগইন আইডি
+    salarySheet: 'staff', loginIds: 'users',
     // পরীক্ষা
     examsubject: 'exam', examtype: 'exam', examcreate: 'exam', syllabus: 'exam', examlist: 'exam',
     resultcreate: 'exam', resultlist: 'exam', resultpublish: 'exam', marksheet: 'exam',

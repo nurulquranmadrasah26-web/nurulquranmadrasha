@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
+  <link rel="manifest" href="./manifest.json">
+  <meta name="theme-color" content="#0b3d24">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="নুরুল কোরআন">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
+  <link rel="icon" type="image/png" sizes="64x64" href="./icons/favicon.png">
+
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>নুরুল কোরআন মাদ্রাসা | Teacher Panel</title>
@@ -1007,5 +1017,7 @@ function changeTeacherPassword(){
 document.addEventListener('DOMContentLoaded', boot);
 </script>
 
+<script src="pwa-install.js"></script>
+<script src="nq-notify.js"></script>
 </body>
 </html>
