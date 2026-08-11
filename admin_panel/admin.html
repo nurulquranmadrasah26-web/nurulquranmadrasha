@@ -364,38 +364,23 @@
     #printArea .decl { font-size:12px; margin:14px 0; line-height:1.6; }
     #printArea .sig-row td { padding-top:34px; }
 
-    /* ───── রশিদ (Receipt) ───── */
-    #printArea .rc-wrap { max-width: 480px; margin: 0 auto; border: 2px solid #1565c0; border-radius: 8px; padding: 18px 20px; }
-    #printArea .rc-topline { height: 6px; background: linear-gradient(90deg,#1565c0,#26a69a,#7b1fa2); border-radius: 3px; margin-bottom: 10px; }
-    #printArea .rc-head { display:flex; align-items:center; gap:12px; border-bottom: 2px dashed #90a4ae; padding-bottom: 10px; margin-bottom: 10px; }
-    #printArea .rc-logo-box { width:56px; height:56px; border:2px solid #1565c0; border-radius:50%; overflow:hidden; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-    #printArea .rc-head-center { flex: 1; text-align:center; }
-    #printArea .rc-head-center h1 { font-size:19px; color:#1a237e; margin:0; }
-    #printArea .rc-head-center p { font-size:11px; color:#555; margin:1px 0; }
-    #printArea .rc-title {
-      text-align:center; font-weight:700; color:#fff; padding:8px; border-radius:4px; margin-bottom:10px; font-size:15px;
-      background: linear-gradient(90deg,#2e7d32,#43a047);
-    }
-    #printArea .rc-title.donation { background: linear-gradient(90deg,#6a1b9a,#8e24aa); }
-    #printArea .rc-title.admfee { background: linear-gradient(90deg,#ef6c00,#f9a825); }
-    #printArea .rc-meta-row { display:flex; justify-content:space-between; font-size:12.5px; color:#333; margin-bottom:4px; font-weight:600; }
-    #printArea .rc-info { font-size:13px; margin: 8px 0 10px; color:#222; }
-    #printArea .rc-info b { color:#1565c0; }
-    #printArea .rc-table { width:100%; border-collapse:collapse; font-size:13px; margin-bottom:10px; }
-    #printArea .rc-table th { background:#e3f2fd; color:#1565c0; padding:6px 8px; border:1px solid #90caf9; text-align:left; }
-    #printArea .rc-table td { padding:6px 8px; border:1px solid #cfd8dc; }
-    #printArea .rc-table td.amt { text-align:right; font-weight:600; }
-    #printArea .rc-totals { margin-top: 6px; }
-    #printArea .rc-total-row { display:flex; justify-content:space-between; padding:4px 0; font-size:13px; }
-    #printArea .rc-total-row.grand { font-weight:700; font-size:15px; color:#c62828; border-top:2px solid #1565c0; margin-top:4px; padding-top:6px; }
-    #printArea .rc-due { color:#c62828; font-weight:700; }
-    #printArea .rc-paid-stamp {
-      display:inline-block; border:2px solid #2e7d32; color:#2e7d32; font-weight:700; padding:3px 14px;
-      border-radius: 4px; transform: rotate(-6deg); font-size:14px; margin: 6px 0;
-    }
-    #printArea .rc-sign-row { display:flex; justify-content:space-between; margin-top:34px; font-size:12px; }
-    #printArea .rc-sign-row div { text-align:center; width:45%; border-top:1px solid #666; padding-top:4px; }
-    #printArea .rc-footer-note { text-align:center; font-size:10.5px; color:#777; margin-top:12px; }
+    /* ───── রশিদ (Receipt) — নতুন ডিজাইন ───── */
+    #printArea .rc-wrap { width: 100%; max-width: 400px; margin: 0 auto; border: 1px solid #444; padding: 0; background:#fff; }
+    #printArea .rc-banner { width: 100%; display: block; border-bottom: 1px solid #444; }
+    #printArea .rc-title { text-align:center; font-size: 17px; font-weight: 700; padding: 8px 6px 4px; color:#000; }
+    #printArea .rc-fields { padding: 2px 10px 8px; }
+    #printArea .rc-field { display:flex; font-size: 13.5px; padding: 2px 0; color:#000; }
+    #printArea .rc-field .k { width: 92px; font-weight: 700; flex-shrink: 0; }
+    #printArea .rc-field .v { flex: 1; }
+    #printArea .rc-table { width:100%; border-collapse:collapse; font-size:13px; }
+    #printArea .rc-table th, #printArea .rc-table td { border:1px solid #444; padding:5px 6px; text-align:center; color:#000; }
+    #printArea .rc-table th { font-weight:700; }
+    #printArea .rc-table td.l { text-align:left; }
+    #printArea .rc-table td.amt { text-align:right; white-space:nowrap; }
+    #printArea .rc-table td.sum-lbl { text-align:right; font-weight:700; }
+    #printArea .rc-note { text-align:center; font-size:12.5px; padding:10px 8px 4px; color:#000; }
+    #printArea .rc-time { text-align:center; font-size:12px; padding-bottom:10px; color:#000; }
+    #printArea .rc-small { font-size:11px; color:#333; }
 
     @media print {
       body * { visibility: hidden; }
@@ -6045,67 +6030,78 @@ function printStudent(id) {
      rows: [{label, amount}, ...],
      discount, paid, due, method, collectedBy, remark
    } */
-let nqReceiptSeq = 1000;
-function nextReceiptNo() { return 'NQ-' + (nqReceiptSeq++); }
+/* রশিদ নম্বর — ব্রাউজারে সংরক্ষিত থাকে, তাই রিফ্রেশ করলেও ক্রমিক ঠিক থাকে */
+function nextReceiptNo() {
+  var n = parseInt(localStorage.getItem('nq_receipt_seq') || '0', 10) + 1;
+  try { localStorage.setItem('nq_receipt_seq', String(n)); } catch (e) {}
+  return (typeof bn === 'function' ? bn(n) : n);
+}
 
+function nqReceiptBanner() { return 'assets/receipt-header.png'; }
+function nqNowStampBn() {
+  var d = new Date();
+  var dd = String(d.getDate()).padStart(2, '0');
+  var mm = String(d.getMonth() + 1).padStart(2, '0');
+  var yy = d.getFullYear();
+  var h = d.getHours(); var ap = h < 12 ? 'am' : 'pm';
+  var h12 = h % 12; if (h12 === 0) h12 = 12;
+  var mi = String(d.getMinutes()).padStart(2, '0');
+  var ss = String(d.getSeconds()).padStart(2, '0');
+  var txt = dd + '/' + mm + '/' + yy + ' ' + String(h12).padStart(2, '0') + ':' + mi + ':' + ss;
+  return (typeof bn === 'function' ? bn(txt) : txt) + ' ' + ap;
+}
 function printReceipt(opts) {
-  const logoSrc = getSchoolLogoSrc();
-  const watermarkHtml = logoSrc ? `<img class="print-watermark" src="${logoSrc}" />` : '';
-  const logoHtml = logoSrc ? `<img src="${logoSrc}" style="width:100%;height:100%;object-fit:contain;" />` : '';
-  const titleClass = opts.type === 'donation' ? 'donation' : (opts.type === 'admfee' ? 'admfee' : '');
+  opts = opts || {};
+  var rows = opts.rows || [];
+  var subtotal = rows.reduce(function (s, r) { return s + (Number(r.amount) || 0); }, 0);
+  var discount = Number(opts.discount) || 0;
+  var paid = opts.paid != null ? Number(opts.paid) : subtotal;
+  var due = opts.due != null ? Number(opts.due) : Math.max(subtotal - discount - paid, 0);
+  var money = function (v) { return (typeof bn === 'function' ? bn(Math.round(v)) : Math.round(v)) + '/-'; };
 
-  const rowsHtml = (opts.rows || []).map(r => `
-    <tr><td>${r.label}</td><td class="amt">${fmtTk(r.amount)} টাকা</td></tr>`).join('');
+  var rowsHtml = rows.length ? rows.map(function (r, i) {
+    return '<tr><td>' + (typeof bn === 'function' ? bn(i + 1) : (i + 1)) + '</td>' +
+      '<td class="l">' + (r.month || opts.monthLabel || '-') + '</td>' +
+      '<td class="l">' + (r.label || '-') + '</td>' +
+      '<td class="amt">' + money(r.amount || 0) + '</td></tr>';
+  }).join('') : '<tr><td colspan="4">-</td></tr>';
 
-  const extraInfoHtml = (opts.extraInfo || []).map(([k, v]) => `
-    <div class="rc-meta-row"><span>${k}</span><span>${v}</span></div>`).join('');
+  var fields = [];
+  fields.push([(opts.payerLabel || 'নাম') + ':', opts.payerName || '-']);
+  (opts.extraInfo || []).forEach(function (kv) { fields.push([kv[0] + ':', kv[1]]); });
+  if (opts.method) fields.push(['পরিশোধের ধরণ:', opts.method]);
+  fields.push(['আদায়কারী:', opts.collectedBy || '-']);
+  if (opts.remark) fields.push(['মন্তব্য:', opts.remark]);
 
-  const subtotal = (opts.rows || []).reduce((s, r) => s + r.amount, 0);
-  const discount = opts.discount || 0;
-  const paid = opts.paid != null ? opts.paid : subtotal;
-  const due = opts.due != null ? opts.due : Math.max(subtotal - discount - paid, 0);
+  var fieldsHtml = fields.map(function (f) {
+    return '<div class="rc-field"><span class="k">' + f[0] + '</span><span class="v">' + f[1] + '</span></div>';
+  }).join('');
 
-  document.getElementById('printArea').innerHTML = `
-    <div class="print-doc">
-      ${watermarkHtml}
-      <div class="rc-wrap">
-        <div class="rc-topline"></div>
-        <div class="rc-head">
-          <div class="rc-logo-box">${logoHtml}</div>
-          <div class="rc-head-center">
-            <h1>নুরুল কোরআন মাদ্রাসা</h1>
-            <p>হরিপুর বৌড়ঘর, চাঁপাইনবাবগঞ্জ। | মোবাইল: +৮৮০১৭৭০-০১৩৩৩৩</p>
-          </div>
-        </div>
-        <div class="rc-title ${titleClass}">${opts.title || 'আদায়ের রশিদ'}</div>
-        <div class="rc-meta-row"><span>রশিদ নং : <b>${opts.receiptNo || nextReceiptNo()}</b></span><span>তারিখ : <b>${opts.date || bnDate(todayISO())}</b></span></div>
-        <div class="rc-info">
-          <b>${opts.payerLabel || 'নাম'}</b> : ${opts.payerName || ''}
-        </div>
-        ${extraInfoHtml}
-        <table class="rc-table">
-          <thead><tr><th>বিবরণ</th><th style="text-align:right;">পরিমাণ</th></tr></thead>
-          <tbody>${rowsHtml || '<tr><td colspan="2" style="text-align:center;color:#888;">কোনো আইটেম নেই</td></tr>'}</tbody>
-        </table>
-        <div class="rc-totals">
-          <div class="rc-total-row"><span>মোট</span><span>${fmtTk(subtotal)} টাকা</span></div>
-          ${discount ? `<div class="rc-total-row"><span>ডিসকাউন্ট</span><span>- ${fmtTk(discount)} টাকা</span></div>` : ''}
-          <div class="rc-total-row grand"><span>পরিশোধিত</span><span>${fmtTk(paid)} টাকা</span></div>
-          ${due > 0 ? `<div class="rc-total-row"><span class="rc-due">বাকি</span><span class="rc-due">${fmtTk(due)} টাকা</span></div>` : `<div class="rc-paid-stamp">সম্পূর্ণ পরিশোধিত ✓</div>`}
-        </div>
-        <div class="rc-meta-row" style="margin-top:8px;">
-          <span>পরিশোধের ধরণ : ${opts.method || '-'}</span>
-          <span>আদায়কারী : ${opts.collectedBy || '-'}</span>
-        </div>
-        ${opts.remark ? `<div class="rc-info">মন্তব্�� : ${opts.remark}</div>` : ''}
-        <div class="rc-sign-row">
-          <div>পরিশোধকারীর স্বাক্ষর</div>
-          <div>আদায়কারীর স্বাক্ষর</div>
-        </div>
-        <div class="rc-footer-note">এই রশিদটি কম্পিউটার জেনারেটেড, কোনো স্বাক্ষর ছাড়াই বৈধ।</div>
-      </div>
-    </div>`;
-  window.print();
+  var titleTxt = (opts.title || 'আদায় রশিদ');
+  var rcNo = opts.receiptNo || nextReceiptNo();
+
+  document.getElementById('printArea').innerHTML =
+    '<div class="print-doc"><div class="rc-wrap">' +
+      '<img class="rc-banner" src="' + nqReceiptBanner() + '" alt="নূরুল কোরআন মাদ্রাসা" />' +
+      '<div class="rc-title">' + titleTxt + ' - ' + rcNo + '</div>' +
+      '<div class="rc-fields">' + fieldsHtml +
+        '<div class="rc-field rc-small"><span class="k">তারিখ:</span><span class="v">' +
+        (opts.date || (typeof bnDate === 'function' ? bnDate(todayISO()) : '')) + '</span></div>' +
+      '</div>' +
+      '<table class="rc-table">' +
+        '<thead><tr><th>#</th><th>মাস</th><th>ধরণ</th><th>পরিমাণ</th></tr></thead>' +
+        '<tbody>' + rowsHtml +
+          '<tr><td colspan="3" class="sum-lbl">মোট:</td><td class="amt">' + money(subtotal) + '</td></tr>' +
+          (discount ? '<tr><td colspan="3" class="sum-lbl">ডিসকাউন্ট:</td><td class="amt">' + money(discount) + '</td></tr>' : '') +
+          '<tr><td colspan="3" class="sum-lbl">নেট পরিশোধিত:</td><td class="amt">' + money(paid) + '</td></tr>' +
+          '<tr><td colspan="3" class="sum-lbl">বর্তমান বকেয়া:</td><td class="amt">' + money(due) + '</td></tr>' +
+        '</tbody>' +
+      '</table>' +
+      '<div class="rc-note">আমাদের সাথে থাকার জন্য আপনাকে ধন্যবাদ!</div>' +
+      '<div class="rc-time">' + nqNowStampBn() + '</div>' +
+    '</div></div>';
+
+  setTimeout(function () { window.print(); }, 120);
 }
 function calcAgeText(dobStr) {
   if (!dobStr) return bn(0) + ' বছর';
@@ -11290,18 +11286,22 @@ window.nqSaveStateNow = nqSaveStateNow;
 
 /* সার্ভার থেকে সব ডেটা লোড করে (প্রথমবার হলে বর্তমান ডিফল্ট ডেটা দিয়েই সিড করে) */
 async function nqLoadPersistedState() {
+  let hadServerData = false;
   try {
     const res = await window.NQAuth.authFetch('/api/store');
     if (res.ok) {
       const data = await res.json();
+      hadServerData = !!(data && typeof data === 'object' && Object.keys(data).length > 0);
       nqApplyLoadedState(data);
     }
   } catch (e) {
     console.error('ডেটা লোড করতে সমস্যা:', e);
   }
   nqStoreLoaded = true;
-  // প্রথমবার (ডাটাবেজ খালি থাকলে) বর্তমান ডিফল্ট/সিড ডেটা সংরক্ষণ করে রাখা হচ্ছে
-  nqSaveStateNow();
+  // শুধু প্রথমবার (ডাটাবেজ খালি থাকলে) ডিফল্ট/সিড ডেটা সংরক্ষণ করা হয়।
+  // আগে প্রতিবার লোডের পরেই পুরো ডেটা আবার সার্ভারে পাঠানো হতো — সেটি
+  // প্রতিটি রিফ্রেশে কয়েক সেকেন্ড দেরি করাতো, তাই বাদ দেওয়া হয়েছে।
+  if (!hadServerData) nqSaveStateNow();
 }
 
 /* যেকোনো পরিবর্তনের (অ্যাড/এডিট/ডিলিট) পর UI রি-রেন্ডার হয় — এই পরিবর্তনগুলো

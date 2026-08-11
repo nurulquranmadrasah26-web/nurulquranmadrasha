@@ -204,7 +204,11 @@
         options.headers['Content-Type'] = 'application/json';
       }
       var url = /^https?:/.test(path) ? path : (API + path);
-      return fetch(url, options).then(function (res) {
+      // সার্ভার ঘুমিয়ে থাকলে (Render cold start) টাইমআউট/রিট্রাইসহ কল
+      var call = (window.NQ_API && window.NQ_API.fetch && !/^https?:/.test(path))
+        ? window.NQ_API.fetch(path, options, { retries: 2, timeout: 60000 })
+        : fetch(url, options);
+      return call.then(function (res) {
         if (res.status === 401) { NQAuth.logout(); throw new Error('unauthorized'); }
         return res;
       });

@@ -62,6 +62,37 @@ app.use(
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 8 * 1024 * 1024 } });
 
 /* ------------------------------------------------------------------ */
+/*  DB readiness gate                                                  */
+/*  সার্ভার আগে চালু হয়, ডাটাবেস ব্যাকগ্রাউন্ডে কানেক্ট হয়।            */
+/*  ফলে Render-এ cold start-এ health/স্ট্যাটিক রেসপন্স সাথে সাথে আসে।   */
+/* ------------------------------------------------------------------ */
+let dbReady = null;
+
+function connectDb() {
+  return mongoose.connect(MONGODB_URI, {
+    maxPoolSize: 10,
+    minPoolSize: 1,
+    serverSelectionTimeoutMS: 15000,
+    socketTimeoutMS: 45000,
+    autoIndex: process.env.NODE_ENV !== "production",
+  });
+}
+
+app.use(async (req, res, next) => {
+  // ডাটাবেস ছাড়াই উত্তর দেওয়া যায় এমন রুট
+  if (req.path === "/" || req.path === "/api/health" || req.method === "OPTIONS") return next();
+  if (mongoose.connection.readyState === 1) return next();
+  try {
+    if (!dbReady) dbReady = connectDb();
+    await dbReady;
+    next();
+  } catch (e) {
+    dbReady = null;
+    res.status(503).json({ message: "ডাটাবেস সংযোগ পাওয়া যাচ্ছে না, আবার চেষ্টা করুন" });
+  }
+});
+
+/* ------------------------------------------------------------------ */
 /*  Roles & Permissions                                                */
 /* ------------------------------------------------------------------ */
 /**
@@ -936,11 +967,33 @@ async function start() {
     console.error("FATAL: MONGODB_URI is not set");
     process.exit(1);
   }
-  await mongoose.connect(MONGODB_URI);
-  console.log("[db] MongoDB connected");
-  await seedSuperAdmin();
-  await seedDefaultStudents();
-  app.listen(PORT, () => console.log(`[api] listening on :${PORT}`));
+
+  // ── ১) আগে পোর্ট খুলি (Render-এ cold start দ্রুত হয়) ──
+  const server = app.listen(PORT, () => console.log(`[api] listening on :${PORT}`));
+  server.keepAliveTimeout = 65000;
+  server.headersTimeout = 70000;
+
+  // ── ২) এরপর ব্যাকগ্রাউন্ডে ডাটাবেস সংযোগ ও সিডিং ──
+  dbReady = (async () => {
+    await connectDb();
+    console.log("[db] MongoDB connected");
+    await seedSuperAdmin();
+    await seedDefaultStudents();
+    console.log("[db] ready");
+  })();
+
+  dbReady.catch((e) => {
+    console.error("[db] connect failed:", e.message);
+    dbReady = null; // পরের রিকোয়েস্টে আবার চেষ্টা হবে
+  });
+
+  // ── ৩) Render free tier-এ sleep আটকাতে নিজেকেই পিং (ঐচ্ছিক) ──
+  const selfUrl = process.env.KEEP_ALIVE_URL;
+  if (selfUrl) {
+    setInterval(() => {
+      fetch(selfUrl.replace(/\/+$/, "") + "/api/health").catch(() => {});
+    }, 10 * 60 * 1000).unref();
+  }
 }
 
 start().catch((e) => {
