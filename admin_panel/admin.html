@@ -382,13 +382,31 @@
     #printArea .rc-time { text-align:center; font-size:12px; padding-bottom:10px; color:#000; }
     #printArea .rc-small { font-size:11px; color:#333; }
 
+    /* ───── প্রিন্ট: শুধুমাত্র একটি পেজ, উপরে/নিচে বাড়তি টেক্স ছাড়া ───── */
+    @page { size: A4 portrait; margin: 0; }
     @media print {
-      body * { visibility: hidden; }
-      #printArea, #printArea * { visibility: visible; }
-      #printArea {
-        display: block !important; position: absolute; top: 0; left: 0;
-        width: 100%; max-width: 720px; margin: auto; padding: 20px; color: #222;
+      html, body {
+        margin: 0 !important; padding: 0 !important; background: #fff !important;
+        height: auto !important; overflow: hidden !important;
       }
+      body > *:not(#printArea) { display: none !important; }
+      #printArea {
+        display: block !important; position: static !important;
+        width: 100%; max-width: 720px; margin: 0 auto; padding: 6mm 6mm 0; color: #222;
+      }
+      #printArea .print-doc {
+        page-break-inside: avoid; break-inside: avoid;
+        page-break-after: avoid; break-after: avoid;
+      }
+      #printArea .print-doc:last-child { page-break-after: auto; break-after: auto; }
+      #printArea * { page-break-inside: avoid; break-inside: avoid; }
+      #printArea tr, #printArea td, #printArea th { page-break-inside: avoid; break-inside: avoid; }
+      /* রশিদ একটি পেজেই ধরানোর জন্য কম্প্যাক্ট মাপ */
+      #printArea .rc-wrap { max-width: 400px; margin: 0 auto; }
+      #printArea .rc-title { padding: 6px 6px 3px; }
+      #printArea .rc-fields { padding: 2px 10px 6px; }
+      #printArea .rc-note { padding: 6px 8px 2px; }
+      #printArea .rc-time { padding-bottom: 6px; }
     }
 
     /* ───── Attendance grid ───── */
@@ -1220,6 +1238,76 @@
       [style*="grid-template-columns: 1.5fr 1fr"] {
         grid-template-columns: 1fr !important;
       }
+    }
+    /* ═══════════════════════════════════════════════════
+       মোবাইল: header + main-nav (৩ লাইনে সাজানো) রেসপন্সিভ
+    ═══════════════════════════════════════════════════ */
+    @media (max-width: 700px) {
+      .header {
+        display: grid; grid-template-columns: minmax(0,1fr) auto;
+        align-items: center; gap: 8px; padding: 8px 12px; row-gap: 6px;
+      }
+      .logo-area { min-width: 0; gap: 8px; }
+      .logo-circle { width: 38px; height: 38px; flex-shrink: 0; }
+      .logo-text { min-width: 0; }
+      .logo-text h1 {
+        font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+      .header-right { gap: 8px; flex-shrink: 0; }
+      .bell-btn, .avatar-circle { width: 34px; height: 34px; }
+      .header-tools {
+        grid-column: 1 / -1; order: 3; width: 100%; flex: none;
+        display: flex; flex-wrap: nowrap; overflow-x: auto;
+        -webkit-overflow-scrolling: touch; scrollbar-width: none;
+        gap: 14px; padding: 4px 0 2px; justify-content: flex-start;
+        border-top: 1px solid #f0f0f0;
+      }
+      .header-tools::-webkit-scrollbar { display: none; }
+      .tool-btn { font-size: 12.5px; padding: 4px 2px; }
+
+      /* main-nav : ১১টি পিল ঠিক ৩ লাইনে (৪ কলাম গ্রিড) */
+      .main-nav {
+        display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 6px; padding: 8px 10px;
+      }
+      .main-nav .nav-drop { min-width: 0; }
+      .main-nav .nav-pill, .main-nav .nav-btn {
+        width: 100%; min-width: 0; justify-content: center;
+        padding: 7px 4px; font-size: 11.5px; gap: 3px; line-height: 1.25;
+        border-radius: 14px; text-align: center;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+      }
+      .main-nav .nav-pill-icon, .main-nav .nav-pill-icon svg { width: 13px; height: 13px; }
+      .main-nav .nav-caret { display: none; }
+
+      /* ড্রপডাউন মেনু : মোবাইলে পূর্ণ প্রস্থে শীট */
+      .main-nav .nav-drop-menu,
+      .main-nav .nav-drop-menu.wide {
+        position: fixed; left: 8px; right: 8px; top: auto; width: auto;
+        min-width: 0; max-width: none; max-height: 60vh; overflow-y: auto;
+        margin-top: 6px; padding: 8px; z-index: 300;
+      }
+      .main-nav .nav-drop.open .nav-drop-menu,
+      .main-nav .nav-drop.open .nav-drop-menu.wide {
+        display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 8px;
+      }
+      .main-nav .nav-drop-item {
+        white-space: normal; font-size: 12.5px; padding: 8px 8px; text-align: start;
+      }
+
+      /* মোবাইলে মেনু খোলা থাকলে (mobile-open) স্ক্রলযোগ্য ও সম্পূর্ণ দৃশ্যমান */
+      .main-nav.mobile-open {
+        max-height: 70vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+        box-shadow: 0 6px 18px rgba(0,0,0,.12);
+      }
+      .header.mobile-open { row-gap: 8px; }
+      .header.mobile-open .header-tools { flex-wrap: wrap; overflow: visible; }
+    }
+    @media (max-width: 420px) {
+      .main-nav { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .main-nav .nav-pill, .main-nav .nav-btn { font-size: 11px; }
+      .main-nav .nav-drop.open .nav-drop-menu,
+      .main-nav .nav-drop.open .nav-drop-menu.wide { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -3093,7 +3181,7 @@
       <div class="hazlist-field"><span class="lbl">পূর্ণমান</span><input type="text" id="ecTotalMarks" value="০" disabled /></div>
     </div>
     <div class="exam-note">
-      দ্রষ্টব্য : বিষয় অনুযায়ী তারিখ নির্ধারণ করুন (শুক্রবার বাদ দেওয়া হয়েছে)। প্রতিটি বিষয় জন্য অনন্য তারিখ নির্বাচন করুন। একই তারিখে একাধিক বিষয় নির্বাচন করা যাবে না। মোট বিষয় সংখ্যা এবং মোট পূর্ণমান স্বয়ংক্রিয়ভাবে গণনা হবে। বিষয় অনুযায়ী তারিখ নির্ধারণের পর সেভ বাটনে ক্লিক করুন।
+      দ্রষ্টব্য : বিষয় অনুযায়ী তারিখ নির্ধারণ করুন (শুক্রবার বাদ দেওয়া হয়েছে)। একই তারিখে একাধিক পরীক্ষা নেওয়া যাবে, তবে একই তারিখে দুইটি বিষয়ের সময় একই বা পরস্পর overlapping হতে পারবে না। মোট বিষয় সংখ্যা এবং মোট পূর্ণমান স্বয়ংক্রিয়ভাবে গণনা হবে। বিষয় অনুযায়ী তারিখ নির্ধারণের পর সেভ বাটনে ক্লিক করুন।
     </div>
     <div class="tbl-wrap">
       <table>
@@ -9197,6 +9285,41 @@ function ecUpdateTotals() {
   if (markEl) markEl.value = bn(total);
 }
 
+/* একই তারিখে একাধিক পরীক্ষা নেওয়া যাবে, তবে সময় একই/overlapping হতে পারবে না */
+function ecToMinutes(t) {
+  if (!t) return null;
+  const parts = String(t).split(':');
+  const h = parseInt(parts[0]), m = parseInt(parts[1] || '0');
+  if (isNaN(h)) return null;
+  return h * 60 + (isNaN(m) ? 0 : m);
+}
+
+function ecFindTimeClash(rows) {
+  const byDate = {};
+  rows.forEach(r => { (byDate[r.date] = byDate[r.date] || []).push(r); });
+  for (const date in byDate) {
+    const list = byDate[date];
+    for (let i = 0; i < list.length; i++) {
+      const a = list[i];
+      const aS = ecToMinutes(a.startTime), aE = ecToMinutes(a.endTime);
+      if (aS === null || aE === null) {
+        if (list.length > 1) return 'একই তারিখে একাধিক বিষয় থাকলে প্রতিটি বিষয়ের শুরু ও শেষ সময় দিতে হবে (' + (typeof bnDate === 'function' ? bnDate(date) : date) + ')';
+        continue;
+      }
+      if (aE <= aS) return a.subjectName + ' — শেষ সময় শুরুর সময়ের পরে হতে হবে';
+      for (let j = i + 1; j < list.length; j++) {
+        const b = list[j];
+        const bS = ecToMinutes(b.startTime), bE = ecToMinutes(b.endTime);
+        if (bS === null || bE === null) return 'একই তারিখে একাধিক বিষয় থাকলে প্রতিটি বিষয়ের শুরু ও শেষ সময় দিতে হবে (' + (typeof bnDate === 'function' ? bnDate(date) : date) + ')';
+        if (aS < bE && bS < aE) {
+          return 'একই তারিখে (' + (typeof bnDate === 'function' ? bnDate(date) : date) + ') "' + a.subjectName + '" ও "' + b.subjectName + '" এর সময় একই বা পরস্পর overlapping — ভিন্ন সময় নির্ধারণ করুন';
+        }
+      }
+    }
+  }
+  return '';
+}
+
 function saveExamCreate() {
   const cls = document.getElementById('ecClass').value;
   const examTypeId = parseInt(document.getElementById('ecExam').value) || null;
@@ -9209,14 +9332,10 @@ function saveExamCreate() {
   if (!startDate || !endDate) { showErrorPopup('শুরু ও শেষ তারিখ দিন'); return; }
 
   const subjRows = [];
-  const dateSeen = new Set();
-  let dupDate = false;
   document.querySelectorAll('.ecSubjDate').forEach(inp => {
     const date = inp.value;
     if (!date) return;
     const subjectId = parseInt(inp.dataset.subject);
-    if (dateSeen.has(date)) dupDate = true;
-    dateSeen.add(date);
     const stEl = document.querySelector(`.ecSubjStart[data-subject="${subjectId}"]`);
     const enEl = document.querySelector(`.ecSubjEnd[data-subject="${subjectId}"]`);
     const mkEl = document.querySelector(`.ecSubjMarks[data-subject="${subjectId}"]`);
@@ -9228,7 +9347,8 @@ function saveExamCreate() {
     });
   });
   if (!subjRows.length) { showErrorPopup('অন্তত একটি বিষয়ের তারিখ নির্ধারণ করুন'); return; }
-  if (dupDate) { showErrorPopup('একই তারিখে একাধিক বিষয় নির্বাচন করা যাবে না'); return; }
+  const timeClash = ecFindTimeClash(subjRows);
+  if (timeClash) { showErrorPopup(timeClash); return; }
 
   const examType = examTypes.find(t => t.id === examTypeId);
   const totalMarks = subjRows.reduce((sum, r) => sum + r.fullMarks, 0);
