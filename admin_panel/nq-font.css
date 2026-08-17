@@ -1,0 +1,54 @@
+/* ══════════════════════════════════════════════════════════════
+   সফটওয়্যারের সর্বত্র একই বাংলা ফন্ট নিশ্চিত করার জন্য এই ফাইল।
+   প্রতিটি পেজে <link rel="stylesheet" href="./nq-font.css"> যুক্ত আছে।
+   ফন্ট: 'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif
+   ══════════════════════════════════════════════════════════════ */
+
+@font-face {
+  font-family: 'Kalpurush';
+  src: url('./fonts/kalpurush.ttf') format('truetype'),
+       url('./kalpurush.ttf') format('truetype'),
+       url('https://cdn.jsdelivr.net/gh/maateen/bangla-web-fonts@master/fonts/kalpurush/kalpurush.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Kalpurush';
+  src: url('./fonts/kalpurush.ttf') format('truetype'),
+       url('./kalpurush.ttf') format('truetype'),
+       url('https://cdn.jsdelivr.net/gh/maateen/bangla-web-fonts@master/fonts/kalpurush/kalpurush.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --nq-font: 'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;
+}
+
+html,
+body,
+button,
+input,
+select,
+textarea,
+optgroup,
+option,
+table,
+th,
+td,
+label,
+h1, h2, h3, h4, h5, h6,
+p, span, div, a, li,
+.modal, .popup, .toast, .card, .warn-msg, .warn-reason {
+  font-family: 'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif !important;
+}
+
+/* প্রিন্ট/পিডিএফেও একই ফন্ট */
+@media print {
+  * {
+    font-family: 'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif !important;
+  }
+}

@@ -15,7 +15,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>নুরুল কোরআন মাদ্রাসা</title>
   <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./nq-font.css">
+<style>
     @font-face {
       font-family: 'Kalpurush';
       src: url('kalpurush.ttf') format('truetype'),
@@ -61,6 +65,42 @@
       display: flex; align-items: center; justify-content: center; padding: 0 3px;
     }
     .bell-wrap { position: relative; }
+
+    /* ───── মেসেজ নোটিফিকেশন প্যানেল ───── */
+    .nq-msg-panel {
+      display: none; position: absolute; top: 48px; right: 0; width: 400px;
+      max-height: 70vh; overflow-y: auto; background: #fff;
+      border: 1px solid #e0e0e0; border-radius: 10px;
+      box-shadow: 0 12px 32px rgba(0,0,0,.16); z-index: 3000;
+    }
+    .nq-msg-panel.open { display: block; }
+    .nq-msg-panel-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 10px 14px; border-bottom: 1px solid #eee; font-weight: 700;
+      font-size: 14px; color: #1a237e; position: sticky; top: 0; background: #fff;
+    }
+    .nq-msg-item { padding: 12px 14px; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+    .nq-msg-item.unread { background: #f1f8f4; }
+    .nq-msg-from { font-weight: 700; color: #1f2937; font-size: 13.5px; }
+    .nq-msg-meta { color: #6b7280; font-size: 11.5px; margin-top: 3px; line-height: 1.7; }
+    .nq-msg-body { color: #374151; margin-top: 7px; white-space: pre-wrap; }
+    .nq-msg-actions { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+    .nq-msg-actions button {
+      border: none; border-radius: 6px; padding: 5px 10px; font-size: 12px;
+      font-weight: 600; cursor: pointer;
+      font-family: 'Kalpurush','Hind Siliguri','Noto Sans Bengali',sans-serif;
+    }
+    .nq-msg-reply-btn { background: #1565c0; color: #fff; }
+    .nq-msg-read-btn { background: #e5f6ec; color: #166534; }
+    .nq-msg-del-btn { background: #fef2f2; color: #b42318; }
+    .nq-msg-reply-box { margin-top: 8px; display: none; }
+    .nq-msg-reply-box.open { display: block; }
+    .nq-msg-reply-box textarea {
+      width: 100%; min-height: 62px; padding: 8px; border: 1px solid #e0e0e0;
+      border-radius: 6px; font-size: 13px; resize: vertical;
+      font-family: 'Kalpurush','Hind Siliguri','Noto Sans Bengali',sans-serif;
+    }
+    @media (max-width: 520px) { .nq-msg-panel { width: 92vw; right: -8px; } }
 
     /* ───── Header quick-action tools ───── */
     .header-tools {
@@ -407,6 +447,32 @@
       #printArea .rc-fields { padding: 2px 10px 6px; }
       #printArea .rc-note { padding: 6px 8px 2px; }
       #printArea .rc-time { padding-bottom: 6px; }
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       Rongta RP335 থার্মাল POS প্রিন্টার (৮০মিমি পেপার, ~৭২-৭৬মিমি
+       প্রিন্টেবল এরিয়া) — রশিদ সাইজ। printReceipt() কল করার সময়
+       body তে .receipt-print-mode ক্লাস যোগ হয় এবং একটি ডাইনামিক
+       @page rule (৮০মিমি প্রস্থ, স্বয়ংক্রিয় উচ্চতা) সেট হয়।
+       ═══════════════════════════════════════════════════════════ */
+    @media print {
+      body.receipt-print-mode #printArea {
+        width: 76mm; max-width: 76mm; margin: 0 auto; padding: 1mm 1mm 3mm;
+      }
+      body.receipt-print-mode #printArea .rc-wrap {
+        width: 100%; max-width: 100%; margin: 0; border: none; padding: 0;
+      }
+      body.receipt-print-mode #printArea .rc-banner { max-width: 100%; }
+      body.receipt-print-mode #printArea .rc-title { font-size: 14px; padding: 5px 2px 2px; }
+      body.receipt-print-mode #printArea .rc-fields { padding: 2px 2px 4px; }
+      body.receipt-print-mode #printArea .rc-field { font-size: 11px; padding: 1px 0; }
+      body.receipt-print-mode #printArea .rc-field .k { width: 66px; }
+      body.receipt-print-mode #printArea .rc-table { font-size: 10.5px; }
+      body.receipt-print-mode #printArea .rc-table th,
+      body.receipt-print-mode #printArea .rc-table td { padding: 3px 3px; border-color: #000; }
+      body.receipt-print-mode #printArea .rc-note { font-size: 10.5px; padding: 6px 2px 3px; }
+      body.receipt-print-mode #printArea .rc-time { font-size: 10px; padding-bottom: 4px; }
+      body.receipt-print-mode #printArea .rc-small { font-size: 9.5px; }
     }
 
     /* ───── Attendance grid ───── */
@@ -1101,6 +1167,8 @@
       font-size: 16px; font-weight: 700; display: flex; justify-content: flex-end; margin-top: 4px;
     }
     .ci-btn.ci-edit-a { background: #1e88e5; }
+    .usr-op-btn.usr-op-login { background: #6a1b9a; }
+    .usr-op-btn.usr-op-login:hover { background: #4a148c; }
     .ci-btn.ci-print-a { background: #f9a825; }
 
     /* ───── Generic warning popup (matches reference) ───── */
@@ -1109,7 +1177,12 @@
       width: 92px; height: 92px; margin: 4px auto 22px;
       display: flex; align-items: center; justify-content: center;
     }
-    .warn-msg { font-size: 22px; font-weight: 700; color: #555; margin-bottom: 26px; }
+    .warn-msg { font-size: 22px; font-weight: 700; color: #555; margin-bottom: 14px; }
+    .warn-reason {
+      background: #fff8e1; border: 1px solid #ffe0a3; border-left: 4px solid #fb8c00;
+      color: #7a4a00; font-size: 14.5px; line-height: 1.7; text-align: left;
+      padding: 10px 14px; border-radius: 6px; margin: 0 4px 22px; white-space: pre-wrap;
+    }
     .warn-ok-btn {
       background: #5c6bc0; color: #fff; border: none; padding: 11px 46px;
       font-family: 'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer;
@@ -1334,10 +1407,17 @@
   </div>
   <div class="header-right">
     <div class="bell-wrap">
-      <button class="bell-btn" title="নোটিফিকেশন">
+      <button class="bell-btn" title="নোটিফিকেশন" onclick="toggleMsgPanel(event)">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
       </button>
-      <span class="notif-count">0</span>
+      <span class="notif-count" id="notifCount">0</span>
+      <div class="nq-msg-panel" id="nqMsgPanel" onclick="event.stopPropagation();">
+        <div class="nq-msg-panel-head">
+          <span>📩 শিক্ষার্থীদের বার্তা</span>
+          <button onclick="loadAdminMessages()" style="background:#f5f5f5;border:1px solid #e0e0e0;border-radius:6px;padding:4px 9px;font-size:12px;cursor:pointer;font-family:inherit;">রিফ্রেশ</button>
+        </div>
+        <div id="nqMsgList"><div style="padding:18px;text-align:center;color:#888;">লোড হচ্ছে...</div></div>
+      </div>
     </div>
     <div class="user-box" style="display:flex;align-items:center;gap:10px;">
       <div style="text-align:right;line-height:1.2;">
@@ -1633,10 +1713,19 @@
       <div class="section-title">যোগাযোগের তথ্য</div>
       <div style="background:#fff;border-radius:12px;padding:24px;">
         <p style="margin-bottom:10px"><strong>প্রতিষ্ঠানের নাম:</strong> নুরুল কোরআন মাদ্রাসা</p>
-        <p style="margin-bottom:10px"><strong>ঠিকানা:</strong> ঢাকা, বাংলাদেশ</p>
-        <p style="margin-bottom:10px"><strong>ফোন:</strong> 017XX-XXXXXX</p>
-        <p style="margin-bottom:10px"><strong>ইমেইল:</strong> info@nurulquran.edu.bd</p>
+        <p style="margin-bottom:10px"><strong>ঠিকানা:</strong> হরিপুর বোর্ডঘর, চাঁপাইনবাবগঞ্জ।</p>
+        <p style="margin-bottom:10px"><strong>ফোন:</strong> +৮৮০১৭৭০-০১৩৩৩</p>
+        <p style="margin-bottom:10px"><strong>ইমেইল:</strong> info@nqm.com</p>
         <p><strong>সময়সূচি:</strong> শনি–বৃহস্পতি, সকাল ৮টা – দুপুর ২টা</p>
+      </div>
+
+      <div class="list-title-bar" style="margin-top:18px;">
+        <div class="section-title" style="margin:0;border:none;padding:0;">ওয়েবসাইট থেকে আসা বার্তা</div>
+        <button class="add-btn" onclick="loadContactMessages()">রিফ্রেশ</button>
+      </div>
+      <div class="tbl-wrap">
+        <table><thead><tr><th>#</th><th>নাম</th><th>মোবাইল/ইমেইল</th><th>বিষয়</th><th>বার্তা</th><th>তারিখ</th><th>অ্যাকশন</th></tr></thead>
+        <tbody id="contactMsgBody"><tr><td colspan="7" style="text-align:center;color:#888;">রিফ্রেশ চাপুন</td></tr></tbody></table>
       </div>
     </div>
 
@@ -2686,10 +2775,7 @@
       </div>
       <div class="adai-field">
         <span class="lbl">আদায়কারীর নাম</span>
-        <select id="adaiCollector">
-          <option>-</option><option>-</option><option>Support</option><option selected>M.A. Bari</option>
-          <option>বালিকা শাখা</option><option>নুপুর</option><option>খাইরুল ইসলাম</option>
-          <option>Bbbb</option><option>সুরাইয়া</option><option>আব্দুর রউফ</option><option>adfasdf</option>
+        <select id="adaiCollector" title="লগইন করা ব্যবহারকারীর নাম স্বয়ংক্রিয়ভাবে নির্বাচিত">
         </select>
       </div>
       <div class="adai-field">
@@ -3209,6 +3295,12 @@
         </div>
         <div class="form-row"><label>বিষয় / অধ্যায়ের শিরোনাম</label><input id="sylTitle" placeholder="শিরোনাম লিখুন" /></div>
         <div class="form-row"><label>সিলেবাসের বিবরণ</label><textarea id="sylDesc" rows="5" placeholder="বিবরণ লিখুন"></textarea></div>
+        <div class="form-row"><label>শিক্ষার্থীর প্যানেলে দেখানো শুরু (তারিখ)</label><input id="sylShowFrom" type="date" /></div>
+        <div class="form-row"><label>শিক্ষার্থীর প্যানেলে দেখানো শেষ (তারিখ)</label><input id="sylShowTo" type="date" /></div>
+        <div class="form-row" style="display:flex;align-items:center;gap:8px;">
+          <input type="checkbox" id="sylNotify" checked style="width:16px;height:16px;" />
+          <label for="sylNotify" style="margin:0;">শিক্ষার্থীদের নোটিফিকেশন পাঠান</label>
+        </div>
         <button class="add-btn" style="width:100%;background:#f9a825;" onclick="addSyllabusItem()">সিলেবাস যোগ করুন</button>
       </div>
       <div class="desig-card">
@@ -4136,6 +4228,7 @@
       </svg>
     </div>
     <div class="warn-msg" id="genericErrorMsg">প্রয়োজনীয় তথ্য দিন</div>
+    <div class="warn-reason" id="genericErrorReason" style="display:none;"></div>
     <button class="warn-ok-btn" onclick="closeModal('genericErrorModal')">OK</button>
   </div>
 </div>
@@ -4792,7 +4885,7 @@
 <div class="form-modal-overlay" id="resultPublishModal">
   <div class="form-modal">
     <h2>ফলাফলের ব্যাচ যোগ করুন</h2>
-    <div class="form-row"><label>শ্রেণী</label><select id="rpbClass"></select></div>
+    <div class="form-row"><label>শ্রেণী</label><select id="rpbClass" onchange="rpbPopulateModal()"></select></div>
     <div class="form-row"><label>পরীক্ষা</label><select id="rpbExam"></select></div>
     <div class="form-actions">
       <button class="btn-cancel" onclick="closeModal('resultPublishModal')">বাতিল</button>
@@ -4861,22 +4954,589 @@
 
 <!-- ═══════════════ AUTH & RBAC ═══════════════ -->
 <script src="config.js"></script>
+<script src="nq-warmup.js"></script>
 <script src="auth.js"></script>
 
 <!-- ═══════════════ DATA & LOGIC ═══════════════ -->
 <script>
 /* ─── Initial Data ─── */
+/* ─── শিক্ষার্থী তালিকা ("শিক্ষার্থীর তালিকা (2).xls" অনুযায়ী) ─── */
 let students = [
-  {id:1, name:'মোঃ ইয়াসিন',    cls:'নাযেরা',         mobile:'', fee:860,  parent:'', status:'সক্রিয়'},
-  {id:2, name:'উম্মে হাবিবা',    cls:'নাযেরা',         mobile:'', fee:860,  parent:'', status:'সক্রিয়'},
-  {id:3, name:'মোঃ রাফি',       cls:'হিফজ',          mobile:'', fee:860,  parent:'', status:'সক্রিয়'},
-  {id:4, name:'তাসনিম জাহান',   cls:'হিফজ',          mobile:'', fee:860,  parent:'', status:'সক্রিয়'},
-  {id:5, name:'মোঃ সাকিব',      cls:'কিতাব',          mobile:'', fee:1200, parent:'', status:'সক্রিয়'},
-  {id:6, name:'মরিয়ম আক্তার',   cls:'কিতাব',          mobile:'', fee:1200, parent:'', status:'সক্রিয়'},
-  {id:7, name:'মোঃ ফাহিম',      cls:'ইবতেদায়ী',      mobile:'', fee:860,  parent:'', status:'সক্রিয়'},
-  {id:8, name:'নাজিয়া সুলতানা', cls:'ইবতেদায়ী',      mobile:'', fee:860,  parent:'', status:'সক্রিয়'},
-  {id:9, name:'মোঃ রায়হান',     cls:'মুতাওয়াস্সিতা', mobile:'', fee:1500, parent:'', status:'সক্রিয়'},
-  {id:10,name:'সাদিয়া ইসলাম',   cls:'মুতাওয়াস্সিতা', mobile:'', fee:1500, parent:'', status:'সক্রিয়'},
+  {
+    "id": 1,
+    "regNo": "১",
+    "classRoll": "১",
+    "name": "মোঃ আজিম",
+    "cls": "নার্সারী",
+    "attCls": "নার্সারী",
+    "attDept": "নুরানি",
+    "branch": "নুরানি",
+    "dept": "নুরানি",
+    "mobile": "01726736416",
+    "fee": 860,
+    "parent": "মোঃ আপেল আলী",
+    "mother": "েমাসাঃ আদরী খাতুন",
+    "guardianName": "মোঃ আপেল আলী",
+    "guardianMobile": "01726736416",
+    "fatherMobile": "01726736416",
+    "curAddr": "হরিপুর, ভূঁইশালপাড়া, চৌহদ্দীটোলা, চাঁপাইনবাবগঞ্জ",
+    "permAddr": "হরিপুর, ভূঁইশালপাড়া, চৌহদ্দীটোলা, চাঁপাইনবাবগঞ্জ",
+    "session": "২০২৬",
+    "type": "অনাবাসিক",
+    "status": "সক্রিয়"
+  },
+  {
+    "id": 2,
+    "regNo": "২",
+    "classRoll": "২",
+    "name": "মোঃ আব্দুর রহমান",
+    "cls": "নার্সারী",
+    "attCls": "নার্সারী",
+    "attDept": "নুরানি",
+    "branch": "নুরানি",
+    "dept": "নুরানি",
+    "mobile": "01739530343",
+    "fee": 860,
+    "parent": "মোঃ রাকিবুল হাসান",
+    "mother": "মোসাঃ মিম আখতার",
+    "guardianName": "মোঃ রাকিবুল হাসান",
+    "guardianMobile": "01739530343",
+    "fatherMobile": "01739530343",
+    "curAddr": "হরিপুর, ভূঁইশালপাড়া, চৌহদ্দীটোলা, চাঁপাইনবাবগঞ্জ",
+    "permAddr": "হরিপুর, ভূঁইশালপাড়া, চৌহদ্দীটোলা, চাঁপাইনবাবগঞ্জ",
+    "session": "২০২৭",
+    "type": "অনাবাসিক",
+    "status": "সক্রিয়"
+  },
+  {
+    "id": 3,
+    "regNo": "৩",
+    "classRoll": "৩",
+    "name": "মাহাবুব হোসেন",
+    "cls": "নার্সারী",
+    "attCls": "নার্সারী",
+    "attDept": "নুরানি",
+    "branch": "নুরানি",
+    "dept": "নুরানি",
+    "mobile": "01779331989",
+    "fee": 860,
+    "parent": "মোহাঃ রুবেল",
+    "mother": "মোসাঃ হালিমা  খাতুন",
+    "guardianName": "মোহাঃ রুবেল",
+    "guardianMobile": "01779331989",
+    "fatherMobile": "01779331989",
+    "curAddr": "হরিপুর সাহাপাড়া",
+    "permAddr": "হরিপুর সাহাপাড়া",
+    "session": "২০২৬",
+    "type": "অনাবাসিক",
+    "status": "সক্রিয়"
+  },
+  {
+    "id": 4,
+    "regNo": "৪",
+    "classRoll": "৪",
+    "name": "আব্দুর রউফ",
+    "cls": "নার্সারী",
+    "attCls": "নার্সারী",
+    "attDept": "নুরানি",
+    "branch": "নুরানি",
+    "dept": "নুরানি",
+    "mobile": "01305450714",
+    "fee": 860,
+    "parent": "রাকিব আলি",
+    "mother": "হাবিবা খাতুন",
+    "guardianName": "রাকিব আলি",
+    "guardianMobile": "01305450714",
+    "fatherMobile": "01305450714",
+    "curAddr": "হরিপুর সাহাপাড়া",
+    "permAddr": "হরিপুর সাহাপাড়া",
+    "session": "২০২৬",
+    "type": "অনাবাসিক",
+    "status": "সক্রিয়"
+  },
+  {
+    "id": 5,
+    "regNo": "৫",
+    "classRoll": "৫",
+    "name": "আবু বক্কর সিদ্দিক",
+    "cls": "নার্সারী",
+    "attCls": "নার্সারী",
+    "attDept": "নুরানি",
+    "branch": "নুরানি",
+    "dept": "নুরানি",
+    "mobile": "01929975550",
+    "fee": 860,
+    "parent": "শামীম হোসেন",
+    "mother": "আক্তারা খাতুন",
+    "guardianName": "শামীম হোসেন",
+    "guardianMobile": "01929975550",
+    "fatherMobile": "01929975550",
+    "curAddr": "হরিপুর",
+    "permAddr": "হরিপুর",
+    "session": "২০২৬",
+    "type": "অনাবাসিক",
+    "status": "সক্রিয়"
+  },
+  {
+    "id": 6,
+    "regNo": "৬",
+    "classRoll": "৬",
+    "name": "আকতারুজ্জামান নিরব",
+    "cls": "নার্সারী",
+    "attCls": "নার্সারী",
+    "attDept": "নুরানি",
+    "branch": "নুরানি",
+    "dept": "নুরানি",
+    "mobile": "01929975550",
+    "fee": 860,
+    "parent": "শামীম হোসেন",
+    "mother": "আকতারা খাতুন",
+    "guardianName": "শামীম হোসেন",
+    "guardianMobile": "01929975550",
+    "fatherMobile": "01929975550",
+    "curAddr": "হরিপুর",
+    "permAddr": "হরিপুর",
+    "session": "২০২৬",
+    "type": "অনাবাসিক",
+    "status": "সক্রিয়"
+  },
+  {
+    "id": 7,
+    "regNo": "৭",
+    "classRoll": "৭",
+    "name": "সাফিন আহমেদ শিশির",
+    "cls": "প্রথম",
+    "attCls": "প্রথম",
+    "attDept": "নুরানি",
+    "branch": "নুরানি",
+    "dept": "নুরানি",
+    "mobile": "০১৮১৯২২৫৩৯৬",
+    "fee": 860,
+    "parent": "ফিরোজ কবির",
+    "mother": "শিরিন শিলা",
+    "guardianName": "ফিরোজ কবির",
+    "guardianMobile": "০১৮১৯২২৫৩৯৬",
+    "fatherMobile": "০১৮১৯২২৫৩৯৬",
+    "curAddr": "হরিপুর",
+    "permAddr": "হরিপুর",
+    "session": "২০২৬",
+    "type": "অনাবাসিক",
+    "status": "সক্রিয়"
+  },
+  {
+    "id": 8,
+    "regNo": "৮",
+    "classRoll": "৮",
+    "name": "আবরার মাহির",
+    "cls": "নার্সারী",
+    "attCls": "নার্সারী",
+    "attDept": "নুরানি",
+    "branch": "নুরানি",
+    "dept": "নুরানি",
+    "mobile": "01750208470",
+    "fee": 860,
+    "parent": "আশরাফুর হক",
+    "mother": "মোসাঃ মরিয়ম নেশা",
+    "guardianName": "আশরাফুর হক",
+    "guardianMobile": "01750208470",
+    "fatherMobile": "01750208470",
+    "curAddr": "হরিপুর ভুইশালপাড়া",
+    "permAddr": "হরিপুর ভুইশালপাড়া",
+    "session": "২০২৬",
+    "type": "অনাবাসিক",
+    "status": "সক্রিয়"
+  },
+  {
+    "id": 9,
+    "regNo": "৯",
+    "classRoll": "৯",
+    "name": "ইয়ামিন আহমেদ",
+    "cls": "প্রথম",
+    "attCls": "প্রথম",
+    "attDept": "নুরানি",
+    "branch": "নুরানি",
+    "dept": "নুরানি",
+    "mobile": "01797392681",
+    "fee": 860,
+    "parent": "মোঃ শফিকুল ইসলাম",
+    "mother": "মোসাঃ মমতাজ মহাল",
+    "guardianName": "মোঃ শফিকুল ইসলাম",
+    "guardianMobile": "01797392681",
+    "fatherMobile": "01797392681",
+    "curAddr": "হরিপুর সাহাপাড়া",
+    "permAddr": "হরিপুর সাহাপাড়া",
+    "session": "২০২৬",
+    "type": "অনাবাসিক",
+    "status": "সক্রিয়"
+  },
+  {
+    "id": 11,
+    "regNo": "১১",
+    "classRoll": "১১",
+    "name": "আব্দুর রহিম",
+    "cls": "প্রথম",
+    "attCls": "প্রথম",
+    "attDept": "নুরানি",
+    "branch": "নুরানি",
+    "dept": "নুরানি",
+    "mobile": "01325366405",
+    "fee": 860,
+    "parent": "রজব আলী",
+    "mother": "মোসাঃ খাতিজা খাতুন",
+    "guardianName": "রজব আলী",
+    "guardianMobile": "01325366405",
+    "fatherMobile": "01325366405",
+    "curAddr": "শিবপুর ফুলতলামোড়",
+    "permAddr": "শিবপুর ফুলতলামোড়",
+    "session": "২০২৬",
+    "type": "অনাবাসিক",
+    "status": "সক্রিয়"
+  },
+  {
+    "id": 12,
+    "regNo": "১২",
+    "classRoll": "১২",
+    "name": "আব্দুর রহমান",
+    "cls": "নার্সারী",
+    "attCls": "নার্সারী",
+    "attDept": "নুরানি",
+    "branch": "নুরানি",
+    "dept": "নুরানি",
+    "mobile": "01724594622",
+    "fee": 860,
+    "parent": "জাহাঙ্গীর আলম",
+    "mother": "মাসরুফা তাসলিমা  সুমি",
+    "guardianName": "জাহাঙ্গীর আলম",
+    "guardianMobile": "01724594622",
+    "fatherMobile": "01724594622",
+    "curAddr": "হরিপুর সাহাপাড়া",
+    "permAddr": "হরিপুর সাহাপাড়া",
+    "session": "২০২৬",
+    "type": "অনাবাসিক",
+    "status": "সক্রিয়"
+  },
+  {
+    "id": 13,
+    "regNo": "১৩",
+    "classRoll": "১৩",
+    "name": "আরহাম বারী আয়াস",
+    "cls": "নার্সারী",
+    "attCls": "নার্সারী",
+    "attDept": "নুরানি",
+    "branch": "নুরানি",
+    "dept": "নুরানি",
+    "mobile": "01723591966",
+    "fee": 860,
+    "parent": "আজিজুল বারী",
+    "mother": "নাসরিন আক্তার",
+    "guardianName": "আজিজুল বারী",
+    "guardianMobile": "01723591966",
+    "fatherMobile": "01723591966",
+    "curAddr": "হরিপুর মহালদার পাড়া",
+    "permAddr": "হরিপুর মহালদার পাড়া",
+    "session": "২০২৬",
+    "type": "অনাবাসিক",
+    "status": "সক্রিয়"
+  },
+  {
+    "id": 14,
+    "regNo": "১৪",
+    "classRoll": "১৪",
+    "name": "আয়মান জাহান সোহানা",
+    "cls": "নার্সারী",
+    "attCls": "নার্সারী",
+    "attDept": "নুরানি",
+    "branch": "নুরানি",
+    "dept": "নুরানি",
+    "mobile": "01765139694",
+    "fee": 860,
+    "parent": "আসাদুজ্জামান",
+    "mother": "রোজী আকতার",
+    "guardianName": "আসাদুজ্জামান",
+    "guardianMobile": "01765139694",
+    "fatherMobile": "01765139694",
+    "curAddr": "মহালদারপাড়া",
+    "permAddr": "মহালদারপাড়া",
+    "session": "২০২৬",
+    "type": "অনাবাসিক",
+    "status": "সক্রিয়"
+  },
+  {
+    "id": 15,
+    "regNo": "১৫",
+    "classRoll": "১৫",
+    "name": "আনিসা আখতার জুঁই",
+    "cls": "নাজেরা বালিকা",
+    "attCls": "নাজেরা বালিকা",
+    "attDept": "বালিকা",
+    "branch": "বালিকা",
+    "dept": "বালিকা",
+    "mobile": "01713718970",
+    "fee": 860,
+    "parent": "আরিফুল ইসলাম",
+    "mother": "মোসাঃ জান্নাতুন ফেরদাউস",
+    "guardianName": "আরিফুল ইসলাম",
+    "guardianMobile": "01713718970",
+    "fatherMobile": "01713718970",
+    "curAddr": "সংকরবাটি, বটতলাহাট, চাঁপাইনবাবগঞ্জ সদর",
+    "permAddr": "সংকরবাটি, বটতলাহাট, চাঁপাইনবাবগঞ্জ সদর",
+    "session": "২০২৬",
+    "type": "অনাবাসিক",
+    "status": "সক্রিয়"
+  },
+  {
+    "id": 16,
+    "regNo": "১৬",
+    "classRoll": "১৬",
+    "name": "মোসাঃ হালিমাতুস্সাদিয়া",
+    "cls": "হেফজ বালিকা",
+    "attCls": "হেফজ বালিকা",
+    "attDept": "বালিকা",
+    "branch": "বালিকা",
+    "dept": "বালিকা",
+    "mobile": "01796469198",
+    "fee": 860,
+    "parent": "মোঃ আব্দুল হাকিম",
+    "mother": "মোসাঃ জান্নাতুন",
+    "guardianName": "মোঃ আব্দুল হাকিম",
+    "guardianMobile": "01796469198",
+    "fatherMobile": "01796469198",
+    "curAddr": "ফুলবাগান, বটতলা হাট, চাঁপাইনবাবগঞ্জ সদর",
+    "permAddr": "ফুলবাগান, বটতলা হাট, চাঁপাইনবাবগঞ্জ সদর",
+    "session": "২০২৬",
+    "type": "অনাবাসিক",
+    "status": "সক্রিয়"
+  },
+  {
+    "id": 17,
+    "regNo": "১৭",
+    "classRoll": "১৭",
+    "name": "মোসাঃ হাবিবা আক্তার তিসা",
+    "cls": "হেফজ বালিকা",
+    "attCls": "হেফজ বালিকা",
+    "attDept": "বালিকা",
+    "branch": "বালিকা",
+    "dept": "বালিকা",
+    "mobile": "01796469198",
+    "fee": 860,
+    "parent": "মোঃ আব্দুল হাকিম",
+    "mother": "মোসাঃ জান্নাতুন",
+    "guardianName": "মোঃ আব্দুল হাকিম",
+    "guardianMobile": "01796469198",
+    "fatherMobile": "01796469198",
+    "curAddr": "",
+    "permAddr": "",
+    "session": "২০২৬",
+    "type": "অনাবাসিক",
+    "status": "সক্রিয়"
+  },
+  {
+    "id": 18,
+    "regNo": "১৮",
+    "classRoll": "১৮",
+    "name": "মোসাঃ সালমা আক্তার জুই",
+    "cls": "হেফজ বালিকা",
+    "attCls": "হেফজ বালিকা",
+    "attDept": "বালিকা",
+    "branch": "বালিকা",
+    "dept": "বালিকা",
+    "mobile": "01735822343",
+    "fee": 860,
+    "parent": "মোঃ শাহ জামাল",
+    "mother": "মোসাঃ আয়েশা বেগম",
+    "guardianName": "মোঃ শাহ জামাল",
+    "guardianMobile": "01735822343",
+    "fatherMobile": "01735822343",
+    "curAddr": "ফুলবাগান, বটতলা হাট, চাঁপাইনবাবগঞ্জ সদর",
+    "permAddr": "ফুলবাগান, বটতলা হাট, চাঁপাইনবাবগঞ্জ সদর",
+    "session": "২০২৬",
+    "type": "অনাবাসিক",
+    "status": "সক্রিয়"
+  },
+  {
+    "id": 19,
+    "regNo": "১৯",
+    "classRoll": "১৯",
+    "name": "আবু সুফিয়ান",
+    "cls": "প্রথম",
+    "attCls": "প্রথম",
+    "attDept": "নুরানি",
+    "branch": "নুরানি",
+    "dept": "নুরানি",
+    "mobile": "হরিপুর মহাল",
+    "fee": 860,
+    "parent": "মোঃ সুজন মিয়া",
+    "mother": "মোসাঃ নিসাত তাইবা নিশা",
+    "guardianName": "মোঃ সুজন মিয়া",
+    "guardianMobile": "হরিপুর মহাল",
+    "fatherMobile": "হরিপুর মহাল",
+    "curAddr": "হরিপুর মহাল্দারপাড়া, চৌহদ্দীটোলা চাঁপাইনবাবগঞ্জ",
+    "permAddr": "হরিপুর মহাল্দারপাড়া, চৌহদ্দীটোলা চাঁপাইনবাবগঞ্জ",
+    "session": "২০২৬",
+    "type": "অনাবাসিক",
+    "status": "সক্রিয়"
+  },
+  {
+    "id": 20,
+    "regNo": "২০",
+    "classRoll": "২০",
+    "name": "মোসাঃ রিফা খাতুন",
+    "cls": "হেফজ বালিকা",
+    "attCls": "হেফজ বালিকা",
+    "attDept": "বালিকা",
+    "branch": "বালিকা",
+    "dept": "বালিকা",
+    "mobile": "01331166786",
+    "fee": 860,
+    "parent": "রানা",
+    "mother": "মোসাঃ শামলি বেগম",
+    "guardianName": "রানা",
+    "guardianMobile": "01331166786",
+    "fatherMobile": "01331166786",
+    "curAddr": "কমলা কান্তপুর, রানিহাটি",
+    "permAddr": "কমলা কান্তপুর, রানিহাটি",
+    "session": "২০২৬",
+    "type": "অনাবাসিক",
+    "status": "সক্রিয়"
+  },
+  {
+    "id": 21,
+    "regNo": "২১",
+    "classRoll": "২১",
+    "name": "মোসাঃ তামান্না খাতুন",
+    "cls": "হেফজ বালিকা",
+    "attCls": "হেফজ বালিকা",
+    "attDept": "বালিকা",
+    "branch": "বালিকা",
+    "dept": "বালিকা",
+    "mobile": "01753779818",
+    "fee": 860,
+    "parent": "মোঃতরিকুল ইসলাম",
+    "mother": "মোসাঃ পিংকি খাতুন",
+    "guardianName": "মোঃতরিকুল ইসলাম",
+    "guardianMobile": "01753779818",
+    "fatherMobile": "01753779818",
+    "curAddr": "ছত্রাজপুর, ছত্রাজপুর, রানিহাটি",
+    "permAddr": "ছত্রাজপুর, ছত্রাজপুর, রানিহাটি",
+    "session": "২০২৬",
+    "type": "অনাবাসিক",
+    "status": "সক্রিয়"
+  },
+  {
+    "id": 22,
+    "regNo": "২২",
+    "classRoll": "২২",
+    "name": "আনিসা আক্তার জুই",
+    "cls": "প্রথম",
+    "attCls": "প্রথম",
+    "attDept": "বালিকা",
+    "branch": "বালিকা",
+    "dept": "বালিকা",
+    "mobile": "0123456789",
+    "fee": 860,
+    "parent": "আরিফ",
+    "mother": "জান্নাতুর কলি",
+    "guardianName": "আরিফ",
+    "guardianMobile": "0123456789",
+    "fatherMobile": "0123456789",
+    "curAddr": "ফুলবাগান, বটতলাহাট",
+    "permAddr": "ফুলবাগান, বটতলাহাট",
+    "session": "২০২৬",
+    "type": "অনাবাসিক",
+    "status": "সক্রিয়"
+  },
+  {
+    "id": 23,
+    "regNo": "২৩",
+    "classRoll": "২৩",
+    "name": "তায়ি্যবা আক্তার মুসকান",
+    "cls": "নার্সারী",
+    "attCls": "নার্সারী",
+    "attDept": "নুরানি",
+    "branch": "নুরানি",
+    "dept": "নুরানি",
+    "mobile": "01725095278",
+    "fee": 860,
+    "parent": "মোঃ শহিদুল ইসরাম",
+    "mother": "মোসাঃ সাদিকা খাতুন",
+    "guardianName": "মোঃ শহিদুল ইসরাম",
+    "guardianMobile": "01725095278",
+    "fatherMobile": "01725095278",
+    "curAddr": "তেলিপাড়া, পুটিয়া, রাজশাহী",
+    "permAddr": "তেলিপাড়া, পুটিয়া, রাজশাহী",
+    "session": "২০২৬",
+    "type": "অনাবাসিক",
+    "status": "সক্রিয়"
+  },
+  {
+    "id": 24,
+    "regNo": "২৪",
+    "classRoll": "২৪",
+    "name": "সায়ীদা  তাবাসসুম",
+    "cls": "নাজেরা বালিকা",
+    "attCls": "নাজেরা বালিকা",
+    "attDept": "বালিকা",
+    "branch": "বালিকা",
+    "dept": "বালিকা",
+    "mobile": "01733129400",
+    "fee": 860,
+    "parent": "শরিফুল ইসলাম সায়েদ",
+    "mother": "শামীমা আখতার মুন",
+    "guardianName": "শরিফুল ইসলাম সায়েদ",
+    "guardianMobile": "01733129400",
+    "fatherMobile": "01733129400",
+    "curAddr": "64, হরিপুর ইউপি পাড়া চৌহদ্দীটোলা, 6300, ওয়র্ড নং 5 চাঁপাইনবাবগঞ্জ সদর",
+    "permAddr": "64, হরিপুর ইউপি পাড়া চৌহদ্দীটোলা, 6300, ওয়র্ড নং 5 চাঁপাইনবাবগঞ্জ সদর",
+    "session": "২০২৬",
+    "type": "অনাবাসিক",
+    "status": "সক্রিয়"
+  },
+  {
+    "id": 28,
+    "regNo": "২৮",
+    "classRoll": "২৮",
+    "name": "নাদিয়া আক্তার মাইশা",
+    "cls": "নার্সারী",
+    "attCls": "নার্সারী",
+    "attDept": "নুরানি",
+    "branch": "নুরানি",
+    "dept": "নুরানি",
+    "mobile": "01779064958",
+    "fee": 860,
+    "parent": "মোঃ শাহাবুল আলম",
+    "mother": "মোসাঃ সালমা খাতুন",
+    "guardianName": "মোঃ শাহাবুল আলম",
+    "guardianMobile": "01779064958",
+    "fatherMobile": "01779064958",
+    "curAddr": "৪১/২ হরিপুর ভুঁইশাল পাড়া, চৌহহদ্দীটোল, চাঁপাইনবাবগঞ্জ",
+    "permAddr": "৪১/২ হরিপুর ভুঁইশাল পাড়া, চৌহহদ্দীটোল, চাঁপাইনবাবগঞ্জ",
+    "session": "২০২৬",
+    "type": "অনাবাসিক",
+    "status": "সক্রিয়"
+  },
+  {
+    "id": 29,
+    "regNo": "২৯",
+    "classRoll": "২৯",
+    "name": "মোঃ সাদিক",
+    "cls": "প্রথম",
+    "attCls": "প্রথম",
+    "attDept": "নুরানি",
+    "branch": "নুরানি",
+    "dept": "নুরানি",
+    "mobile": "01779064958",
+    "fee": 860,
+    "parent": "মোঃ শাহাবুল আলম",
+    "mother": "মোসাঃ সালমা খাতুন",
+    "guardianName": "মোঃ শাহাবুল আলম",
+    "guardianMobile": "01779064958",
+    "fatherMobile": "01779064958",
+    "curAddr": "৪১/২ হরিপুর ভুঁইশাল পাড়া, চৌহহদ্দীটোল, চাঁপাইনবাবগঞ্জ",
+    "permAddr": "৪১/২ হরিপুর ভুঁইশাল পাড়া, চৌহহদ্দীটোল, চাঁপাইনবাবগঞ্জ",
+    "session": "২০২৬",
+    "type": "অনাবাসিক",
+    "status": "সক্রিয়"
+  }
 ];
 
 let teachers = [];
@@ -4918,6 +5578,44 @@ let messages = [];
 let attendance = {};
 students.forEach(s => attendance[s.id] = 'present');
 
+/* প্রতিদিনের হাজিরার ইতিহাস — { studentId: [ {date:'YYYY-MM-DD', status:'present|absent|leave'} ] }
+   শিক্ষার্থী প্যানেলের "উপস্থিতির ইতিহাস" এই ডেটা থেকেই মাস ভিত্তিক দেখানো হয়। */
+let attendanceHistory = {};
+
+/* আজকের তারিখ ISO (YYYY-MM-DD) */
+function nqTodayISO() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+const NQ_BN_MONTHS = ['জানুয়ারি','ফেব্রুয়ারি','মার্চ','এপ্রিল','মে','জুন','জুলাই','আগস্ট','সেপ্টেম্বর','অক্টোবর','নভেম্বর','ডিসেম্বর'];
+function nqMonthLabelBn(iso) {
+  const parts = String(iso || nqTodayISO()).split('-');
+  const mi = (parseInt(parts[1], 10) || 1) - 1;
+  return NQ_BN_MONTHS[mi] + ' ' + bn(parts[0]);
+}
+
+/* বর্তমানে লগইন করা ব্যবহারকারীর নাম (আদায়কারী হিসেবে ব্যবহৃত) */
+function nqCurrentUserName() {
+  const u = (window.NQAuth && window.NQAuth.user) || null;
+  return (u && (u.name || u.username || u.uid)) || 'ব্যবহারকারী';
+}
+
+/* আজকের হাজিরা ইতিহাসে সংরক্ষণ করে (একই দিনে বারবার সেভ করলে আপডেট হয়) */
+function nqRecordAttendanceHistory() {
+  const date = nqTodayISO();
+  if (!attendanceHistory || typeof attendanceHistory !== 'object') attendanceHistory = {};
+  students.forEach(s => {
+    const status = attendance[s.id] || 'present';
+    const list = Array.isArray(attendanceHistory[s.id]) ? attendanceHistory[s.id] : [];
+    const idx = list.findIndex(x => x && x.date === date);
+    const row = { date, status, cls: s.attCls || s.cls || '', takenBy: nqCurrentUserName() };
+    if (idx >= 0) list[idx] = row; else list.push(row);
+    list.sort((a, b) => (a.date < b.date ? -1 : 1));
+    attendanceHistory[s.id] = list;
+  });
+  if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
+}
+
 let invProducts = [
   { id: 1,  name: 'আম পারা (প্লাস্টিক বাধাই)',            cls: '',              type: 'বই',        unit: 'পিস', buyPrice: 17,  sellPrice: 25,  stock: 0,  active: true },
   { id: 2,  name: 'নাজেরা বালিকা - আম পারা (ছোট)',        cls: 'নাজেরা বালিকা', type: 'বই',        unit: 'পিস', buyPrice: 10,  sellPrice: 15,  stock: 10, active: true },
@@ -4941,7 +5639,8 @@ const invClassOptions = ['প্রে','নার্সারী','প্রথ
 
 /* ─── Bengali numerals ─── */
 function bn(n) {
-  return String(n).replace(/[0-9]/g, d => '০১২৩৪৫৬৭৮৯'[d]);
+  /* সংখ্যা সব জায়গায় ইংরেজিতে দেখানো হবে */
+  return String(n).replace(/[০-৯]/g, d => String('০১২৩৪৫৬৭৮৯'.indexOf(d)));
 }
 function bnTaka(n) {
   return bn(n.toLocaleString('en')) + '/-';
@@ -5089,7 +5788,10 @@ async function saveStaffAdmission() {
   const name = document.getElementById('sfName').value.trim();
   const mobile = document.getElementById('sfMobile').value.trim();
   const position = document.getElementById('sfPosition').value;
-  if (!name || !mobile || position === '-') { showErrorPopup('প্রয়োজনীয় তথ্য দিন'); return; }
+  if (!name || !mobile || position === '-') {
+    showErrorPopup('স্টাফ সংরক্ষণ করা যায়নি', nqReason(nqMissing([[name, 'স্টাফের নাম'], [mobile, 'মোবাইল নং'], [position === '-' ? '' : position, 'পদবী']])));
+    return;
+  }
 
   const salary = parseInt(document.getElementById('sfSalary').value) || 0;
   const classDuty = document.getElementById('sfClassDuty').value;
@@ -5143,7 +5845,7 @@ function admissionNext() {
   ];
   const missing = required.filter(([id]) => !document.getElementById(id).value.trim());
   if (missing.length) {
-    showErrorPopup('প্রয়োজনীয় তথ্য দিন');
+    showErrorPopup('পরবর্তী ধাপে যাওয়া যাচ্ছে না', nqReason(missing.map(([, label]) => label)));
     return;
   }
   const photoImg = document.querySelector('#admPhotoPreview img');
@@ -5401,12 +6103,12 @@ async function saveAdmissionFee() {
   }
   if (paidTotal > 0 && typeof payments !== 'undefined') {
     const payId = payments.length ? payments[payments.length - 1].id + 1 : 1;
-    payments.push({ id: payId, student: admStudentData.name, amount: paidTotal, month: admStudentData.startMonth || '-', date: todayAdmDateBn(), by: 'ব্যবহারকারী', remark: 'ভর্তি ফি' });
+    payments.push({ id: payId, studentId: id, student: admStudentData.name, amount: paidTotal, month: admStudentData.startMonth || nqMonthLabelBn(), date: todayAdmDateBn(), dateISO: nqTodayISO(), by: nqCurrentUserName(), remark: 'ভর্তি ফি' });
     if (typeof paymentDetails !== 'undefined') {
       feeBreakdown.filter(r => r.paid > 0).forEach((r, i) => {
         const pdId = paymentDetails.length ? paymentDetails[paymentDetails.length - 1].id + 1 : 1;
         const billBase = paymentDetails.length ? paymentDetails[paymentDetails.length - 1].billNo + 1 : 100;
-        paymentDetails.push({ id: pdId, billNo: billBase + i, studentId: id, date: todayAdmDateBn() + ' ইং', label: r.label, amount: r.paid, month: '-', by: 'ব্যবহারকারী' });
+        paymentDetails.push({ id: pdId, billNo: billBase + i, studentId: id, studentName: admStudentData.name, date: todayAdmDateBn() + ' ইং', dateISO: nqTodayISO(), label: r.label, amount: r.paid, month: admStudentData.startMonth || nqMonthLabelBn(), by: nqCurrentUserName(), remark: 'ভর্তি ফি' });
       });
     }
   }
@@ -5586,6 +6288,50 @@ const usrOpIcoCross = '<svg width="11" height="11" viewBox="0 0 24 24" fill="non
 const usrOpIcoEdit  = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
 const usrOpIcoDel   = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"/></svg>';
 
+const usrOpIcoLogin = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>';
+
+/* শুধু সুপার এডমিনের জন্য উন্নত সুবিধা */
+function isSuperAdminUser() {
+  return !!(window.NQAuth && window.NQAuth.role === 'superadmin');
+}
+
+/* এক ক্লিকে অন্য ব্যবহারকারীর ড্যাশবোর্ডে লগইন (সুপার এডমিন) */
+async function impersonateUser(id) {
+  if (!isSuperAdminUser()) {
+    showErrorPopup('এই সুবিধা ব্যবহার করা যাচ্ছে না', 'কারণ: এই অ্যাডভান্স অপশনটি শুধুমাত্র সুপার এডমিনের জন্য।');
+    return;
+  }
+  const u = usersListData.find(x => x.id === id);
+  if (!u) return;
+  if (!confirm(`"${u.name}" (${u.type}) — এই ব্যবহারকারীর ড্যাশবোর্ডে লগইন করবেন?`)) return;
+  try {
+    const res = await window.NQAuth.authFetch('/api/users/' + id + '/impersonate', { method: 'POST' });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      showErrorPopup('লগইন করা যায়নি', 'কারণ: ' + (data.message || ('সার্ভার ত্রুটি (' + res.status + ')')));
+      return;
+    }
+    // ফিরে আসার জন্য নিজের সেশন সংরক্ষণ
+    try {
+      const myToken = localStorage.getItem('nq_token') || sessionStorage.getItem('nq_token') || '';
+      const myUser = localStorage.getItem('nq_user') || sessionStorage.getItem('nq_user') || '';
+      if (myToken && myUser) localStorage.setItem('nq_impersonator', JSON.stringify({ token: myToken, user: myUser }));
+    } catch (e) {}
+
+    localStorage.setItem('nq_token', data.token);
+    localStorage.setItem('nq_user', JSON.stringify(data.user));
+    sessionStorage.removeItem('nq_token');
+    sessionStorage.removeItem('nq_user');
+    try { localStorage.removeItem('nq_last_page'); localStorage.removeItem('nq_last_subpage'); } catch (e) {}
+
+    const role = String(data.user.role || '').toLowerCase().replace(/[\s_-]+/g, '');
+    const target = role === 'student' ? './student.html' : (role === 'teacher' ? './teacher.html' : './admin.html');
+    window.location.href = target;
+  } catch (e) {
+    showErrorPopup('লগইন করা যায়নি', 'কারণ: সার্ভারের সাথে সংযোগ করা যায়নি (ইন্টারনেট বা API ঠিকানা পরীক্ষা করুন)।');
+  }
+}
+
 function renderUserList() {
   const body = document.getElementById('userListBody');
   if (!body) return;
@@ -5609,12 +6355,18 @@ function renderUserList() {
       const statusBtn = u.active
         ? `<button class="usr-op-btn usr-op-active" title="সক্রিয় — ক্লিক করে নিষ্ক্রিয় করুন" onclick="toggleUserStatus('${u.id}')">${usrOpIcoCheck}</button>`
         : `<button class="usr-op-btn usr-op-inactive" title="নিষ্ক্রিয় — ক্লিক করে সক��রিয় করুন" onclick="toggleUserStatus('${u.id}')">${usrOpIcoCross}</button>`;
+      // সুপার এডমিন ছাড়া কেউ অন্য ব্যবহারকারী হিসেবে লগইন করতে পারবে না
+      const loginBtn = isSuperAdminUser()
+        ? `<button class="usr-op-btn usr-op-login" title="এই ব্যবহারকারীর ড্যাশবোর্ডে লগইন করুন" onclick="impersonateUser('${u.id}')">${usrOpIcoLogin}</button> `
+        : '';
       opCell =
-        `${statusBtn} ` +
+        `${statusBtn} ` + loginBtn +
         `<button class="usr-op-btn usr-op-edit" title="সম্পাদনা" onclick="editUser('${u.id}')">${usrOpIcoEdit}</button> ` +
         `<button class="usr-op-btn usr-op-inactive" title="মুছে ফেলুন" onclick="deleteUser('${u.id}')">${usrOpIcoDel}</button>`;
     } else if (u.editable === false) {
-      opCell = '<span class="badge badge-blue">সুরক্ষিত</span>';
+      opCell = isSuperAdminUser()
+        ? `<button class="usr-op-btn usr-op-login" title="এই ব্যবহারকারীর ড্যাশবোর্ডে লগইন করুন" onclick="impersonateUser('${u.id}')">${usrOpIcoLogin}</button> <span class="badge badge-blue">সুরক্ষিত</span>`
+        : '<span class="badge badge-blue">সুরক্ষিত</span>';
     }
     return `<tr>
       <td>${bn(i + 1)}</td>
@@ -5725,8 +6477,14 @@ async function saveUser() {
   const uid = document.getElementById('usrId').value.trim();
   const pass = document.getElementById('usrPass').value.trim();
 
-  if (!type || !name || !uid) { showErrorPopup('প্রয়োজনীয় তথ্য দিন (ধরন, নাম, আইডি)'); return; }
-  if (!usrEditingId && !pass) { showErrorPopup('নতুন ব্যবহারকারীর জন্য পাসওয়ার্ড দিন'); return; }
+  if (!type || !name || !uid) {
+    showErrorPopup('ব্যবহারকারী সংরক্ষণ করা যায়নি', nqReason(nqMissing([[type, 'ব্যবহারকারীর ধরন'], [name, 'নাম'], [uid, 'লগইন আইডি']])));
+    return;
+  }
+  if (!usrEditingId && !pass) {
+    showErrorPopup('ব্যবহারকারী সংরক্ষণ করা যায়নি', 'কারণ: নতুন ব্যবহারকারীর জন্য পাসওয়ার্ড দেওয়া আবশ্যক।');
+    return;
+  }
 
   if (btn) btn.style.pointerEvents = 'none';
   try {
@@ -6188,6 +6946,31 @@ function printReceipt(opts) {
       '<div class="rc-note">আমাদের সাথে থাকার জন্য আপনাকে ধন্যবাদ!</div>' +
       '<div class="rc-time">' + nqNowStampBn() + '</div>' +
     '</div></div>';
+
+  nqPrintAsReceipt();
+}
+
+/* Rongta RP335 (৮০মিমি থার্মাল প্রিন্টার) এর জন্য রশিদ প্রিন্ট মোড চালু/বন্ধ
+   করে। ডাইনামিক @page rule ইনজেক্ট করে A4-এর বদলে ৮০মিমি পেজ সাইজ ব্যবহার করে,
+   শুধুমাত্র এই প্রিন্টের সময়ের জন্য — বাকি সব প্রিন্ট (ভর্তি ফরম ইত্যাদি) A4-তেই থাকে। */
+function nqPrintAsReceipt() {
+  var styleTag = document.getElementById('nqReceiptPageSize');
+  if (!styleTag) {
+    styleTag = document.createElement('style');
+    styleTag.id = 'nqReceiptPageSize';
+    document.head.appendChild(styleTag);
+  }
+  styleTag.textContent = '@page { size: 80mm auto; margin: 2mm; }';
+  document.body.classList.add('receipt-print-mode');
+
+  function nqRestorePageMode() {
+    document.body.classList.remove('receipt-print-mode');
+    styleTag.textContent = '';
+    window.removeEventListener('afterprint', nqRestorePageMode);
+  }
+  window.addEventListener('afterprint', nqRestorePageMode);
+  // afterprint সমর্থন না করা ব্রাউজারের জন্য ফলব্যাক
+  setTimeout(nqRestorePageMode, 5000);
 
   setTimeout(function () { window.print(); }, 120);
 }
@@ -6697,7 +7480,7 @@ function saveInvProduct() {
   const desc = document.getElementById('invProdDesc').value.trim();
 
   if (!name || !type || !unit || isNaN(buyPrice) || isNaN(sellPrice)) {
-    showErrorPopup('প্রয়োজনীয় তথ্য দিন');
+    showErrorPopup('পণ্য সংরক্ষণ করা যায়নি', nqReason(nqMissing([[name, 'পণ্যের নাম'], [type, 'পণ্যের ধরন'], [unit, 'একক'], [isNaN(buyPrice) ? '' : buyPrice, 'ক্রয় মূল্য'], [isNaN(sellPrice) ? '' : sellPrice, 'বিক্রয় মূল্য']])));
     return;
   }
 
@@ -6990,7 +7773,10 @@ function saveHwDaily() {
   const subject = document.getElementById('hwdSubject').value;
   const task = document.getElementById('hwdTask').value.trim();
   const date = document.getElementById('hwdDate').value;
-  if (!cls || !subject || !task || !date) { showErrorPopup('প্রয়োজনীয় তথ্য দিন'); return; }
+  if (!cls || !subject || !task || !date) {
+    showErrorPopup('বাড়ির কাজ সংরক্ষণ করা যায়নি', nqReason(nqMissing([[cls, 'ক্লাস'], [subject, 'বিষয়'], [task, 'কাজের বিবরণ'], [date, 'তারিখ']])));
+    return;
+  }
   const id = hwDailyList.length ? hwDailyList[hwDailyList.length - 1].id + 1 : 1;
   hwDailyList.push({
     id, cls, subject, task, khata: document.getElementById('hwdKhata').checked,
@@ -7184,7 +7970,10 @@ function renderMsgTemplatePage() {
 function saveMessageTemplate() {
   const title = document.getElementById('msgTplTitle').value.trim();
   const message = document.getElementById('msgTplText').value.trim();
-  if (!title || !message) { showErrorPopup('প্রয়োজনীয় তথ্য দিন'); return; }
+  if (!title || !message) {
+    showErrorPopup('টেমপ্লেট সংরক্ষণ করা যায়নি', nqReason(nqMissing([[title, 'টেমপ্লেটের শিরোনাম'], [message, 'ম্যাসেজের লেখা']])));
+    return;
+  }
   const id = savedMessageTemplates.length ? savedMessageTemplates[savedMessageTemplates.length - 1].id + 1 : 1;
   savedMessageTemplates.push({ id, title, message });
   document.getElementById('msgTplTitle').value = '';
@@ -7216,7 +8005,7 @@ function addStudent() {
   const mob  = document.getElementById('sMobile').value.trim();
   const fee  = parseInt(document.getElementById('sFee').value) || 860;
   const par  = document.getElementById('sParent').value.trim();
-  if (!name) { showErrorPopup('প্রয়োজনীয় তথ্য দিন'); return; }
+  if (!name) { showErrorPopup('শিক্ষার্থী যোগ করা যায়নি', nqReason(['শিক্ষার্থীর নাম'])); return; }
   const id = students.length ? students[students.length-1].id+1 : 1;
   students.push({id, name, cls, mobile:mob, fee, parent:par, status:'সক্রিয়'});
   attendance[id] = 'present';
@@ -7290,6 +8079,7 @@ function sendMessage() {
 function saveAttendance() {
   const p = Object.values(attendance).filter(v=>v==='present').length;
   const a = Object.values(attendance).filter(v=>v==='absent').length;
+  nqRecordAttendanceHistory();
   showToast(`হাজিরা সংরক্ষিত — উপস্থিত: ${bn(p)}, অনুপস্থিত: ${bn(a)}`);
 }
 
@@ -7308,9 +8098,29 @@ function showToast(msg, ms=2400) {
 }
 
 /* ─── Generic warning popup ─── */
-function showErrorPopup(msg = 'প্রয়োজনীয় তথ্য দিন') {
+/* কারণসহ সতর্কবার্তা — কেন কাজটি হচ্ছে না তা স্পষ্ট করে দেখায় */
+function showErrorPopup(msg = 'প্রয়োজনীয় তথ্য দিন', reason = '') {
   document.getElementById('genericErrorMsg').textContent = msg;
+  const rEl = document.getElementById('genericErrorReason');
+  if (rEl) {
+    const text = String(reason || '').trim();
+    rEl.textContent = text;
+    rEl.style.display = text ? '' : 'none';
+  }
   openModal('genericErrorModal');
+}
+
+/* খালি/অবৈধ ফিল্ডগুলোর নাম বের করে — কারণ লেখার জন্য
+   ব্যবহার: nqMissing([[value, 'ফিল্ডের নাম'], ...]) */
+function nqMissing(pairs) {
+  return (pairs || [])
+    .filter(([v]) => v === undefined || v === null || v === '' || v === '-' || (typeof v === 'number' && isNaN(v)))
+    .map(([, label]) => label);
+}
+function nqReason(labels) {
+  return labels.length
+    ? 'কারণ: নিচের তথ্যগুলো পূরণ করা হয়নি —\n• ' + labels.join('\n• ')
+    : '';
 }
 
 /* ═══════════ শিক্ষার্থীর হাজিরা (Student Attendance) ═══════════ */
@@ -7382,6 +8192,7 @@ function updateHajiraSummary() {
 
 function saveHajira() {
   updateHajiraSummary();
+  nqRecordAttendanceHistory();
   showToast('হাজিরা সফলভাবে সংরক্ষিত হয়েছে!');
 }
 
@@ -7842,9 +8653,8 @@ function saveAdai() {
   const paid = parseFloat(document.getElementById('adaiPayAmount').value) || 0;
   if (paid <= 0) { showErrorPopup('পরিশোধের পরিমাণ দিন'); return; }
 
-  const collector = document.getElementById('adaiCollector').value;
   const remark = document.getElementById('adaiRemark').value.trim();
-  const collectedBy = (collector === '-' ? 'ব্যবহারকারী' : collector);
+  const collectedBy = nqCurrentUserName();
   const discount = parseFloat(document.getElementById('adaiDiscount').value) || 0;
 
   const dues = studentDues[s.id] || [];
@@ -7852,16 +8662,24 @@ function saveAdai() {
   studentDues[s.id] = dues.filter(d => !adaiSelectedDueIds.has(d.id));
   rebuildDueDetails();
 
+  const isoNow = nqTodayISO();
+  const monthLabel = nqMonthLabelBn(isoNow);
   const id = payments.length ? payments[payments.length - 1].id + 1 : 1;
-  payments.push({ id, student: s.name, amount: paid, month: 'জুলাই ২০২৬', date: '২০২৬-০৭-১৫', by: collectedBy, remark });
-
   const billBase = paymentDetails.length ? paymentDetails[paymentDetails.length - 1].billNo + 1 : 100;
+  payments.push({
+    id, studentId: s.id, student: s.name, regNo: s.regNo, cls: s.attCls || s.cls || '',
+    amount: paid, month: monthLabel, date: bnDate(isoNow), dateISO: isoNow,
+    by: collectedBy, method, billNo: billBase, remark
+  });
+
   const rows = collectedDues.length ? collectedDues : [{ label: 'অগ্রিম ফি', amount: paid }];
   rows.forEach((d, i) => {
     const pdId = paymentDetails.length ? paymentDetails[paymentDetails.length - 1].id + 1 : 1;
     paymentDetails.push({
-      id: pdId, billNo: billBase + i, studentId: s.id, date: '১৫-০৭-২০২৬ ইং',
-      label: d.label, amount: d.amount, month: '-', by: collectedBy
+      id: pdId, billNo: billBase + i, studentId: s.id, studentName: s.name,
+      date: bnDate(isoNow), dateISO: isoNow,
+      label: d.label, amount: d.amount, month: d.month || monthLabel,
+      method, by: collectedBy, remark
     });
   });
 
@@ -7870,6 +8688,7 @@ function saveAdai() {
   const remainingDue = Math.max(netDue - paid, 0);
 
   renderPayments(); renderRecentPayments();
+  if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
   showToast('ফি আদায় সফলভাবে সংরক্ষিত হয়েছে!');
   printReceipt({
     type: 'fee',
@@ -9320,6 +10139,28 @@ function ecFindTimeClash(rows) {
   return '';
 }
 
+/* আগে সংরক্ষিত পরীক্ষাগুলোর সাথে সময়ের সংঘর্ষ আছে কিনা যাচাই করে */
+function ecFindClashWithSavedExams(cls, rows, ignoreExamId) {
+  for (const ex of exams) {
+    if (ignoreExamId && ex.id === ignoreExamId) continue;
+    if (ex.className && cls && ex.className !== cls) continue;
+    for (const o of (ex.subjects || [])) {
+      const oS = ecToMinutes(o.startTime), oE = ecToMinutes(o.endTime);
+      for (const r of rows) {
+        if (r.date !== o.date) continue;
+        const rS = ecToMinutes(r.startTime), rE = ecToMinutes(r.endTime);
+        if (oS === null || oE === null || rS === null || rE === null) {
+          return 'একই তারিখে (' + (typeof bnDate === 'function' ? bnDate(r.date) : r.date) + ') "' + (ex.examTypeName || 'পরীক্ষা') + '" এর "' + (o.subjectName || '') + '" রয়েছে — সময় নির্ধারণ করলে তবেই একই দিনে একাধিক পরীক্ষা নেওয়া যাবে';
+        }
+        if (rS < oE && oS < rE) {
+          return 'একই তারিখে (' + (typeof bnDate === 'function' ? bnDate(r.date) : r.date) + ') "' + (ex.examTypeName || 'পরীক্ষা') + ' — ' + (o.subjectName || '') + '" এর সময়ের সাথে "' + r.subjectName + '" এর সময় মিলে যাচ্ছে — ভিন্ন সময় নির্ধারণ করুন';
+        }
+      }
+    }
+  }
+  return '';
+}
+
 function saveExamCreate() {
   const cls = document.getElementById('ecClass').value;
   const examTypeId = parseInt(document.getElementById('ecExam').value) || null;
@@ -9350,6 +10191,11 @@ function saveExamCreate() {
   const timeClash = ecFindTimeClash(subjRows);
   if (timeClash) { showErrorPopup(timeClash); return; }
 
+  /* একই দিনে যত ইচ্ছে পরীক্ষা নেওয়া যাবে, কিন্তু আগে তৈরি করা অন্য পরীক্ষার সাথে
+     একই তারিখে সময় একই বা overlapping হতে পারবে না — সেটি এখানে যাচাই করা হচ্ছে */
+  const otherClash = ecFindClashWithSavedExams(cls, subjRows, editingExamId);
+  if (otherClash) { showErrorPopup(otherClash); return; }
+
   const examType = examTypes.find(t => t.id === examTypeId);
   const totalMarks = subjRows.reduce((sum, r) => sum + r.fullMarks, 0);
   const payload = { className: cls, examTypeId, examTypeName: examType ? examType.name : '', startDate, endDate, startTime, endTime, subjects: subjRows, totalMarks };
@@ -9366,7 +10212,10 @@ function saveExamCreate() {
   editingExamId = null;
   ecEditingSubjectsData = [];
   renderExamCreatePage();
-  if (typeof nqScheduleSave === 'function') nqScheduleSave();
+  if (typeof renderExamList === 'function') { try { renderExamList(); } catch (e) {} }
+  /* সাথে সাথেই সার্ভারে সেভ — যাতে শিক্ষার্থী প্যানেলে পরীক্ষাটি দেখা যায় */
+  if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
+  else if (typeof nqScheduleSave === 'function') nqScheduleSave();
 }
 
 function editExam(id) {
@@ -9430,6 +10279,11 @@ function renderSyllabusPage() {
   document.getElementById('sylSubject').innerHTML = '<option value="">-- বিষয় নির্বাচন করুন --</option>';
   document.getElementById('sylTitle').value = '';
   document.getElementById('sylDesc').value = '';
+  const _t = new Date(); const _iso = d => d.toISOString().slice(0, 10);
+  const _to = new Date(_t.getTime() + 30 * 864e5);
+  document.getElementById('sylShowFrom').value = _iso(_t);
+  document.getElementById('sylShowTo').value = _iso(_to);
+  const _nt = document.getElementById('sylNotify'); if (_nt) _nt.checked = true;
   document.getElementById('sylFClass').value = '';
   document.getElementById('sylFSubject').innerHTML = '<option value="">-- বিষয় নির্বাচন করুন --</option>';
   renderSyllabusList();
@@ -9441,12 +10295,18 @@ function addSyllabusItem() {
   const subjectId = parseInt(document.getElementById('sylSubject').value) || null;
   const title = document.getElementById('sylTitle').value.trim();
   const desc = document.getElementById('sylDesc').value.trim();
-  if (!className) { showErrorPopup('ক্লাস নির্বাচন করুন'); return; }
-  if (!subjectId) { showErrorPopup('বিষয় নির্বাচন করুন'); return; }
-  if (!title) { showErrorPopup('শিরোনাম লিখুন'); return; }
+  const showFrom = document.getElementById('sylShowFrom').value;
+  const showTo = document.getElementById('sylShowTo').value;
+  const notify = !!document.getElementById('sylNotify')?.checked;
+  const missing = nqMissing([[className, 'ক্লাস'], [subjectId, 'বিষয়'], [title, 'শিরোনাম'], [showFrom, 'দেখানো শুরুর তারিখ'], [showTo, 'দেখানো শেষের তারিখ']]);
+  if (missing.length) { showErrorPopup('সিলেবাস সংরক্ষণ করা যায়নি', nqReason(missing)); return; }
+  if (showFrom > showTo) {
+    showErrorPopup('সিলেবাস সংরক্ষণ করা যায়নি', 'কারণ: "দেখানো শুরুর তারিখ" শেষের তারিখের পরে দেওয়া হয়েছে।');
+    return;
+  }
   const examType = examTypes.find(t => t.id === examTypeId);
   const subject = examSubjects.find(s => s.id === subjectId);
-  const payload = { examTypeId, examTypeName: examType ? examType.name : '', className, subjectId, subjectName: subject ? subject.name : '', title, desc };
+  const payload = { examTypeId, examTypeName: examType ? examType.name : '', className, subjectId, subjectName: subject ? subject.name : '', title, desc, showFrom, showTo };
 
   if (editingSyllabusId) {
     const it = syllabusItems.find(x => x.id === editingSyllabusId);
@@ -9456,12 +10316,36 @@ function addSyllabusItem() {
     const id = syllabusItems.length ? Math.max(...syllabusItems.map(x => x.id)) + 1 : 1;
     syllabusItems.push({ id, ...payload });
     showToast('সিলেবাস যোগ করা হয়েছে');
+    if (notify) sendSyllabusNotification(payload);
   }
   editingSyllabusId = null;
   document.getElementById('sylTitle').value = '';
   document.getElementById('sylDesc').value = '';
   renderSyllabusList();
   if (typeof nqScheduleSave === 'function') nqScheduleSave();
+}
+
+/* সিলেবাস যোগ হলে শিক্ষার্থীদের নোটিফিকেশন পাঠানো হয় */
+async function sendSyllabusNotification(item) {
+  try {
+    const res = await window.NQAuth.authFetch('/api/notifications/send', {
+      method: 'POST',
+      body: JSON.stringify({
+        roles: ['Student'],
+        title: '🗂️ নতুন পরীক্ষার সিলেবাস — ' + (item.className || ''),
+        body: (item.examTypeName ? item.examTypeName + ' • ' : '') + (item.subjectName || '') + ' — ' + item.title,
+        type: 'notice'
+      })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      showErrorPopup('নোটিফিকেশন পাঠানো যায়নি', 'কারণ: ' + (data.message || ('সার্ভার ত্রুটি (' + res.status + ')')));
+      return;
+    }
+    showToast('শিক্ষার্থীদের নোটিফিকেশন পাঠানো হয়েছে');
+  } catch (e) {
+    showErrorPopup('নোটিফিকেশন পাঠানো যায়নি', 'কারণ: সার্ভারের সাথে সংযোগ করা যায়নি।');
+  }
 }
 
 function renderSyllabusList() {
@@ -9474,6 +10358,7 @@ function renderSyllabusList() {
         <div>
           <div style="font-weight:700;">${it.title}</div>
           <div style="font-size:12px;color:#888;">${it.className} • ${it.subjectName}${it.examTypeName ? ' • ' + it.examTypeName : ''}</div>
+          ${(it.showFrom || it.showTo) ? `<div style="font-size:12px;color:#00796b;">🗓️ শিক্ষার্থীর প্যানেলে: ${bn(it.showFrom || '-')} — ${bn(it.showTo || '-')}</div>` : ''}
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0;">
           <button class="ci-btn ci-edit" title="সম্পাদনা" onclick="editSyllabusItem(${it.id})">${icoEdit}</button>
@@ -9494,6 +10379,8 @@ function editSyllabusItem(id) {
   fillSyllabusSubjectSelect('sylSubject', it.className);
   document.getElementById('sylSubject').value = it.subjectId;
   document.getElementById('sylTitle').value = it.title;
+  document.getElementById('sylShowFrom').value = it.showFrom || '';
+  document.getElementById('sylShowTo').value = it.showTo || '';
   document.getElementById('sylDesc').value = it.desc || '';
   window.scrollTo(0, 0);
 }
@@ -9748,20 +10635,48 @@ function rpPopulateSelects() {
   }
 }
 
+function rpbPopulateModal() {
+  const clsSel = document.getElementById('rpbClass');
+  const examSel = document.getElementById('rpbExam');
+  if (!clsSel || !examSel) return;
+  const curCls = clsSel.value;
+  clsSel.innerHTML = '<option value="">সব শ্রেণী</option>' + admissionClassOptions.map(c => `<option${c === curCls ? ' selected' : ''}>${c}</option>`).join('');
+  const cls = clsSel.value;
+  const list = exams.filter(e => !cls || e.className === cls);
+  examSel.innerHTML = list.length
+    ? list.map(e => `<option value="${e.id}">${e.examTypeName} (${e.className})</option>`).join('')
+    : '<option value="">কোনো পরীক্ষা নেই</option>';
+}
+
 function addResultPublishBatch() {
   rpPopulateSelects();
-  const cls = document.getElementById('rpFClass').value;
-  const examId = parseInt(document.getElementById('rpFExam').value) || null;
+  const filterCls = document.getElementById('rpFClass').value;
+  const filterExam = document.getElementById('rpFExam').value;
+  const clsSel = document.getElementById('rpbClass');
+  if (clsSel) clsSel.value = filterCls || '';
+  rpbPopulateModal();
+  if (filterExam) { const es = document.getElementById('rpbExam'); if (es) es.value = filterExam; }
+  openModal('resultPublishModal');
+}
+
+function saveResultPublishBatch() {
+  const cls = document.getElementById('rpbClass').value;
+  const examId = parseInt(document.getElementById('rpbExam').value) || null;
   if (!examId) { showErrorPopup('একটি পরীক্ষা নির্বাচন করুন'); return; }
   const exam = exams.find(e => e.id === examId);
-  if (!exam) return;
+  if (!exam) { showErrorPopup('পরীক্ষাটি পাওয়া যায়নি'); return; }
   if (cls && exam.className !== cls) { showErrorPopup('নির্বাচিত শ্রেণী ও পরীক্ষা মিলছে না'); return; }
   const hasResults = examResults.some(r => r.examId === examId);
   if (!hasResults) { showErrorPopup('এই পরীক্ষার জন্য এখনো কোনো ফলাফল তৈরি করা হয়নি'); return; }
-  const existing = resultPublishes.find(p => p.examId === examId);
-  if (existing) { showToast('এই পরীক্ষাটি ইতিমধ্যে তালিকায় আছে'); renderResultPublishList(); return; }
+  if (resultPublishes.find(p => p.examId === examId)) {
+    showToast('এই পরীক্ষাটি ইতিমধ্যে তালিকায় আছে');
+    closeModal('resultPublishModal');
+    renderResultPublishList();
+    return;
+  }
   const id = resultPublishes.length ? Math.max(...resultPublishes.map(x => x.id)) + 1 : 1;
   resultPublishes.push({ id, examId, published: false, publishDate: null });
+  closeModal('resultPublishModal');
   renderResultPublishList();
   if (typeof nqScheduleSave === 'function') nqScheduleSave();
   showToast('পরীক্ষাটি প্রকাশের তালিকায় যোগ করা হয়েছে');
@@ -9817,6 +10732,62 @@ function deleteResultPublish(id) {
   renderResultPublishList();
   if (typeof nqScheduleSave === 'function') nqScheduleSave();
   showToast('মুছে ফেলা হয়েছে।');
+}
+
+/* ═══════════ ওয়েবসাইটের যোগাযোগ বার্তা ═══════════ */
+let contactMessages = [];
+
+function cmEsc(v) {
+  return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+async function loadContactMessages() {
+  const body = document.getElementById('contactMsgBody');
+  if (!body) return;
+  body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#888;">লোড হচ্ছে...</td></tr>';
+  try {
+    const res = await window.NQAuth.getJSON('/api/contact-messages');
+    contactMessages = (res && res.items) || [];
+    renderContactMessages();
+  } catch (e) {
+    body.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#c00;">বার্তা আনা যায়নি</td></tr>';
+  }
+}
+
+function renderContactMessages() {
+  const body = document.getElementById('contactMsgBody');
+  if (!body) return;
+  body.innerHTML = contactMessages.map((m, i) => `<tr${m.read ? '' : ' style="font-weight:600;"'}>
+      <td>${bn(i + 1)}</td>
+      <td>${cmEsc(m.name || '-')}</td>
+      <td>${cmEsc(m.phone || m.email || '-')}</td>
+      <td>${cmEsc(m.subject || '-')}</td>
+      <td style="max-width:320px;white-space:pre-wrap;">${cmEsc(m.message || '')}</td>
+      <td>${m.createdAt ? fmtBnDate(String(m.createdAt).slice(0, 10)) : '-'}</td>
+      <td>
+        ${m.read ? '' : `<button class="add-btn" style="padding:4px 10px;font-size:12px;" onclick="markContactRead('${m._id}')">পড়া হয়েছে</button>`}
+        <button class="ci-btn ci-del-a" title="মুছুন" onclick="deleteContactMessage('${m._id}')">${icoDelete}</button>
+      </td>
+    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;color:#888;">কোনো বার্তা নেই</td></tr>';
+}
+
+async function markContactRead(id) {
+  try {
+    await window.NQAuth.postJSON('/api/contact-messages/' + id + '/read', {}, 'PATCH');
+    const m = contactMessages.find(x => x._id === id);
+    if (m) m.read = true;
+    renderContactMessages();
+  } catch (e) { showToast('আপডেট করা যায়নি'); }
+}
+
+async function deleteContactMessage(id) {
+  if (!confirm('এই বার্তাটি মুছে ফেলতে চান?')) return;
+  try {
+    await window.NQAuth.postJSON('/api/contact-messages/' + id, {}, 'DELETE');
+    contactMessages = contactMessages.filter(x => x._id !== id);
+    renderContactMessages();
+    showToast('মুছে ফেলা হয়েছে।');
+  } catch (e) { showToast('মুছতে ব্যর্থ'); }
 }
 
 /* ═══════════ ৯. পরীক্ষার মার্কশীট (Marksheet) ═══════════ */
@@ -11296,7 +12267,7 @@ function nqStateSnapshot() {
     dailyRoutines, residentialRoutineItems, crTimeSlots, examSubjects, examTypes, exams,
     syllabusItems, examResults, resultPublishes, otClasses, otDivisions,
     classGroups, ieFunds, ieCategories, notices, buses, transportAssignments, driverPayments,
-    siteRegistrations, financeTx, donationGroups, donationTx, attendance, studentDues,
+    siteRegistrations, financeTx, donationGroups, donationTx, attendance, attendanceHistory, studentDues,
     feeTypes, mealRoutine, siteInfo, siteSlides, siteRules, siteProgs
   };
 }
@@ -11348,6 +12319,7 @@ function nqApplyLoadedState(data) {
   if (hasContent(data.donationGroups)) donationGroups = data.donationGroups;
   if (hasContent(data.donationTx)) donationTx = data.donationTx;
   if (hasContent(data.attendance)) attendance = data.attendance;
+  if (hasContent(data.attendanceHistory)) attendanceHistory = data.attendanceHistory;
   if (hasContent(data.studentDues)) studentDues = data.studentDues;
   if (hasContent(data.feeTypes)) feeTypes = data.feeTypes;
   if (hasContent(data.mealRoutine)) mealRoutine = data.mealRoutine;
@@ -11434,12 +12406,22 @@ function nqInitAutoSaveWatcher() {
   window.addEventListener('blur', () => nqScheduleSave());
 }
 
+/* আদায়কারীর নাম — যে আইডি দিয়ে লগইন করা হয়েছে শুধু সেটিই থাকবে ও নির্বাচিত থাকবে */
+function nqInitCollectorSelect() {
+  const sel = document.getElementById('adaiCollector');
+  if (!sel) return;
+  const name = nqCurrentUserName();
+  sel.innerHTML = '<option value="' + name + '" selected>' + name + '</option>';
+  sel.value = name;
+}
+
 /* ─── Init ─── */
 (async function nqInit() {
   await nqLoadPersistedState();
   try {
     initHajiraData();
     initAdaiData();
+    nqInitCollectorSelect();
     nqCleanupDemoDues();
     populateAdmissionClasses(); // পেজ রিফ্রেশের পর সরাসরি ভর্তি পেজে ফিরলেও শ্রেণী তালিকা যেন খালি না থাকে
     restoreLastPage();
@@ -11635,8 +12617,156 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 });
 
+/* ═══════════ 📩 বার্তা নোটিফিকেশন (bell-btn) ═══════════ */
+let nqInboxMessages = [];
+
+function nqMsgEsc(v) {
+  return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function toggleMsgPanel(ev) {
+  if (ev) ev.stopPropagation();
+  const panel = document.getElementById('nqMsgPanel');
+  if (!panel) return;
+  const open = panel.classList.toggle('open');
+  if (open) loadAdminMessages();
+}
+
+document.addEventListener('click', function (e) {
+  const panel = document.getElementById('nqMsgPanel');
+  if (panel && panel.classList.contains('open') && !e.target.closest('.bell-wrap')) {
+    panel.classList.remove('open');
+  }
+});
+
+function nqSetNotifCount(n) {
+  const el = document.getElementById('notifCount');
+  if (!el) return;
+  el.textContent = typeof bn === 'function' ? bn(n) : String(n);
+  el.style.display = n > 0 ? '' : 'none';
+}
+
+async function loadAdminMessages() {
+  const list = document.getElementById('nqMsgList');
+  if (!list || !window.NQAuth || !window.NQAuth.isLoggedIn()) return;
+  list.innerHTML = '<div style="padding:18px;text-align:center;color:#888;">লোড হচ্ছে...</div>';
+  try {
+    const res = await window.NQAuth.getJSON('/api/messages/inbox');
+    nqInboxMessages = (res && res.messages) || [];
+    renderAdminMessages();
+  } catch (e) {
+    list.innerHTML = '<div style="padding:18px;text-align:center;color:#c00;">বার্তা আনা যায়নি</div>';
+  }
+}
+
+function nqSenderLines(m) {
+  const s = m.senderInfo || {};
+  const f = m.fromUserId || {};
+  const rows = [];
+  if (s.studentId || f.uid || s.uid) rows.push('🎫 আইডি: ' + nqMsgEsc(s.studentId || s.uid || f.uid));
+  if (s.className) rows.push('🎓 শ্রেণী: ' + nqMsgEsc(s.className));
+  if (s.classRoll) rows.push('🔢 রোল: ' + nqMsgEsc(s.classRoll));
+  if (s.regNo) rows.push('📄 রেজি: ' + nqMsgEsc(s.regNo));
+  if (s.session) rows.push('📅 সেশন: ' + nqMsgEsc(s.session));
+  if (s.branch) rows.push('🏫 শাখা: ' + nqMsgEsc(s.branch));
+  if (s.father) rows.push('👨 পিতা: ' + nqMsgEsc(s.father));
+  if (s.mobile) rows.push('📞 মোবাইল: ' + nqMsgEsc(s.mobile));
+  rows.push('👤 রোল/পদ: ' + nqMsgEsc(s.role || f.role || '-'));
+  return rows.join(' &nbsp;|&nbsp; ');
+}
+
+function renderAdminMessages() {
+  const list = document.getElementById('nqMsgList');
+  if (!list) return;
+  const unread = nqInboxMessages.filter(m => !m.read).length;
+  nqSetNotifCount(unread);
+  if (!nqInboxMessages.length) {
+    list.innerHTML = '<div style="padding:18px;text-align:center;color:#888;">কোনো বার্তা নেই</div>';
+    return;
+  }
+  list.innerHTML = nqInboxMessages.map(m => `
+    <div class="nq-msg-item${m.read ? '' : ' unread'}">
+      <div style="display:flex;justify-content:space-between;gap:8px;">
+        <span class="nq-msg-from">${nqMsgEsc((m.fromUserId && m.fromUserId.name) || (m.senderInfo && m.senderInfo.name) || 'অজানা')}</span>
+        <span style="color:#9ca3af;font-size:11px;white-space:nowrap;">${m.createdAt ? new Date(m.createdAt).toLocaleString('bn-BD') : ''}</span>
+      </div>
+      <div class="nq-msg-meta">${nqSenderLines(m)}</div>
+      ${m.subject ? `<div style="margin-top:6px;color:#6b7280;font-size:12.5px;"><strong>বিষয়:</strong> ${nqMsgEsc(m.subject)}</div>` : ''}
+      <div class="nq-msg-body">${nqMsgEsc(m.body || '')}</div>
+      <div class="nq-msg-actions">
+        <button class="nq-msg-reply-btn" onclick="toggleMsgReply('${m._id}')">↩️ রিপ্লাই</button>
+        ${m.read ? '' : `<button class="nq-msg-read-btn" onclick="markMsgRead('${m._id}')">পড়া হয়েছে</button>`}
+        <button class="nq-msg-del-btn" onclick="deleteAdminMessage('${m._id}')">মুছুন</button>
+      </div>
+      <div class="nq-msg-reply-box" id="replyBox-${m._id}">
+        <textarea id="replyText-${m._id}" placeholder="উত্তর লিখুন..."></textarea>
+        <div class="nq-msg-actions">
+          <button class="nq-msg-reply-btn" onclick="sendAdminReply('${m._id}')">পাঠান</button>
+          <button class="nq-msg-read-btn" onclick="toggleMsgReply('${m._id}')">বাতিল</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function toggleMsgReply(id) {
+  const box = document.getElementById('replyBox-' + id);
+  if (!box) return;
+  box.classList.toggle('open');
+  if (box.classList.contains('open')) {
+    const t = document.getElementById('replyText-' + id);
+    if (t) t.focus();
+  }
+}
+
+async function sendAdminReply(id) {
+  const t = document.getElementById('replyText-' + id);
+  const body = t ? t.value.trim() : '';
+  if (!body) { showToast('উত্তর লিখুন'); return; }
+  try {
+    await window.NQAuth.postJSON('/api/messages/' + id + '/reply', { body });
+    showToast('উত্তর পাঠানো হয়েছে');
+    await loadAdminMessages();
+  } catch (e) {
+    showToast((e && e.message) || 'উত্তর পাঠাতে ব্যর্থ');
+  }
+}
+
+async function markMsgRead(id) {
+  try {
+    await window.NQAuth.postJSON('/api/messages/' + id + '/read', {}, 'PATCH');
+    const m = nqInboxMessages.find(x => x._id === id);
+    if (m) m.read = true;
+    renderAdminMessages();
+  } catch (e) { showToast('আপডেট করা যায়নি'); }
+}
+
+async function deleteAdminMessage(id) {
+  if (!confirm('এই বার্তাটি মুছে ফেলতে চান?')) return;
+  try {
+    await window.NQAuth.postJSON('/api/messages/' + id, {}, 'DELETE');
+    nqInboxMessages = nqInboxMessages.filter(x => x._id !== id);
+    renderAdminMessages();
+    showToast('মুছে ফেলা হয়েছে।');
+  } catch (e) { showToast('মুছতে ব্যর্থ'); }
+}
+
+async function refreshMsgBadge() {
+  if (!window.NQAuth || !window.NQAuth.isLoggedIn()) return;
+  try {
+    const res = await window.NQAuth.getJSON('/api/messages/unread-count');
+    nqSetNotifCount((res && res.count) || 0);
+  } catch (e) { /* নীরবে উপেক্ষা */ }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  refreshMsgBadge();
+  setInterval(refreshMsgBadge, 60000);
+});
+
 </script>
 <script src="pwa-install.js"></script>
+<script src="nq-notify.js"></script>
 <script src="nq-monthly.js"></script>
+<script src="nq-en-digits.js"></script>
 </body>
 </html>

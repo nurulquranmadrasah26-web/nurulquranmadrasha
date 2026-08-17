@@ -19,6 +19,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>নুরুল কোরআন মাদ্রাসা | Teacher Panel</title>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="./nq-font.css">
 <style>
   :root{
     --bg:#eef1f5;
@@ -35,7 +39,7 @@
   *{box-sizing:border-box;}
   html,body{margin:0;padding:0;}
   body{
-    font-family:'Hind Siliguri','Inter',sans-serif;
+    font-family:'Kalpurush','Hind Siliguri','Noto Sans Bengali',sans-serif;
     background:var(--bg);
     color:var(--text);
     padding-bottom:86px;
@@ -615,7 +619,8 @@ var attTempt = {};          // হাজিরার অস্থায়ী �
 var attActiveClass = '';
 var feeSelected = {};       // নির্বাচিত বকেয়া আইডি
 
-function bn(n){ return String(n).replace(/[0-9]/g, function(d){ return '০১২৩৪৫৬৭৮৯'[d]; }); }
+/* সংখ্যা সব জায়গায় ইংরেজিতে দেখানো হবে */
+function bn(n){ return String(n == null ? '' : n).replace(/[০-৯]/g, function(d){ return String('০১২৩৪৫৬৭৮৯'.indexOf(d)); }); }
 function esc(t){ return String(t == null ? '' : t).replace(/[&<>"]/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
 function todayISO(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function bnDate(iso){ if(!iso) return ''; var p=String(iso).split('-'); return p.length===3 ? bn(p[2]+'/'+p[1]+'/'+p[0]) : String(iso); }
@@ -1023,5 +1028,6 @@ document.addEventListener('DOMContentLoaded', boot);
 
 <script src="pwa-install.js"></script>
 <script src="nq-notify.js"></script>
+<script src="nq-en-digits.js"></script>
 </body>
 </html>

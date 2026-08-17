@@ -168,6 +168,8 @@ const studentSchema = new mongoose.Schema(
     name: { type: String, required: true, trim: true },
     rollNo: { type: String, required: true },
     className: { type: String, required: true },
+    branch: { type: String, default: "" },
+    session: { type: String, default: "" },
     fatherName: { type: String, default: "" },
     motherName: { type: String, default: "" },
     mobileNo: { type: String, default: "" },
@@ -188,6 +190,10 @@ const messageSchema = new mongoose.Schema(
     subject: { type: String, default: "" },
     body: { type: String, required: true },
     read: { type: Boolean, default: false },
+    // প্রেরকের অতিরিক্ত তথ্য (শিক্ষার্থীর আইডি, শ্রেণী, রোল ইত্যাদি)
+    senderInfo: { type: mongoose.Schema.Types.Mixed, default: null },
+    // কোন মেসেজের উত্তর
+    replyTo: { type: mongoose.Schema.Types.ObjectId, ref: "Message", default: null },
   },
   { timestamps: true }
 );
@@ -202,6 +208,21 @@ const storeSchema = new mongoose.Schema(
   { timestamps: true }
 );
 const Store = mongoose.model("Store", storeSchema);
+
+// ওয়েবসাইটের যোগাযোগ ফর্ম থেকে আসা বার্তা
+const contactSchema = new mongoose.Schema(
+  {
+    name: { type: String, required: true },
+    email: { type: String, default: "" },
+    phone: { type: String, default: "" },
+    subject: { type: String, default: "" },
+    message: { type: String, required: true },
+    ip: { type: String, default: "" },
+    read: { type: Boolean, default: false },
+  },
+  { timestamps: true }
+);
+const ContactMessage = mongoose.model("ContactMessage", contactSchema);
 
 /* ------------------------------------------------------------------ */
 /*  Auth helpers                                                       */
@@ -242,65 +263,348 @@ function requirePerm(mod) {
 }
 
 /**
- * Seed default students (ডিফল্ট শিক্ষার্থী)
+ * ডিফল্ট শিক্ষার্থী তালিকা — "শিক্ষার্থীর তালিকা (2).xls" থেকে নেওয়া
+ */
+const DEFAULT_STUDENTS = [
+  {
+    "name": "মোঃ আজিম",
+    "rollNo": "1",
+    "className": "নার্সারী",
+    "branch": "নুরানি",
+    "session": "২০২৬",
+    "fatherName": "মোঃ আপেল আলী",
+    "motherName": "েমাসাঃ আদরী খাতুন",
+    "mobileNo": "01726736416",
+    "address": "হরিপুর, ভূঁইশালপাড়া, চৌহদ্দীটোলা, চাঁপাইনবাবগঞ্জ"
+  },
+  {
+    "name": "মোঃ আব্দুর রহমান",
+    "rollNo": "2",
+    "className": "নার্সারী",
+    "branch": "নুরানি",
+    "session": "২০২৭",
+    "fatherName": "মোঃ রাকিবুল হাসান",
+    "motherName": "মোসাঃ মিম আখতার",
+    "mobileNo": "01739530343",
+    "address": "হরিপুর, ভূঁইশালপাড়া, চৌহদ্দীটোলা, চাঁপাইনবাবগঞ্জ"
+  },
+  {
+    "name": "মাহাবুব হোসেন",
+    "rollNo": "3",
+    "className": "নার্সারী",
+    "branch": "নুরানি",
+    "session": "২০২৬",
+    "fatherName": "মোহাঃ রুবেল",
+    "motherName": "মোসাঃ হালিমা  খাতুন",
+    "mobileNo": "01779331989",
+    "address": "হরিপুর সাহাপাড়া"
+  },
+  {
+    "name": "আব্দুর রউফ",
+    "rollNo": "4",
+    "className": "নার্সারী",
+    "branch": "নুরানি",
+    "session": "২০২৬",
+    "fatherName": "রাকিব আলি",
+    "motherName": "হাবিবা খাতুন",
+    "mobileNo": "01305450714",
+    "address": "হরিপুর সাহাপাড়া"
+  },
+  {
+    "name": "আবু বক্কর সিদ্দিক",
+    "rollNo": "5",
+    "className": "নার্সারী",
+    "branch": "নুরানি",
+    "session": "২০২৬",
+    "fatherName": "শামীম হোসেন",
+    "motherName": "আক্তারা খাতুন",
+    "mobileNo": "01929975550",
+    "address": "হরিপুর"
+  },
+  {
+    "name": "আকতারুজ্জামান নিরব",
+    "rollNo": "6",
+    "className": "নার্সারী",
+    "branch": "নুরানি",
+    "session": "২০২৬",
+    "fatherName": "শামীম হোসেন",
+    "motherName": "আকতারা খাতুন",
+    "mobileNo": "01929975550",
+    "address": "হরিপুর"
+  },
+  {
+    "name": "সাফিন আহমেদ শিশির",
+    "rollNo": "7",
+    "className": "প্রথম",
+    "branch": "নুরানি",
+    "session": "২০২৬",
+    "fatherName": "ফিরোজ কবির",
+    "motherName": "শিরিন শিলা",
+    "mobileNo": "০১৮১৯২২৫৩৯৬",
+    "address": "হরিপুর"
+  },
+  {
+    "name": "আবরার মাহির",
+    "rollNo": "8",
+    "className": "নার্সারী",
+    "branch": "নুরানি",
+    "session": "২০২৬",
+    "fatherName": "আশরাফুর হক",
+    "motherName": "মোসাঃ মরিয়ম নেশা",
+    "mobileNo": "01750208470",
+    "address": "হরিপুর ভুইশালপাড়া"
+  },
+  {
+    "name": "ইয়ামিন আহমেদ",
+    "rollNo": "9",
+    "className": "প্রথম",
+    "branch": "নুরানি",
+    "session": "২০২৬",
+    "fatherName": "মোঃ শফিকুল ইসলাম",
+    "motherName": "মোসাঃ মমতাজ মহাল",
+    "mobileNo": "01797392681",
+    "address": "হরিপুর সাহাপাড়া"
+  },
+  {
+    "name": "আব্দুর রহিম",
+    "rollNo": "11",
+    "className": "প্রথম",
+    "branch": "নুরানি",
+    "session": "২০২৬",
+    "fatherName": "রজব আলী",
+    "motherName": "মোসাঃ খাতিজা খাতুন",
+    "mobileNo": "01325366405",
+    "address": "শিবপুর ফুলতলামোড়"
+  },
+  {
+    "name": "আব্দুর রহমান",
+    "rollNo": "12",
+    "className": "নার্সারী",
+    "branch": "নুরানি",
+    "session": "২০২৬",
+    "fatherName": "জাহাঙ্গীর আলম",
+    "motherName": "মাসরুফা তাসলিমা  সুমি",
+    "mobileNo": "01724594622",
+    "address": "হরিপুর সাহাপাড়া"
+  },
+  {
+    "name": "আরহাম বারী আয়াস",
+    "rollNo": "13",
+    "className": "নার্সারী",
+    "branch": "নুরানি",
+    "session": "২০২৬",
+    "fatherName": "আজিজুল বারী",
+    "motherName": "নাসরিন আক্তার",
+    "mobileNo": "01723591966",
+    "address": "হরিপুর মহালদার পাড়া"
+  },
+  {
+    "name": "আয়মান জাহান সোহানা",
+    "rollNo": "14",
+    "className": "নার্সারী",
+    "branch": "নুরানি",
+    "session": "২০২৬",
+    "fatherName": "আসাদুজ্জামান",
+    "motherName": "রোজী আকতার",
+    "mobileNo": "01765139694",
+    "address": "মহালদারপাড়া"
+  },
+  {
+    "name": "আনিসা আখতার জুঁই",
+    "rollNo": "15",
+    "className": "নাজেরা বালিকা",
+    "branch": "বালিকা",
+    "session": "২০২৬",
+    "fatherName": "আরিফুল ইসলাম",
+    "motherName": "মোসাঃ জান্নাতুন ফেরদাউস",
+    "mobileNo": "01713718970",
+    "address": "সংকরবাটি, বটতলাহাট, চাঁপাইনবাবগঞ্জ সদর"
+  },
+  {
+    "name": "মোসাঃ হালিমাতুস্সাদিয়া",
+    "rollNo": "16",
+    "className": "হেফজ বালিকা",
+    "branch": "বালিকা",
+    "session": "২০২৬",
+    "fatherName": "মোঃ আব্দুল হাকিম",
+    "motherName": "মোসাঃ জান্নাতুন",
+    "mobileNo": "01796469198",
+    "address": "ফুলবাগান, বটতলা হাট, চাঁপাইনবাবগঞ্জ সদর"
+  },
+  {
+    "name": "মোসাঃ হাবিবা আক্তার তিসা",
+    "rollNo": "17",
+    "className": "হেফজ বালিকা",
+    "branch": "বালিকা",
+    "session": "২০২৬",
+    "fatherName": "মোঃ আব্দুল হাকিম",
+    "motherName": "মোসাঃ জান্নাতুন",
+    "mobileNo": "01796469198",
+    "address": ""
+  },
+  {
+    "name": "মোসাঃ সালমা আক্তার জুই",
+    "rollNo": "18",
+    "className": "হেফজ বালিকা",
+    "branch": "বালিকা",
+    "session": "২০২৬",
+    "fatherName": "মোঃ শাহ জামাল",
+    "motherName": "মোসাঃ আয়েশা বেগম",
+    "mobileNo": "01735822343",
+    "address": "ফুলবাগান, বটতলা হাট, চাঁপাইনবাবগঞ্জ সদর"
+  },
+  {
+    "name": "আবু সুফিয়ান",
+    "rollNo": "19",
+    "className": "প্রথম",
+    "branch": "নুরানি",
+    "session": "২০২৬",
+    "fatherName": "মোঃ সুজন মিয়া",
+    "motherName": "মোসাঃ নিসাত তাইবা নিশা",
+    "mobileNo": "হরিপুর মহাল",
+    "address": "হরিপুর মহাল্দারপাড়া, চৌহদ্দীটোলা চাঁপাইনবাবগঞ্জ"
+  },
+  {
+    "name": "মোসাঃ রিফা খাতুন",
+    "rollNo": "20",
+    "className": "হেফজ বালিকা",
+    "branch": "বালিকা",
+    "session": "২০২৬",
+    "fatherName": "রানা",
+    "motherName": "মোসাঃ শামলি বেগম",
+    "mobileNo": "01331166786",
+    "address": "কমলা কান্তপুর, রানিহাটি"
+  },
+  {
+    "name": "মোসাঃ তামান্না খাতুন",
+    "rollNo": "21",
+    "className": "হেফজ বালিকা",
+    "branch": "বালিকা",
+    "session": "২০২৬",
+    "fatherName": "মোঃতরিকুল ইসলাম",
+    "motherName": "মোসাঃ পিংকি খাতুন",
+    "mobileNo": "01753779818",
+    "address": "ছত্রাজপুর, ছত্রাজপুর, রানিহাটি"
+  },
+  {
+    "name": "আনিসা আক্তার জুই",
+    "rollNo": "22",
+    "className": "প্রথম",
+    "branch": "বালিকা",
+    "session": "২০২৬",
+    "fatherName": "আরিফ",
+    "motherName": "জান্নাতুর কলি",
+    "mobileNo": "0123456789",
+    "address": "ফুলবাগান, বটতলাহাট"
+  },
+  {
+    "name": "তায়ি্যবা আক্তার মুসকান",
+    "rollNo": "23",
+    "className": "নার্সারী",
+    "branch": "নুরানি",
+    "session": "২০২৬",
+    "fatherName": "মোঃ শহিদুল ইসরাম",
+    "motherName": "মোসাঃ সাদিকা খাতুন",
+    "mobileNo": "01725095278",
+    "address": "তেলিপাড়া, পুটিয়া, রাজশাহী"
+  },
+  {
+    "name": "সায়ীদা  তাবাসসুম",
+    "rollNo": "24",
+    "className": "নাজেরা বালিকা",
+    "branch": "বালিকা",
+    "session": "২০২৬",
+    "fatherName": "শরিফুল ইসলাম সায়েদ",
+    "motherName": "শামীমা আখতার মুন",
+    "mobileNo": "01733129400",
+    "address": "64, হরিপুর ইউপি পাড়া চৌহদ্দীটোলা, 6300, ওয়র্ড নং 5 চাঁপাইনবাবগঞ্জ সদর"
+  },
+  {
+    "name": "নাদিয়া আক্তার মাইশা",
+    "rollNo": "28",
+    "className": "নার্সারী",
+    "branch": "নুরানি",
+    "session": "২০২৬",
+    "fatherName": "মোঃ শাহাবুল আলম",
+    "motherName": "মোসাঃ সালমা খাতুন",
+    "mobileNo": "01779064958",
+    "address": "৪১/২ হরিপুর ভুঁইশাল পাড়া, চৌহহদ্দীটোল, চাঁপাইনবাবগঞ্জ"
+  },
+  {
+    "name": "মোঃ সাদিক",
+    "rollNo": "29",
+    "className": "প্রথম",
+    "branch": "নুরানি",
+    "session": "২০২৬",
+    "fatherName": "মোঃ শাহাবুল আলম",
+    "motherName": "মোসাঃ সালমা খাতুন",
+    "mobileNo": "01779064958",
+    "address": "৪১/২ হরিপুর ভুঁইশাল পাড়া, চৌহহদ্দীটোল, চাঁপাইনবাবগঞ্জ"
+  }
+];
+
+/* সিড সংস্করণ — বদলালে পুরোনো শিক্ষার্থী/শিক্ষক ডেটা মুছে নতুন তালিকা বসে */
+const STUDENT_SEED_VERSION = "xls-2026-v1";
+
+/**
+ * পুরোনো সব শিক্ষার্থী ও শিক্ষক মুছে নতুন তালিকা বসানো হয় (প্রতি সংস্করণে একবার)
  */
 async function seedDefaultStudents() {
-  const count = await Student.countDocuments();
+  const marker = await Store.findOne({ key: "__seed_students_version" }).lean();
+  if (marker && marker.data === STUDENT_SEED_VERSION) return;
 
-  if (count > 0) return; // Already seeded
+  // ── ১) পুরোনো শিক্ষার্থী ও শিক্ষক ডেটা সম্পূর্ণ মুছে ফেলা ──
+  await Student.deleteMany({});
+  await User.deleteMany({ role: { $in: ["Student", "Teacher"] } });
+  await Promise.all(
+    [
+      "students",
+      "teachers",
+      "attendance",
+      "attendanceHistory",
+      "studentDues",
+      "payments",
+      "paymentDetails",
+      "dueDetails",
+    ].map((k) => Store.findOneAndUpdate({ key: k }, { data: [] }, { upsert: true }))
+  );
 
-  const defaultStudents = [
-    {
-      name: "আহমদ আলী",
-      rollNo: "001",
-      className: "প্রথম বর্ষ",
-      fatherName: "করিম আহমেদ",
-      motherName: "ফাতিমা বেগম",
-      mobileNo: "01712345671",
-      address: "ঢাকা",
-    },
-    {
-      name: "ফাতিমা খান",
-      rollNo: "002",
-      className: "প্রথম বর্ষ",
-      fatherName: "খান সা��েব",
-      motherName: "আয়শা খান",
-      mobileNo: "01712345672",
-      address: "চট্টগ্রাম",
-    },
-    {
-      name: "মুহাম্মদ হাসান",
-      rollNo: "003",
-      className: "দ্বিতীয় বর্ষ",
-      fatherName: "হাসান সাহেব",
-      motherName: "লাইলা আক্তার",
-      mobileNo: "01712345673",
-      address: "সিলেট",
-    },
-    {
-      name: "আয়শা সুলতানা",
-      rollNo: "004",
-      className: "দ্বিতীয় বর্ষ",
-      fatherName: "সুলতান আহমেদ",
-      motherName: "রাহিমা বেগম",
-      mobileNo: "01712345674",
-      address: "খুলনা",
-    },
-    {
-      name: "করিম উদ্দিন",
-      rollNo: "005",
-      className: "তৃতীয় বর্ষ",
-      fatherName: "উদ্দিন সাহেব",
-      motherName: "হামিদা বেগম",
-      mobileNo: "01712345675",
-      address: "রাজশাহী",
-    },
-  ];
+  // ── ২) নতুন তালিকা বসানো ──
+  await Student.insertMany(DEFAULT_STUDENTS);
 
-  await Student.insertMany(defaultStudents);
+  // এডমিন প্যানেলের ডেটা-স্টোরেও একই তালিকা (প্যানেলের ফরম্যাটে)
+  const panelStudents = DEFAULT_STUDENTS.map((s, i) => ({
+    id: i + 1,
+    regNo: s.rollNo,
+    classRoll: s.rollNo,
+    name: s.name,
+    cls: s.className,
+    attCls: s.className,
+    attDept: s.branch || "",
+    branch: s.branch || "",
+    dept: s.branch || "",
+    mobile: s.mobileNo,
+    fee: 860,
+    parent: s.fatherName,
+    mother: s.motherName,
+    guardianName: s.fatherName,
+    guardianMobile: s.mobileNo,
+    fatherMobile: s.mobileNo,
+    curAddr: s.address,
+    permAddr: s.address,
+    session: s.session || "",
+    type: "অনাবাসিক",
+    status: "সক্রিয়",
+  }));
+  await Store.findOneAndUpdate({ key: "students" }, { data: panelStudents }, { upsert: true });
+  await Store.findOneAndUpdate(
+    { key: "__seed_students_version" },
+    { data: STUDENT_SEED_VERSION },
+    { upsert: true }
+  );
 
   console.log(
-    `[seed] ${defaultStudents.length} default students created`
+    `[seed] ${DEFAULT_STUDENTS.length} students seeded — পুরোনো শিক্ষার্থী/শিক্ষক ডেটা মুছে ফেলা হয়েছে`
   );
 }
 
@@ -437,8 +741,8 @@ app.get("/api/directory", auth, async (req, res) => {
   try {
     const query = { active: true, _id: { $ne: req.user.id } };
     // শিক্ষার্থী শুধু শিক্ষক/প্রশাসনের সাথে যোগাযোগ করতে পারবে
-    if (req.user.role === "Student")
-      query.role = { $in: ["Teacher", "Admin", "Super Admin", "Support"] };
+    // শিক্ষার্থী শুধুমাত্র সুপার এডমিনকে মেসেজ পাঠাতে পারবে
+    if (req.user.role === "Student") query.role = "Super Admin";
     const users = await User.find(query).select("name uid role").sort({ name: 1 }).lean();
     res.json(users.map((u) => ({ id: u._id, name: u.name, uid: u.uid, role: u.role })));
   } catch (e) {
@@ -586,6 +890,38 @@ app.delete("/api/users/:id", auth, requirePerm("users"), async (req, res) => {
   }
 });
 
+/* ── সুপার এডমিন: যেকোনো ব্যবহারকারী হিসেবে সরাসরি লগইন (impersonate) ── */
+app.post("/api/users/:id/impersonate", auth, requirePerm("users"), async (req, res) => {
+  try {
+    if (req.user.role !== "Super Admin")
+      return res.status(403).json({ message: "শুধুমাত্র সুপার এডমিন এই সুবিধা ব্যবহার করতে পারবেন" });
+
+    const target = await User.findById(req.params.id);
+    if (!target) return res.status(404).json({ message: "ব্যবহারকারী পাওয়া যায়নি" });
+    if (!target.active)
+      return res.status(403).json({ message: "এই অ্যাকাউন্ট নিষ্ক্রিয় — আগে সক্রিয় করুন" });
+    if (String(target._id) === String(req.user.id))
+      return res.status(400).json({ message: "আপনি ইতিমধ্যে এই অ্যাকাউন্টে লগইন আছেন" });
+
+    const token = signToken(target);
+    res.json({
+      token,
+      user: {
+        id: target._id,
+        name: target.name,
+        uid: target.uid,
+        role: target.role,
+        perms: permissionsForRole(target.role),
+        photoUrl: target.photoUrl,
+        impersonatedBy: { id: req.user.id, name: req.user.name, uid: req.user.uid },
+      },
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "সার্ভার ত্রুটি" });
+  }
+});
+
 /* ------------------------------------------------------------------ */
 /*  Routes: students (শিক্ষার্থী)                                      */
 /* ------------------------------------------------------------------ */
@@ -700,9 +1036,113 @@ app.put("/api/store/:key", auth, canWriteStore, async (req, res) => {
 });
 
 /* ------------------------------------------------------------------ */
+/*  Public API: ওয়েবসাইটের যোগাযোগ ফর্ম (অথেন্টিকেশন ছাড়া)             */
+/* ------------------------------------------------------------------ */
+const contactHits = new Map(); // সরল রেট-লিমিট (প্রতি IP, ১০ মিনিটে ৫টি)
+
+app.post("/api/public/contact", async (req, res) => {
+  try {
+    const ip = (req.headers["x-forwarded-for"] || req.ip || "").toString().split(",")[0].trim();
+    const now = Date.now();
+    const hits = (contactHits.get(ip) || []).filter((t) => now - t < 10 * 60 * 1000);
+    if (hits.length >= 5) {
+      return res.status(429).json({ message: "অনেকবার চেষ্টা করা হয়েছে, কিছুক্ষণ পর আবার চেষ্টা করুন" });
+    }
+    hits.push(now);
+    contactHits.set(ip, hits);
+
+    const str = (v, max) => String(v == null ? "" : v).trim().slice(0, max);
+    const name = str(req.body && req.body.name, 120);
+    const email = str(req.body && req.body.email, 160);
+    const phone = str(req.body && req.body.phone, 40);
+    const subject = str(req.body && req.body.subject, 200);
+    const message = str(req.body && req.body.message, 4000);
+
+    if (!name || !message) {
+      return res.status(400).json({ message: "নাম এবং বার্তা প্রয়োজন" });
+    }
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ message: "সঠিক ইমেইল দিন" });
+    }
+
+    const doc = await ContactMessage.create({ name, email, phone, subject, message, ip });
+    res.json({ ok: true, id: doc._id });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "বার্তা পাঠাতে ব্যর্থ" });
+  }
+});
+
+// অ্যাডমিন: যোগাযোগ ফর্মের বার্তা তালিকা / পড়া চিহ্নিত / মুছে ফেলা
+app.get("/api/contact-messages", auth, async (_req, res) => {
+  try {
+    const items = await ContactMessage.find().sort({ createdAt: -1 }).limit(500).lean();
+    res.json({ ok: true, items });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "বার্তা আনতে ব্যর্থ" });
+  }
+});
+
+app.patch("/api/contact-messages/:id/read", auth, async (req, res) => {
+  try {
+    const doc = await ContactMessage.findByIdAndUpdate(req.params.id, { read: true }, { new: true });
+    if (!doc) return res.status(404).json({ message: "পাওয়া যায়নি" });
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ message: "আপডেট করতে ব্যর্থ" });
+  }
+});
+
+app.delete("/api/contact-messages/:id", auth, async (req, res) => {
+  try {
+    const doc = await ContactMessage.findByIdAndDelete(req.params.id);
+    if (!doc) return res.status(404).json({ message: "পাওয়া যায়নি" });
+    res.json({ ok: true });
+  } catch (e) {
+    res.status(500).json({ message: "মুছতে ব্যর্থ" });
+  }
+});
+
+/* ------------------------------------------------------------------ */
 /*  Message API (মেসেজিং সিস্টেম)                                      */
 /* ------------------------------------------------------------------ */
 // পোস্ট মেসেজ (ব্যবহারকারী থেকে ব্যবহারকারীকে)
+// প্রেরকের বিস্তারিত তথ্য তৈরি (শিক্ষার্থী হলে তার আইডি/শ্রেণী/রোল নম্বরসহ)
+async function buildSenderInfo(user) {
+  const info = { name: user.name || "", uid: user.uid || "", role: user.role || "" };
+  try {
+    if (user.role === "Student") {
+      const me = await User.findById(user.id).lean();
+      if (me) {
+        info.name = me.name;
+        info.uid = me.uid;
+        info.mobile = me.mobile || "";
+        info.photoUrl = me.photoUrl || "";
+      }
+      const doc = await Store.findOne({ key: "students" }).lean();
+      const list = Array.isArray(doc && doc.data) ? doc.data : [];
+      const st =
+        list.find((x) => x && me && String(x.uid) === String(me.uid)) ||
+        list.find((x) => x && me && String(x.name) === String(me.name));
+      if (st) {
+        info.studentId = st.id || st.uid || "";
+        info.className = st.cls || st.className || "";
+        info.classRoll = st.classRoll || st.roll || "";
+        info.regNo = st.regNo || "";
+        info.session = st.session || "";
+        info.branch = st.branch || "";
+        info.father = st.parent || st.fatherName || "";
+        info.mobile = info.mobile || st.mobile || "";
+        info.photoUrl = info.photoUrl || st.photo || "";
+      }
+    }
+  } catch (e) {
+    console.error("senderInfo তৈরিতে সমস্যা:", e);
+  }
+  return info;
+}
+
 app.post("/api/messages/send", auth, async (req, res) => {
   try {
     const { toUserId, subject, body } = req.body;
@@ -715,12 +1155,20 @@ app.post("/api/messages/send", auth, async (req, res) => {
     if (!toUser) {
       return res.status(404).json({ message: "ব্যবহারকারী পাওয়া যায়নি" });
     }
-    
+
+    // শিক্ষার্থী শুধুমাত্র সুপার এডমিনকে মেসেজ পাঠাতে পারবে
+    if (req.user.role === "Student" && toUser.role !== "Super Admin") {
+      return res
+        .status(403)
+        .json({ message: "শুধুমাত্র সুপার এডমিনকে মেসেজ পাঠানো যাবে" });
+    }
+
     const msg = new Message({
       fromUserId: req.user.id,
       toUserId,
       subject: subject || "",
-      body
+      body,
+      senderInfo: await buildSenderInfo(req.user),
     });
     await msg.save();
     res.json({ ok: true, message: msg });
@@ -771,6 +1219,67 @@ app.patch("/api/messages/:id/read", auth, async (req, res) => {
   }
 });
 
+// অপঠিত মেসেজ সংখ্যা (এডমিন প্যানেলের bell আইকনের জন্য)
+app.get("/api/messages/unread-count", auth, async (req, res) => {
+  try {
+    const count = await Message.countDocuments({ toUserId: req.user.id, read: false });
+    res.json({ ok: true, count });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "সার্ভার ত্রুটি" });
+  }
+});
+
+// মেসেজের উত্তর দিন (এডমিন প্যানেল থেকে শিক্ষার্থীকে)
+app.post("/api/messages/:id/reply", auth, async (req, res) => {
+  try {
+    const body = (req.body && req.body.body ? String(req.body.body) : "").trim();
+    if (!body) return res.status(400).json({ message: "বার্তা লিখুন" });
+
+    const original = await Message.findById(req.params.id);
+    if (!original) return res.status(404).json({ message: "মেসেজ পাওয়া যায়নি" });
+    if (String(original.toUserId) !== String(req.user.id))
+      return res.status(403).json({ message: "এই মেসেজের উত্তর দেওয়ার অনুমতি নেই" });
+
+    const reply = new Message({
+      fromUserId: req.user.id,
+      toUserId: original.fromUserId,
+      subject: original.subject
+        ? original.subject.indexOf("Re:") === 0
+          ? original.subject
+          : "Re: " + original.subject
+        : "উত্তর",
+      body,
+      replyTo: original._id,
+      senderInfo: await buildSenderInfo(req.user),
+    });
+    await reply.save();
+
+    original.read = true;
+    await original.save();
+
+    res.json({ ok: true, message: reply });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "উত্তর পাঠাতে ব্যর্থ" });
+  }
+});
+
+// একটি মেসেজ মুছে ফেলা (প্রাপক)
+app.delete("/api/messages/:id", auth, async (req, res) => {
+  try {
+    const msg = await Message.findById(req.params.id);
+    if (!msg) return res.status(404).json({ message: "মেসেজ পাওয়া যায়নি" });
+    if (String(msg.toUserId) !== String(req.user.id))
+      return res.status(403).json({ message: "অনুমতি নেই" });
+    await msg.deleteOne();
+    res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "মুছতে ব্যর্থ" });
+  }
+});
+
 // Bulk upsert: PUT /api/store  { keys: { key1: data1, key2: data2, ... } }
 // Lets the admin panel persist the entire in-memory app state (students,
 // staff, fee, exam, routine, accounts, homework, message, etc.) in one call.
@@ -789,6 +1298,109 @@ app.put("/api/store", auth, canWriteStore, async (req, res) => {
   } catch (e) {
     console.error(e);
     res.status(500).json({ message: "সার্ভার ত্রুটি" });
+  }
+});
+
+/* ------------------------------------------------------------------ */
+/*  শিক্ষার্থীর নিজের প্রোফাইল আপডেট (student.html সেটিংস পেজ)         */
+/*  - আইডি/রেজি/রোল/শ্রেণী/ফি/স্ট্যাটাস পরিবর্তন করা যাবে না           */
+/*  - বাংলা অঙ্ক দিলেও ইংরেজি অঙ্কে সংরক্ষণ হবে                        */
+/* ------------------------------------------------------------------ */
+const STUDENT_EDITABLE_FIELDS = [
+  "name",
+  "mobile",
+  "parent",
+  "mother",
+  "fatherJob",
+  "fatherMobile",
+  "motherJob",
+  "motherMobile",
+  "guardianName",
+  "guardianRel",
+  "guardianMobile",
+  "curAddr",
+  "permAddr",
+  "address",
+  "dob",
+  "gender",
+  "birthReg",
+  "email",
+  "bloodGroup",
+  "photo",
+];
+
+// লক করা ফিল্ড (কখনোই শিক্ষার্থী পরিবর্তন করতে পারবে না)
+const STUDENT_LOCKED_FIELDS = [
+  "id",
+  "uid",
+  "regNo",
+  "classRoll",
+  "roll",
+  "cls",
+  "attCls",
+  "attDept",
+  "group",
+  "branch",
+  "session",
+  "admission",
+  "startMonth",
+  "fee",
+  "feeBreakdown",
+  "status",
+];
+
+function bnDigitsToEn(v) {
+  return String(v == null ? "" : v).replace(/[০-৯]/g, (d) => String("০১২৩৪৫৬৭৮৯".indexOf(d)));
+}
+
+app.put("/api/student/profile", auth, async (req, res) => {
+  try {
+    if (req.user.role !== "Student")
+      return res.status(403).json({ message: "শুধু শিক্ষার্থী নিজের প্রোফাইল পরিবর্তন করতে পারবে" });
+
+    const me = await User.findById(req.user.id).lean();
+    if (!me) return res.status(404).json({ message: "ব্যবহারকারী পাওয়া যায়নি" });
+
+    const doc = await Store.findOne({ key: "students" });
+    const list = Array.isArray(doc && doc.data) ? doc.data.slice() : [];
+    let idx = list.findIndex((st) => st && String(st.uid) === String(me.uid));
+    if (idx < 0) idx = list.findIndex((st) => st && String(st.name) === String(me.name));
+    if (idx < 0) return res.status(404).json({ message: "শিক্ষার্থীর রেকর্ড পাওয়া যায়নি" });
+
+    const body = req.body || {};
+    const record = Object.assign({}, list[idx]);
+    let changed = 0;
+    STUDENT_EDITABLE_FIELDS.forEach((f) => {
+      if (!(f in body)) return;
+      let val = body[f];
+      if (typeof val === "string") {
+        val = bnDigitsToEn(val).trim().slice(0, f === "photo" ? 500000 : 300);
+      }
+      record[f] = val;
+      changed++;
+    });
+    if (!changed) return res.status(400).json({ message: "পরিবর্তনের কোনো তথ্য পাওয়া যায়নি" });
+
+    // লক করা ফিল্ড আগের মানেই থাকবে
+    STUDENT_LOCKED_FIELDS.forEach((f) => {
+      if (f in list[idx]) record[f] = list[idx][f];
+      else delete record[f];
+    });
+
+    list[idx] = record;
+    await Store.findOneAndUpdate({ key: "students" }, { data: list }, { upsert: true });
+
+    // ব্যবহারকারী অ্যাকাউন্টের নাম/ছবিও সমন্বয় করা হচ্ছে
+    const patch = {};
+    if (typeof body.name === "string" && body.name.trim()) patch.name = body.name.trim();
+    if (typeof body.photo === "string" && body.photo) patch.photoUrl = body.photo;
+    if (typeof body.mobile === "string") patch.mobile = bnDigitsToEn(body.mobile).trim();
+    if (Object.keys(patch).length) await User.findByIdAndUpdate(req.user.id, patch);
+
+    res.json({ ok: true, student: record });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "প্রোফাইল আপডেট ব্যর্থ" });
   }
 });
 
