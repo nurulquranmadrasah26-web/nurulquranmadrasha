@@ -1614,7 +1614,7 @@
     </div>
   </div>
 
-  <!-- ব���যবহারকারী -->
+  <!-- ব্যবহারকারী -->
   <div class="nav-drop" data-mod="users">
     <button class="nav-pill nav-p-navy" onclick="toggleNavDrop(this)">
       <span class="nav-pill-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-3-3.87"/><path d="M7 21v-2a4 4 0 013-3.87"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.85"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></span>
@@ -1643,7 +1643,7 @@
 
       <div class="cards-grid-4">
         <div class="card c-salmon" style="cursor:pointer;" onclick="showPage('admission'); resetAdmission();"><span class="card-label">আজকের ভর্তি</span><span class="card-value">১ জন</span></div>
-        <div class="card c-orange" style="cursor:pointer;" onclick="showPage('students')"><span class="card-label">মোট শিক্ষার্থী</span><span class="card-value">২৪ জন</span></div>
+        <div class="card c-orange" style="cursor:pointer;" onclick="showPage('students')"><span class="card-label">মোট শিক্ষার্থী</span><span class="card-value" id="dashTotalStudents">০ জন</span></div>
         <div class="card c-teal" style="cursor:pointer;" onclick="showPage('hajira'); renderHajira();"><span class="card-label">আজকের হাজিরা</span><span class="card-value">১১ জন</span></div>
         <div class="card c-coral" style="cursor:pointer;" onclick="showPage('hajira'); renderHajira();"><span class="card-label">আজকের উপস্থিত</span><span class="card-value">৫ জন</span></div>
 
@@ -1670,7 +1670,7 @@
         <div class="card c-green" style="cursor:pointer;" onclick="showPage('otDivision'); renderOtDivisions();"><span class="card-label">বিভাগ</span><span class="card-value">৩ টি</span></div>
         <div class="card c-black" style="cursor:pointer;" onclick="showPage('ieCategory'); renderIeCategories();"><span class="card-label">আয়/ব্যয় খাত</span><span class="card-value">১৫ টি</span></div>
         <div class="card c-navy" style="cursor:pointer;" onclick="showPage('stutransfer'); renderStuTransfer();"><span class="card-label">স্থানান্তর/বহিষ্কার</span><span class="card-value">০ জন</span></div>
-        <div class="card c-navy" style="cursor:pointer;" onclick="showPage('msgDashboard'); renderMsgDashboard();"><span class="card-label">আজক��র পাঠানো ম্যাসেজ</span><span class="card-value">০ টি</span></div>
+        <div class="card c-navy" style="cursor:pointer;" onclick="showPage('msgDashboard'); renderMsgDashboard();"><span class="card-label">আজকের পাঠানো ম্যাসেজ</span><span class="card-value">০ টি</span></div>
 
         <div class="card c-black" style="cursor:pointer;" onclick="showPage('msgList'); renderMsgListPage();"><span class="card-label">মোট পাঠানো ম্যাসেজ</span><span class="card-value">০ টি</span></div>
         <div class="card c-salmon" style="cursor:pointer;" onclick="showPage('msgTemplate'); renderMsgTemplatePage();"><span class="card-label">ম্যাসেজ টেমপ্লেট</span><span class="card-value">১ টি</span></div>
@@ -1690,7 +1690,7 @@
     <!-- Sub-page: Messages -->
     <div id="subpage-messages" style="display:none">
       <div class="msg-compose">
-        <h3>নতুন বার্তা পা��ান</h3>
+        <h3>নতুন বার্তা পাঠান</h3>
         <textarea id="msgText" placeholder="বার্তা লিখুন..."></textarea>
         <div>
           <select id="msgTo">
@@ -1786,7 +1786,7 @@
   <div class="page" id="page-stumobile">
     <div class="section-title">শিক্ষার্থীর মোবাইল নং তালিকা</div>
     <div class="stu-filters">
-      <div class="hazlist-field"><span class="lbl">রেজি���্ট্রেশন নং.</span><input type="text" id="smFReg" placeholder="রেজিস্ট্রেশন নং" oninput="renderStuMobile()" /></div>
+      <div class="hazlist-field"><span class="lbl">রেজিস্ট্রেশন নং.</span><input type="text" id="smFReg" placeholder="রেজিস্ট্রেশন নং" oninput="renderStuMobile()" /></div>
       <div class="hazlist-field"><span class="lbl">শিক্ষার্থীর নাম</span><input type="text" id="smFName" placeholder="শিক্ষার্থীর নাম" oninput="renderStuMobile()" /></div>
       <div class="hazlist-field"><span class="lbl">বিভাগ নির্বাচন করুন</span>
         <select id="smFDept" onchange="renderStuMobile()"><option value="">সকল</option><option>বালিকা</option><option>নুরানি</option><option>বালক</option></select>
@@ -1805,7 +1805,7 @@
     </div>
     <div class="tbl-wrap">
       <table>
-        <thead><tr><th>#</th><th>রেজিস্ট্রেশন নং</th><th>নাম</th><th>বিভাগ</th><th>শ্র���ণী</th><th>শাখা</th><th>মোবাইল নং</th></tr></thead>
+        <thead><tr><th>#</th><th>রেজিস্ট্রেশন নং</th><th>নাম</th><th>বিভাগ</th><th>শ্রেণী</th><th>শাখা</th><th>মোবাইল নং</th></tr></thead>
         <tbody id="stuMobileTableBody"></tbody>
       </table>
     </div>
@@ -2085,7 +2085,7 @@
     </div>
     <div class="tbl-wrap">
       <table class="ledger-tbl">
-        <thead><tr><th>#</th><th>তারিখ</th><th>খাত/ব���বরণ</th><th>নাম</th><th>পরিমাণ</th><th>প্রদানকারী</th><th>অ্যাকশন</th></tr></thead>
+        <thead><tr><th>#</th><th>তারিখ</th><th>খাত/বিবরণ</th><th>নাম</th><th>পরিমাণ</th><th>প্রদানকারী</th><th>অ্যাকশন</th></tr></thead>
         <tbody id="elLedgerBody"></tbody>
       </table>
     </div>
@@ -2359,7 +2359,7 @@
           </div>
           <div class="adm-field">
             <label>পিতার নাম <span class="req">*</span></label>
-            <input id="admFatherName" placeholder="পি��ার নাম" />
+            <input id="admFatherName" placeholder="পিতার নাম" />
           </div>
 
           <div class="adm-field"><label>পিতার পেশা</label><input id="admFatherJob" placeholder="পিতার পেশা" /></div>
@@ -2588,7 +2588,7 @@
       <table>
         <thead>
           <tr>
-            <th>#</th><th>��বি</th><th>রেজিস্ট্রেশন নং</th><th>শ্রেণী রোল</th>
+            <th>#</th><th>ছবি</th><th>রেজিস্ট্রেশন নং</th><th>শ্রেণী রোল</th>
             <th>নাম</th><th>শ্রেণী</th><th>বিভাগ</th><th>হাজিরা</th>
           </tr>
         </thead>
@@ -2667,7 +2667,7 @@
         <div class="leave-card-title"><span class="ic ic-wrap"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="12" height="17"/><path d="M9 4V2h6v2"/><path d="M9 10h6M9 14h6"/></svg></span> ছুটির আবেদন সমূহ</div>
         <div class="tbl-wrap">
           <table>
-            <thead><tr><th>#</th><th>নাম</th><th>কারণ</th><th>থেকে</th><th>পর্যন্ত</th><th>দিন</th><th>বিস্তারিত কারণ</th><th>অবস্থা</th><th>প্���ত্যাখ্যানের কার���</th></tr></thead>
+            <thead><tr><th>#</th><th>নাম</th><th>কারণ</th><th>থেকে</th><th>পর্যন্ত</th><th>দিন</th><th>বিস্তারিত কারণ</th><th>অবস্থা</th><th>প্রত্যাখ্যানের কারণ</th></tr></thead>
             <tbody id="leaveApplyTableBody"></tbody>
           </table>
         </div>
@@ -2706,7 +2706,7 @@
         <select id="gtNewGroup"><option value="">-- নতুন গ্রুপ নির্বাচন করুন --</option><option>A গ্রুপ</option><option>B গ্রুপ</option><option value="নেই">গ্রুপ নেই</option></select>
       </div>
     </div>
-    <div class="gt-hint">ঐচ্ছিক: চেকবক্স ছাড়াও রেজি. আইডি দিয়ে ট্রান��সফার করা যাবে। যেমনঃ ১০০ থেকে ২০০</div>
+    <div class="gt-hint">ঐচ্ছিক: চেকবক্স ছাড়াও রেজি. আইডি দিয়ে ট্রান্সফার করা যাবে। যেমনঃ ১০০ থেকে ২০০</div>
     <div class="gt-range-row">
       <input type="text" id="gtFrom" placeholder="থেকে" />
       <input type="text" id="gtTo" placeholder="পর্যন্ত" />
@@ -2817,7 +2817,7 @@
 
         <button class="adai-adv-btn" onclick="toggleAdaiAdvanceMode()"><svg class="btn-ic" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 5 12 12 6 19"/><polyline points="12 5 18 12 12 19"/></svg> অগ্রিম ফি</button>
         <div class="adai-advance-wrap" id="adaiAdvanceInputWrap">
-          <input id="adaiAdvanceInput" type="number" placeholder="অগ্রিম পরিমা���" />
+          <input id="adaiAdvanceInput" type="number" placeholder="অগ্রিম পরিমাণ" />
           <button onclick="addAdaiAdvance()">যোগ করুন</button>
         </div>
 
@@ -2900,7 +2900,7 @@
       <div class="hazlist-field"><span class="lbl">শিক্ষার্থীর নাম</span><input id="flName" placeholder="শিক্ষার্থীর নাম" oninput="renderFeeList()"/></div>
       <div class="hazlist-field"><span class="lbl">বিভাগ নির্বাচন করুন</span><select id="flDept" onchange="renderFeeList()"><option value="">সকল</option></select></div>
       <div class="hazlist-field"><span class="lbl">শ্রেণী নির্বাচন করুন</span><select id="flClass" onchange="renderFeeList()"><option value="">সকল</option></select></div>
-      <div class="hazlist-field"><span class="lbl">শাখা নির্বা��ন করুন</span><select id="flBranch" onchange="renderFeeList()"><option value="">সকল</option></select></div>
+      <div class="hazlist-field"><span class="lbl">শাখা নির্বাচন করুন</span><select id="flBranch" onchange="renderFeeList()"><option value="">সকল</option></select></div>
     </div>
     <div class="list-title-bar">
       <div class="section-title" style="margin:0;border:none;padding:0;">ফির তালিকা</div>
@@ -2908,7 +2908,7 @@
     </div>
     <div class="tbl-wrap">
       <table>
-        <thead><tr><th>#</th><th>রেজি. নং</th><th>নাম</th><th>বিভাগ</th><th>���্রেণী</th><th>শাখা</th><th>ফি</th><th>শেষ মাস</th><th>Action</th></tr></thead>
+        <thead><tr><th>#</th><th>রেজি. নং</th><th>নাম</th><th>বিভাগ</th><th>শ্রেণী</th><th>শাখা</th><th>ফি</th><th>শেষ মাস</th><th>Action</th></tr></thead>
         <tbody id="feeListBody"></tbody>
       </table>
     </div>
@@ -2916,7 +2916,7 @@
 
   <!-- ═══════════════ ফি বকেয়ার তালিকা ═══════════════ -->
   <div class="page" id="page-duelist">
-    <div class="section-title">ফি ���কেয়ার তালিকা</div>
+    <div class="section-title">ফি বকেয়ার তালিকা</div>
     <div class="fee-list-filters">
       <div class="hazlist-field"><span class="lbl">রেজিস্ট্রেশন নং.</span><input id="dlReg" placeholder="রেজি." oninput="renderDueList()"/></div>
       <div class="hazlist-field"><span class="lbl">শিক্ষার্থীর নাম</span><input id="dlName" placeholder="শিক্ষার্থীর নাম" oninput="renderDueList()"/></div>
@@ -3031,7 +3031,7 @@
     </div>
   </div>
 
-  <!-- ═══════════���═══ STAFF ATTENDANCE DETAILS (হাজিরার বিস্তারিত) ═══════════════ -->
+  <!-- ═════════════════ STAFF ATTENDANCE DETAILS (হাজিরার বিস্তারিত) ═══════════════ -->
   <div class="page" id="page-staffhazdetail">
     <div class="section-title">হাজিরার বিস্তারিত</div>
     <div class="hazlist-filters">
@@ -3098,14 +3098,14 @@
       <div class="leave-form-card">
         <div class="leave-card-title"><span class="ic ic-wrap"><svg viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span> ছুটির আবেদন</div>
         <div class="form-row">
-          <label>কর্মচ��রী নির্বাচন করুন</label>
+          <label>কর্মচারী নির্বাচন করুন</label>
           <select id="slaStaff"><option value="">-</option></select>
         </div>
         <div class="form-row">
           <label>কারণ</label>
           <select id="slaReason">
             <option value="">-</option>
-            <option>অসুস্থতা</option><option>পারিবারিক কারণ</option><option>ব্যক্ত��গত কারণ</option>
+            <option>অসুস্থতা</option><option>পারিবারিক কারণ</option><option>ব্যক্তিগত কারণ</option>
             <option>জরুরি প্রয়োজন</option><option>অন্যান্য</option>
           </select>
         </div>
@@ -3118,7 +3118,7 @@
         </div>
         <div class="form-row"><label>থেকে</label><input type="date" id="slaFrom" /></div>
         <div class="form-row"><label>পর্যন্ত</label><input type="date" id="slaTo" /></div>
-        <div class="form-row"><label>বিস্তা��িত কারণ</label><textarea id="slaDetail" rows="5"></textarea></div>
+        <div class="form-row"><label>বিস্তারিত কারণ</label><textarea id="slaDetail" rows="5"></textarea></div>
         <button class="add-btn" style="width:100%;" onclick="submitStaffLeaveApply()"><svg class="btn-ic" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14"/><path d="M3 7l9 6 9-6"/></svg> Submit Request</button>
       </div>
 
@@ -3262,7 +3262,7 @@
       <div class="hazlist-field"><span class="lbl">শুরুর তারিখ</span><input type="date" id="ecStart" /></div>
       <div class="hazlist-field"><span class="lbl">শেষ তারিখ</span><input type="date" id="ecEnd" /></div>
       <div class="hazlist-field"><span class="lbl">শুরুর সময়</span><input type="time" id="ecStartTime" /></div>
-      <div class="hazlist-field"><span class="lbl">শ��ষের সময়</span><input type="time" id="ecEndTime" /></div>
+      <div class="hazlist-field"><span class="lbl">শেষের সময়</span><input type="time" id="ecEndTime" /></div>
       <div class="hazlist-field"><span class="lbl">মোট বিষয়</span><input type="text" id="ecTotalSubjects" value="০" disabled /></div>
       <div class="hazlist-field"><span class="lbl">পূর্ণমান</span><input type="text" id="ecTotalMarks" value="০" disabled /></div>
     </div>
@@ -3453,7 +3453,7 @@
           <option value="">-- শ্রেণী নির্বাচন করুন --</option>
         </select>
       </div>
-      <div id="crdSlotsWrap" style="margin-top:14px;color:#888;">শ্রেণী নির্বাচন করলে টাইম স্লট অনুযায়ী বিষয় ও শিক্ষক দ���ওয়ার ছক দেখা যাবে।</div>
+      <div id="crdSlotsWrap" style="margin-top:14px;color:#888;">শ্রেণী নির্বাচন করলে টাইম স্লট অনুযায়ী বিষয় ও শিক্ষক দেওয়ার ছক দেখা যাবে।</div>
       <div style="display:flex; justify-content:flex-end; gap:10px; flex-wrap:wrap; margin-top:14px;">
         <button class="add-btn" onclick="saveCrDaily()">✓ সংরক্ষণ করুন</button>
       </div>
@@ -3545,7 +3545,7 @@
     </div>
   </div>
 
-  <!-- ═══════════════ ৬. ক্লাসের সময় (টাই�� স্লট ম্যানেজমেন্ট) ═══════════════ -->
+  <!-- ═══════════════ ৬. ক্লাসের সময় (টাইম স্লট ম্যানেজমেন্ট) ═══════════════ -->
   <div class="page" id="page-crTimeSlot">
     <div class="list-title-bar">
       <div class="section-title" style="margin:0;">টাইম স্লট ম্যানেজমেন্ট</div>
@@ -3618,66 +3618,20 @@
         <button class="add-btn" style="background:#1e88e5;" onclick="showHwResidentialListDetail()">☰ বিস্তারিত</button>
       </div>
       <div style="padding:18px;">
-        <!-- Checkboxes for Category Selection -->
         <div class="adm-radio-group" style="margin-bottom:16px;">
-          <label><input type="checkbox" class="hwrCategoryCheck" value="নুরানি" onchange="updateHwFormLayout()"> নুরানি</label>
-          <label><input type="checkbox" class="hwrCategoryCheck" value="বালিকা শাখা" onchange="updateHwFormLayout()"> বালিকা শাখা</label>
+          <label><input type="radio" name="hwrCategory" value="নুরানি" checked> নুরানি</label>
+          <label><input type="radio" name="hwrCategory" value="বালিকা শাখা"> বালিকা শাখা</label>
           <span style="color:#ccc;">||</span>
-          <label><input type="checkbox" class="hwrCategoryCheck" value="কায়দা" onchange="updateHwFormLayout()"> কায়দা</label>
-          <label><input type="checkbox" class="hwrCategoryCheck" value="আমপারা" onchange="updateHwFormLayout()"> আমপারা</label>
+          <label><input type="radio" name="hwrCategory" value="কায়দা"> কায়দা</label>
+          <label><input type="radio" name="hwrCategory" value="আমপারা"> আমপারা</label>
           <span style="color:#ccc;">||</span>
-          <label><input type="checkbox" class="hwrCategoryCheck" value="কুরআন" onchange="updateHwFormLayout()"> কুরআন</label>
+          <label><input type="radio" name="hwrCategory" value="কুরআন"> কুরআন</label>
         </div>
-
-        <!-- Form Layout 1: নুরানি/বালিকা শাখা -->
-        <div id="hwrFormLayout1" style="display:none;">
-          <div class="form-row">
-            <textarea id="hwrComment" rows="3" placeholder="মন্তব্য"></textarea>
-          </div>
-          <div style="font-size:14px;color:#333;margin-bottom:8px;">শিক্ষার্থী</div>
-          <div id="hwrStudentGrid" style="border-top:1px solid #eee;padding-top:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;"></div>
+        <div class="form-row">
+          <textarea id="hwrComment" rows="3" placeholder="মন্তব্য"></textarea>
         </div>
-
-        <!-- Form Layout 2: কায়দা -->
-        <div id="hwrFormLayout2" style="display:none;">
-          <div class="form-row">
-            <textarea id="hwrComment2" rows="3" placeholder="মন্তব্য"></textarea>
-          </div>
-          <div style="font-size:14px;color:#333;margin-bottom:12px;">শিক্ষার্থী</div>
-          <div id="hwrStudentGrid2" style="border-top:1px solid #eee;padding-top:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-bottom:16px;"></div>
-          <div style="font-size:14px;color:#333;margin-bottom:8px;font-weight:600;">শিক্ষার্থী অগ্রগতি</div>
-          <div id="hwrStudentChecklist2" style="border-top:1px solid #eee;padding-top:10px;"></div>
-        </div>
-
-        <!-- Form Layout 3: আমপারা -->
-        <div id="hwrFormLayout3" style="display:none;">
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
-            <input type="text" id="hwrSearch3" placeholder="ছাত্র খুঁজুন" style="padding:8px 12px;border:1px solid #ddd;border-radius:4px;font-size:14px;font-family:inherit;">
-            <button class="add-btn" style="background:#2e7d32;padding:8px 14px;border:none;cursor:pointer;border-radius:4px;color:#fff;font-weight:600;" onclick="applyHwrSearch()">আইয়া খুঁজ পরিবর্তন</button>
-          </div>
-          <div class="form-row">
-            <textarea id="hwrComment3" rows="3" placeholder="মন্তব্য"></textarea>
-          </div>
-          <div style="font-size:14px;color:#333;margin-bottom:12px;">শিক্ষার্থী</div>
-          <div id="hwrStudentGrid3" style="border-top:1px solid #eee;padding-top:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;"></div>
-        </div>
-
-        <!-- Form Layout 4: কুরআন -->
-        <div id="hwrFormLayout4" style="display:none;">
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;font-size:13px;">
-            <button class="filter-btn4" data-filter="ছাত্র পারা না" style="padding:6px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;font-weight:500;">ছাত্র পারা না</button>
-            <button class="filter-btn4" data-filter="ছাত্র পূর্ণ না" style="padding:6px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;font-weight:500;">ছাত্র পূর্ণ না</button>
-            <button class="filter-btn4" data-filter="সাত ছাত্র পারা না" style="padding:6px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;font-weight:500;">সাত ছাত্র পারা না</button>
-            <button class="filter-btn4" data-filter="সাত ছাত্র পূর্ণ না" style="padding:6px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;font-weight:500;">সাত ছাত্র পূর্ণ না</button>
-            <button class="filter-btn4" data-filter="আমূলকা পারা না" style="padding:6px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;font-weight:500;">আমূলকা পারা না</button>
-            <button class="filter-btn4" data-filter="আমূলকা পূর্ণ না" style="padding:6px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;font-weight:500;">আমূলকা পূর্ণ না</button>
-          </div>
-          <div class="form-row">
-            <textarea id="hwrComment4" rows="3" placeholder="মন্তব্য"></textarea>
-          </div>
-          <div style="font-size:14px;color:#333;margin-bottom:12px;">শিক্ষার্থী</div>
-          <div id="hwrStudentGrid4" style="border-top:1px solid #eee;padding-top:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;"></div>
-        </div>
+        <div style="font-size:14px;color:#333;margin-bottom:8px;">শিক্ষার্থী</div>
+        <div id="hwrStudentGrid" style="border-top:1px solid #eee;padding-top:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;"></div>
       </div>
     </div>
     <button class="haz-save-bar" style="margin-top:14px;" onclick="saveHwResidential()">✓ সংরক্ষণ করুন</button>
@@ -3914,7 +3868,7 @@
     </div>
   </div>
 
-  <!-- ═══════════════ অন্যান্য মেনু: ১. অন্য��ন্য ড্যাশবোর্ড ═══════════════ -->
+  <!-- ═══════════════ অন্যান্য মেনু: ১. অন্যান্য ড্যাশবোর্ড ═══════════════ -->
   <div class="page" id="page-othersDashboard">
     <div class="section-title">অন্যান্য ড্যাশবোর্ড</div>
     <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px;">
@@ -4073,7 +4027,7 @@
     </div>
   </div>
 
-  <!-- ═══════════��═══ অন্যান্য মেনু: ৬. ক্লাস গ্রুপ ═══════════════ -->
+  <!-- ════════════════ অন্যান্য মেনু: ৬. ক্লাস গ্রুপ ═══════════════ -->
   <div class="page" id="page-classGroup">
     <div class="section-title">ক্লাশ গ্রপ</div>
     <div style="background:#fff;border-radius:10px;padding:18px;">
@@ -4171,7 +4125,7 @@
       </div>
       <div class="desig-card">
         <div class="leave-card-title">নোটিশের তথ্য</div>
-        <div class="form-row"><label>নো���িশ শিরোনাম</label><input id="noticeTitle" placeholder="নোটিশ শিরোনাম" /></div>
+        <div class="form-row"><label>নোটিশ শিরোনাম</label><input id="noticeTitle" placeholder="নোটিশ শিরোনাম" /></div>
         <div class="form-row"><label>নোটিশ</label><textarea id="noticeDesc" rows="3" placeholder="নোটিশের বিস্তারিত"></textarea></div>
         <div class="form-row">
           <label>শ্রেণি</label>
@@ -4230,7 +4184,7 @@
         <div class="form-row"><label>বাণী</label><textarea id="siteDirMsg" rows="4">বিসমিল্লাহির রাহমানির রাহিম।
 একবিংশ শতাব্দীর চ্যালেঞ্জ মোকাবিলায় আমাদের সন্তানদের সঠিক ও ইসলামি আদর্শ নাগরিক হিসেবে গড়ে তোলাই নূরুল কোরআন মাদ্রাসা-র মূল লক্ষ্য।
 আলহামদুলিল্লাহ, আমাদের মাদ্রাসায় বর্তমানে কোমলমতি শিশুদের জন্য নূরানি (প্রাইমারিবিলা) এবং মা-বোনদের জন্য সম্পূর্ণ নিরাপদ ও পর্দার আবহমান পরিবেশে বালিকা শাখা চালু রয়েছে।
-আপনার সন্তানের সুন্দর ভবিষ্যৎ ও আখেরাতের পাথেয় রচনা করতে নূরুল কোরআন মাদ্রা��ার আঙিনায় আপনাকে স্বাগতম। আসুন আমাদের সহযোগী হোন।</textarea></div>
+আপনার সন্তানের সুন্দর ভবিষ্যৎ ও আখেরাতের পাথেয় রচনা করতে নূরুল কোরআন মাদ্রাসার আঙিনায় আপনাকে স্বাগতম। আসুন আমাদের সহযোগী হোন।</textarea></div>
       </div>
 
       <div class="desig-card" style="margin-top:16px;">
@@ -4249,7 +4203,7 @@
 
     <div id="sp-siteRegList" style="display:none;">
       <div class="list-title-bar">
-        <div class="section-title" style="margin:0;">শিক্ষার্থী রেজিস্ট্রেশন তালিকা (ওয়েবস��ইট থেকে)</div>
+        <div class="section-title" style="margin:0;">শিক্ষার্থী রেজিস্ট্রেশন তালিকা (ওয়েবসাইট থেকে)</div>
         <input id="siteRegSearch" placeholder="নাম বা মোবাইল দিয়ে খুঁজুন" style="max-width:240px;" oninput="renderSiteRegList()" />
       </div>
       <div class="tbl-wrap">
@@ -4477,7 +4431,7 @@
     <h2 id="teacherModalTitle">নতুন স্টাফ যোগ করুন</h2>
     <div class="form-row"><label>নাম</label><input id="tName" placeholder="স্টাফের পুরো নাম" /></div>
     <div class="form-row"><label>পদবী</label><select id="tTitle"></select></div>
-    <div class="form-row"><label>���্রেণী</label><select id="tClass"></select></div>
+    <div class="form-row"><label>শ্রেণী</label><select id="tClass"></select></div>
     <div class="form-row"><label>বিভাগ</label>
       <select id="tBranch"><option>নুরানি</option><option>বালিকা</option><option>বালক</option></select>
     </div>
@@ -4486,7 +4440,7 @@
     <div class="form-row"><label>যোগদানের তারিখ</label><input id="tJoin" type="date" /></div>
     <div class="form-actions">
       <button class="btn-cancel" onclick="closeModal('teacherModal')">বাতিল</button>
-      <button class="btn-save" onclick="addTeacher()">স���রক্ষণ করুন</button>
+      <button class="btn-save" onclick="addTeacher()">সংরক্ষণ করুন</button>
     </div>
   </div>
 </div>
@@ -4628,7 +4582,7 @@
   </div>
 </div>
 
-<!-- নতুন পণ্য যো�� করুন -->
+<!-- নতুন পণ্য যোগ করুন -->
 <div class="form-modal-overlay" id="invProductModal">
   <div class="form-modal mid">
     <div class="inv-modal-head">
@@ -5601,7 +5555,7 @@ let staffDesignations = [
   {id:2, name:'বার্বুচি',          type:'সাধারণ স্টাফ'},
   {id:3, name:'ম্যানেজিং ডিরেক্টর', type:'অফিস স্টাফ'},
   {id:4, name:'সহকারী শিক্ষক',     type:'শিক্ষক/শিক্ষিকা'},
-  {id:5, name:'অফিস সহকারী',       type:'অফিস স্���াফ'},
+  {id:5, name:'অফিস সহকারী',       type:'অফিস স্টাফ'},
   {id:6, name:'অধ্যক্ষ',           type:'অফিস স্টাফ'},
 ];
 
@@ -5883,7 +5837,7 @@ async function saveStaffAdmission() {
 
 function admissionNext() {
   const required = [
-    ['admDept','বিভাগ নির্বাচন করুন'], ['admClass','শ্রেণী ��ির্বাচন করুন'],
+    ['admDept','বিভাগ নির্বাচন করুন'], ['admClass','শ্রেণী নির্বাচন করুন'],
     ['admStartMonth','ক্লাশ শুরুর মাস'], ['admName','শিক্ষার্থীর নাম'],
     ['admDob','জন্ম তারিখ'], ['admGender','লিঙ্গ নির্বাচন করুন'],
     ['admFatherName','পিতার নাম'], ['admGuardianName','অভিভাবকের নাম'],
@@ -6003,7 +5957,7 @@ function onAdmFeeInput(id) {
   recalcAdmTotals();
 }
 
-/* ম���ট হিসাব — সব নির্বাচিত ফি সারি যোগফল করে টোটাল বক্স আপডেট করে */
+/* মোট হিসাব — সব নির্বাচিত ফি সারি যোগফল করে টোটাল বক্স আপডেট করে */
 function recalcAdmTotals() {
   const totalOrigEl = document.getElementById('admTotalOriginal');
   if (!totalOrigEl) return; // টোটাল বক্স তৈরি না হয়ে থাকলে কিছু করার নেই
@@ -6392,7 +6346,7 @@ function renderUserList() {
     (!fType || u.type === fType)
   ).slice(0, limit);
 
-  // সাপোর্ট রোল শুধু দেখতে পারবে — কোনো অ্যাকশন বাটন নয��
+  // সাপোর্ট রোল শুধু দেখতে পারবে — কোনো অ্যাকশন বাটন নয়
   const readOnly = !!(window.NQAuth && window.NQAuth.isReadOnlyModule && window.NQAuth.isReadOnlyModule('users'));
 
   body.innerHTML = rows.map((u, i) => {
@@ -6400,7 +6354,7 @@ function renderUserList() {
     if (!readOnly && u.editable !== false) {
       const statusBtn = u.active
         ? `<button class="usr-op-btn usr-op-active" title="সক্রিয় — ক্লিক করে নিষ্ক্রিয় করুন" onclick="toggleUserStatus('${u.id}')">${usrOpIcoCheck}</button>`
-        : `<button class="usr-op-btn usr-op-inactive" title="নিষ্ক্রিয় — ক্লিক করে সক��রিয় করুন" onclick="toggleUserStatus('${u.id}')">${usrOpIcoCross}</button>`;
+        : `<button class="usr-op-btn usr-op-inactive" title="নিষ্ক্রিয় — ক্লিক করে সক্রিয় করুন" onclick="toggleUserStatus('${u.id}')">${usrOpIcoCross}</button>`;
       // সুপার এডমিন ছাড়া কেউ অন্য ব্যবহারকারী হিসেবে লগইন করতে পারবে না
       const loginBtn = isSuperAdminUser()
         ? `<button class="usr-op-btn usr-op-login" title="এই ব্যবহারকারীর ড্যাশবোর্ডে লগইন করুন" onclick="impersonateUser('${u.id}')">${usrOpIcoLogin}</button> `
@@ -6483,7 +6437,7 @@ function editUser(id) {
   document.getElementById('usrMobile').value = u.mobile || '';
   document.getElementById('usrId').value = u.uid;
   document.getElementById('usrPass').value = '';
-  document.getElementById('usrPass').placeholder = 'পরি��র্তন করতে নতুন পাসওয়ার্ড দিন (ঐচ্ছিক)';
+  document.getElementById('usrPass').placeholder = 'পরিবর্তন করতে নতুন পাসওয়ার্ড দিন (ঐচ্ছিক)';
   document.getElementById('usrPhotoPreview').innerHTML = u.photoUrl
     ? `<img src="${u.photoUrl}" alt="ব্যবহারকারীর ছবি" />`
     : '<svg width="90" height="90" viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="1.4"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>';
@@ -7023,7 +6977,7 @@ function nqPrintAsReceipt() {
 function calcAgeText(dobStr) {
   if (!dobStr) return bn(0) + ' বছর';
   const diff = new Date().getFullYear() - new Date(dobStr).getFullYear();
-  return bn(Math.max(diff, 0)) + ' বছ��';
+  return bn(Math.max(diff, 0)) + ' বছর';
 }
 
 /* ═══════════ শিক্ষার্থী — স্থানান্তর/বহিষ্কার নিশ্চিতকরণ ═══════════ */
@@ -7339,7 +7293,7 @@ function invAddLine(type) {
   if (!prod) { showErrorPopup('পণ্য নির্বাচন করুন'); return; }
   const qty = parseFloat(document.getElementById('inv' + type + 'Qty').value) || 0;
   const price = parseFloat(document.getElementById('inv' + type + 'Price').value) || 0;
-  if (qty <= 0) { showErrorPopup('সঠি��� পরিমাণ দিন'); return; }
+  if (qty <= 0) { showErrorPopup('সঠিক পরিমাণ দিন'); return; }
   if (type === 'Sale' && qty > (prod.stock || 0)) {
     showErrorPopup('পর্যাপ্ত স্টক নেই! বর্তমান স্টক: ' + bn(prod.stock || 0));
     return;
@@ -8028,7 +7982,13 @@ function saveMessageTemplate() {
   showToast('ম্যাসেজ টেমপ্লেট সংরক্ষণ করা হয়েছে!');
 }
 
+function renderMainDashCounts() {
+  const el = document.getElementById('dashTotalStudents');
+  if (el) el.textContent = `${bn(students.length)} জন`;
+}
+
 function renderAll() {
+  renderMainDashCounts();
   renderStudentDashboard();
   renderStudents(); renderParents(); renderTeachers(); renderCommittee();
   renderPayments(); renderRecentPayments(); renderAttendance(); renderMessages();
@@ -8436,7 +8396,7 @@ function doGroupTransfer() {
     const f = Number(from), t = Number(to);
     ids = students.filter(s => s.regNo >= f && s.regNo <= t).map(s => s.id);
   }
-  if (!ids.length) { showErrorPopup('অন্তত একজন শিক্ষার্থী নির্বাচন করুন অথ��া রেজি. আইডি রেঞ্জ দিন'); return; }
+  if (!ids.length) { showErrorPopup('অন্তত একজন শিক্ষার্থী নির্বাচন করুন অথবা রেজি. আইডি রেঞ্জ দিন'); return; }
 
   const applyGroup = newGroup === 'নেই' ? '' : newGroup;
   students.forEach(s => { if (ids.includes(s.id)) s.group = applyGroup; });
@@ -8612,7 +8572,7 @@ function renderAdaiStudent() {
   infoBar.innerHTML = `
     <div class="adai-info-item"><span class="ic ic-wrap">${icoClipboard}</span><div><div class="k">রেজি: নং:</div><div class="v">#${bn(s.regNo)}</div></div></div>
     <div class="adai-info-item"><span class="ic ic-wrap">${icoUser}</span><div><div class="k">নাম:</div><div class="v">${s.name}</div></div></div>
-    <div class="adai-info-item"><span class="ic ic-wrap">${icoUser}</span><div><div class="k">পিতার না��:</div><div class="v">${s.parent}</div></div></div>
+    <div class="adai-info-item"><span class="ic ic-wrap">${icoUser}</span><div><div class="k">পিতার নাম:</div><div class="v">${s.parent}</div></div></div>
     <div class="adai-info-item"><span class="ic ic-wrap">${icoBuilding}</span><div><div class="k">শ্রেণী:</div><div class="v">${s.attCls || s.cls}</div></div></div>
     <div class="adai-info-item"><span class="ic ic-wrap">${icoBuilding}</span><div><div class="k">শাখা:</div><div class="v">${s.branch}</div></div></div>
     <div class="adai-info-item"><span class="ic ic-wrap">${icoMobile}</span><div><div class="k">মোবাইল:</div><div class="v">${s.mobile}</div></div></div>`;
@@ -9109,7 +9069,7 @@ function editDueDetail(id) {
   if (target) target.amount = amt;
   rebuildDueDetails();
   renderDueDetail(); renderDueList(); renderFeeDash();
-  showToast('বকে���়া হা��নাগাদ করা হয়েছে');
+  showToast('বকেয়া হালনাগাদ করা হয়েছে');
 }
 
 function deleteDueDetail(id) {
@@ -9392,7 +9352,7 @@ function saveOutWork() {
 function deleteOutWork(id) {
   staffOutWork = staffOutWork.filter(o => o.id !== id);
   renderStaffOutWork();
-  showToast('এ���্ট্রি মুছে ফেলা হয়েছে');
+  showToast('এন্ট্রি মুছে ফেলা হয়েছে');
 }
 
 /* ═══════════ বেতন শীট ═══════════ */
@@ -9616,23 +9576,63 @@ function crdRenderSlotRows(items) {
   wrap.innerHTML = `
     <div class="tbl-wrap">
       <table>
-        <thead><tr><th>#</th><th>টাইম স্লট</th><th>বিষয় / কার্যক্রম</th><th>শিক্ষক</th></tr></thead>
+        <thead><tr><th>#</th><th>টাইম স্লট (সম্পাদনযোগ্য)</th><th>বিষয় / কার্যক্রম</th><th>শিক্ষক</th><th>অ্যাকশন</th></tr></thead>
         <tbody>
           ${crTimeSlots.map((t, i) => {
             const it = items.find(x => x.slotId === t.id);
             const subjVal = it && it.subject ? it.subject.replace(/"/g, '&quot;') : '';
+            const labelVal = (t.label || '').replace(/"/g, '&quot;');
             const teacherOpts = `<option value="">-- শিক্ষক নির্বাচন করুন --</option>` +
               teachers.map(tc => `<option value="${tc.id}" ${it && it.teacherId === tc.id ? 'selected' : ''}>${tc.name} (${tc.title})</option>`).join('');
             return `<tr>
               <td>${bn(i + 1)}</td>
-              <td>${t.label}</td>
+              <td><input data-slot="${t.id}" class="crdSlotLabelInput" value="${labelVal}" placeholder="যেমনঃ সকাল ৮.০০ টা থেকে ৮.৫০ টা" style="min-width:210px;" /></td>
               <td><input data-slot="${t.id}" class="crdSubjInput" value="${subjVal}" placeholder="বিষয়/কার্যক্রম লিখুন" /></td>
               <td><select data-slot="${t.id}" class="crdTeachSelect">${teacherOpts}</select></td>
+              <td><button class="add-btn" style="padding:4px 12px;font-size:12px;background:#e53935;" onclick="crdDeleteSlot(${t.id})">মুছুন</button></td>
             </tr>`;
           }).join('')}
         </tbody>
       </table>
+    </div>
+    <div style="margin-top:10px;">
+      <button class="add-btn" style="padding:5px 14px;font-size:13px;" onclick="crdAddSlot()">+ নতুন টাইম স্লট</button>
+      <span style="color:#888;font-size:12px;margin-left:8px;">টাইম স্লটের লেখা এখানেই পরিবর্তন করে "সংরক্ষণ করুন" চাপুন।</span>
     </div>`;
+}
+
+/* রুটিন তৈরির পেজে টাইম স্লটের নাম/সময় সরাসরি সম্পাদনা করে সংরক্ষণ করে */
+function crdCommitSlotLabels() {
+  document.querySelectorAll('#crdSlotsWrap .crdSlotLabelInput').forEach(inp => {
+    const slotId = parseInt(inp.dataset.slot);
+    const slot = crTimeSlots.find(x => x.id === slotId);
+    const val = inp.value.trim();
+    if (slot && val) slot.label = val;
+  });
+  if (typeof renderCrTimeSlots === 'function' && document.getElementById('crTimeSlotBody')) renderCrTimeSlots();
+  if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
+}
+
+/* রুটিন তৈরির পেজ থেকেই নতুন টাইম স্লট যোগ করা যায় */
+function crdAddSlot() {
+  crdCommitSlotLabels();
+  const id = crTimeSlots.length ? Math.max(...crTimeSlots.map(x => x.id)) + 1 : 1;
+  crTimeSlots.push({ id, label: '' });
+  crdLoadClassRoutine();
+  if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
+  if (typeof showToast === 'function') showToast('নতুন টাইম স্লট যোগ হয়েছে — সময় লিখে সংরক্ষণ করুন');
+}
+
+/* রুটিন তৈরির পেজ থেকেই টাইম স্লট মুছে ফেলা যায় */
+function crdDeleteSlot(id) {
+  if (!confirm('এই টাইম স্লটটি মুছে ফেলতে চান?')) return;
+  crdCommitSlotLabels();
+  crTimeSlots = crTimeSlots.filter(x => x.id !== id);
+  dailyRoutines.forEach(r => { r.items = (r.items || []).filter(it => it.slotId !== id); });
+  crdLoadClassRoutine();
+  if (typeof renderCrTimeSlots === 'function' && document.getElementById('crTimeSlotBody')) renderCrTimeSlots();
+  if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
+  if (typeof showToast === 'function') showToast('টাইম স্লট মুছে ফেলা হয়েছে');
 }
 
 /* crdClass সিলেক্ট পরিবর্তন হলে — সেই শ্রেণীর বিদ্যমান রুটিন থাকলে তা দেখায়, না থাকলে খালি ছক দেখায় */
@@ -9649,6 +9649,7 @@ function crdLoadClassRoutine() {
 function saveCrDaily() {
   const cls = document.getElementById('crdClass').value;
   if (!cls) { showErrorPopup('শ্রেণী নির্বাচন করুন'); return; }
+  crdCommitSlotLabels();
   const items = [];
   document.querySelectorAll('#crdSlotsWrap .crdSubjInput').forEach(inp => {
     const slotId = parseInt(inp.dataset.slot);
@@ -9710,7 +9711,7 @@ function deleteDailyRoutine(id) {
 let residentialRoutineItems = [
   { id: 1,  desc: 'বাদ এশা রাতের খাবার ও (সহি হাদিসের) কিতাবি তালিম এবং দোয়া/মাসআলা শিখা।', from: '20:30', to: '22:00', classes: ['২৩', '২৪'] },
   { id: 2,  desc: 'মাগরিব থেকে এশা পর্যন্ত নতুন সবক ঠিক করা।', from: '19:00', to: '20:30', classes: ['২৩', '২৪'] },
-  { id: 3,  desc: 'আসর থেকে মাগরিব হালাল ���িনোদন/ ইসলামিক বই পড়া এবং মাগরিবের সালাত আদায় করা।', from: '17:15', to: '19:00', classes: ['২৩', '২৪'] },
+  { id: 3,  desc: 'আসর থেকে মাগরিব হালাল বিনোদন/ ইসলামিক বই পড়া এবং মাগরিবের সালাত আদায় করা।', from: '17:15', to: '19:00', classes: ['২৩', '২৪'] },
   { id: 4,  desc: 'একাডেমিক পড়া-লিখা ঠিক করার সময় এবং আসরের সালাত।', from: '15:30', to: '17:15', classes: ['২৩'] },
   { id: 5,  desc: 'আমুক্তার সময় এবং আসরের সালাত।', from: '15:30', to: '17:15', classes: ['২৪'] },
   { id: 6,  desc: 'কোরআনের মাশক বা তেলোয়াতের সুর শিক্ষা।', from: '14:30', to: '15:00', classes: ['২৪'] },
@@ -9720,8 +9721,8 @@ let residentialRoutineItems = [
   { id: 10, desc: 'তেলোয়াতের মাশক।', from: '08:00', to: '09:00', classes: ['২৪'] },
   { id: 11, desc: 'সকালের নাস্তা।', from: '07:30', to: '08:00', classes: ['২৩', '২৪'] },
   { id: 12, desc: 'ফজর সালাতের পর নতুন সবক (পড়া) তৈরি এবং নতুন পড়া (সুনানো) মুখস্থ করার সেরা সময়।', from: '05:15', to: '08:15', classes: ['২৩', '২৪'] },
-  { id: 13, desc: 'তাহাজ্জুদ ��� ব্যক্তিগত তিলাওয়াত, ঘুম থেকে ওঠা, ওযু এবং ফজরের প্রস্তুতি।', from: '04:00', to: '05:00', classes: ['২৩', '২৪'] },
-  { id: 14, desc: '��াতের ঘুমানো।', from: '22:30', to: '04:30', classes: ['২৩', '২৪'] },
+  { id: 13, desc: 'তাহাজ্জুদ ও ব্যক্তিগত তিলাওয়াত, ঘুম থেকে ওঠা, ওযু এবং ফজরের প্রস্তুতি।', from: '04:00', to: '05:00', classes: ['২৩', '২৪'] },
+  { id: 14, desc: 'রাতের ঘুমানো।', from: '22:30', to: '04:30', classes: ['২৩', '২৪'] },
   { id: 15, desc: 'এশা সালাতের পর ( সহি হাদিসের) কিতাবী তালিম / রাতের খাবার ৪০ মিনিট।', from: '21:00', to: '22:00', classes: ['২৩', '২৪'] },
   { id: 16, desc: 'মাগরিব থেকে এশা পর্যন্ত আবাসিক ক্লাসের পড়া-শুনা এবং এশা সালাত।', from: '18:45', to: '21:00', classes: ['২৩', '২৪'] }
 ];
@@ -9992,7 +9993,7 @@ function renderExamSubjects() {
         <button class="ci-btn ci-edit" title="সম্পাদনা" onclick="editExamSubject(${s.id})">${icoEdit}</button>
         <button class="ci-btn ci-del-a" title="মুছুন" onclick="deleteExamSubject(${s.id})">${icoDelete}</button>
       </td>
-    </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;color:#888;">��োনো বিষয় পাওয়া যায়নি</td></tr>';
+    </tr>`).join('') || '<tr><td colspan="4" style="text-align:center;color:#888;">কোনো বিষয় পাওয়া যায়নি</td></tr>';
 }
 function editExamSubject(id) {
   const s = examSubjects.find(x => x.id === id);
@@ -10517,7 +10518,7 @@ function renderResultCreateStudents() {
   if (!cls) { body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">প্রথমে ক্লাস নির্বাচন করুন</td></tr>'; return; }
   if (!examId) { body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">একটি পরীক্ষা নির্বাচন করুন</td></tr>'; return; }
   const exam = exams.find(e => e.id === examId);
-  if (!exam) { body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">পরীক্ষা পাওয়া যায���নি</td></tr>'; return; }
+  if (!exam) { body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">পরীক্ষা পাওয়া যায়নি</td></tr>'; return; }
   const rows = students.filter(s => s.attCls === cls && (!branch || s.branch === branch));
   if (!rows.length) { body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">এই শ্রেণীতে কোনো শিক্ষার্থী পাওয়া যায়নি</td></tr>'; return; }
   body.innerHTML = rows.map((s, i) => {
@@ -11349,7 +11350,7 @@ function showHwResidentialListDetail() {
     return `
     <div style="border:1px solid #eee;border-radius:8px;padding:12px 14px;margin-bottom:8px;">
       <div style="display:flex;justify-content:space-between;font-weight:600;font-size:14px;color:#1a237e;"><span>${h.category}</span><span class="badge badge-green">${h.status}</span></div>
-      <div style="font-size:13.5px;color:#333;margin-top:6px;">${h.comment || '(কোনো মন্���ব্য নেই)'}</div>
+      <div style="font-size:13.5px;color:#333;margin-top:6px;">${h.comment || '(কোনো মন্তব্য নেই)'}</div>
       <div style="font-size:12px;color:#888;margin-top:8px;">শিক্ষার্থী (${bn((h.students || []).length)}): ${names || '-'}</div>
       <div style="font-size:12px;color:#888;margin-top:4px;">তারিখ: ${h.date} • শিক্ষক: ${h.teacher}</div>
     </div>`;
@@ -11482,9 +11483,9 @@ function renderTransportAssignStudents() {
 }
 function saveTransportAssign() {
   const busId = parseInt(document.getElementById('taBusSelect').value);
-  if (!busId) { showErrorPopup('এক��ি বাস নির্বাচন করুন'); return; }
+  if (!busId) { showErrorPopup('একটি বাস নির্বাচন করুন'); return; }
   const selectedIds = Array.from(document.querySelectorAll('.ta-stu-chk:checked')).map(c => Number(c.value));
-  if (!selectedIds.length) { showErrorPopup('অন্তত ��কজন শিক্ষার্থী নির্বাচন করুন'); return; }
+  if (!selectedIds.length) { showErrorPopup('অন্তত একজন শিক্ষার্থী নির্বাচন করুন'); return; }
   selectedIds.forEach(sid => {
     let a = transportAssignments.find(x => x.studentId === sid);
     if (a) { a.busId = busId; }
@@ -12807,126 +12808,13 @@ async function refreshMsgBadge() {
 document.addEventListener('DOMContentLoaded', function () {
   refreshMsgBadge();
   setInterval(refreshMsgBadge, 60000);
-  
-  // Initialize homework form layout
-  initializeHwFormLayout();
 });
-
-/* ═══════════ বাড়ির কাজ ফর্ম লেআউট সুইচিং ═══════════ */
-function initializeHwFormLayout() {
-  // Set default layout when page loads (show Layout 1 by default)
-  const layout1 = document.getElementById('hwrFormLayout1');
-  if (layout1) {
-    layout1.style.display = 'block';
-    renderHwStudentGrid();
-  }
-  
-  // Add event listeners for filter buttons in layout 4
-  document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('filter-btn4')) {
-      const filterBtns = document.querySelectorAll('.filter-btn4');
-      filterBtns.forEach(btn => btn.style.background = '#fff');
-      e.target.style.background = '#e3f2fd';
-    }
-  });
-}
-
-function updateHwFormLayout() {
-  // Get all selected categories
-  const selectedCheckboxes = Array.from(document.querySelectorAll('.hwrCategoryCheck:checked'));
-  const selectedValues = selectedCheckboxes.map(cb => cb.value);
-  
-  // Hide all layouts first
-  document.getElementById('hwrFormLayout1').style.display = 'none';
-  document.getElementById('hwrFormLayout2').style.display = 'none';
-  document.getElementById('hwrFormLayout3').style.display = 'none';
-  document.getElementById('hwrFormLayout4').style.display = 'none';
-  
-  // Determine which layout to show based on selection logic
-  if (selectedValues.length === 0) {
-    // Default: Show Layout 1 when nothing selected
-    document.getElementById('hwrFormLayout1').style.display = 'block';
-    renderHwStudentGrid();
-  } else if (selectedValues.includes('নুরানি') && selectedValues.includes('কায়দা') && selectedValues.length === 2) {
-    // Layout 2: নুরানি + কায়দা combination
-    document.getElementById('hwrFormLayout2').style.display = 'block';
-    renderHwStudentGrid2();
-    renderHwStudentChecklist2();
-  } else if (selectedValues.includes('আমপারা') && selectedValues.length === 1) {
-    // Layout 3: আমপারা alone
-    document.getElementById('hwrFormLayout3').style.display = 'block';
-    renderHwStudentGrid3();
-  } else if (selectedValues.includes('কুরআন') && selectedValues.length === 1) {
-    // Layout 4: কুরআন alone
-    document.getElementById('hwrFormLayout4').style.display = 'block';
-    renderHwStudentGrid4();
-  } else if ((selectedValues.includes('নুরানি') || selectedValues.includes('বালিকা শাখা')) && selectedValues.length === 1) {
-    // Layout 1: নুরানি or বালিকা শাখা alone
-    document.getElementById('hwrFormLayout1').style.display = 'block';
-    renderHwStudentGrid();
-  } else {
-    // Default: If any other combination, show Layout 1
-    document.getElementById('hwrFormLayout1').style.display = 'block';
-    renderHwStudentGrid();
-  }
-}
-
-function renderHwStudentGrid() {
-  const grid = document.getElementById('hwrStudentGrid');
-  if (!grid) return;
-  grid.innerHTML = '<div style="padding:12px;color:#888;">শিক্ষার্থীর তালিকা লোড হচ্ছে...</div>';
-  // This will be populated by existing renderHwResidentialStudents function
-}
-
-function renderHwStudentGrid2() {
-  const grid = document.getElementById('hwrStudentGrid2');
-  if (!grid) return;
-  grid.innerHTML = '<div style="padding:12px;color:#888;">শিক্ষার্থীর তালিকা লোড হচ্ছে...</div>';
-}
-
-function renderHwStudentChecklist2() {
-  const checklist = document.getElementById('hwrStudentChecklist2');
-  if (!checklist) return;
-  
-  const studentNames = [
-    'মো আজিজুম', 'আবু বকর সিদ্দিক', 'ইয়ামিন আহমেদ', 'আয়মান জাহান লোহানা', 'মো সাদিক',
-    'আক্তারুজ্জামান নিরব', 'আদরের রহিম', 'সাফিন আহমেদ নিশির', 'আদরের রহমান', 'আদরাম বারী আয়াস',
-    'আদরহিম বারী আয়াস', 'আদরহাম রানি আয়াস', 'নাদিয়া আপার মাইশা'
-  ];
-  
-  const html = studentNames.map((name, idx) => `
-    <label style="display:flex;align-items:center;gap:8px;padding:8px;margin-bottom:4px;font-size:13px;">
-      <input type="checkbox" value="${idx}" data-name="${name}">
-      <span>${idx + 1}. ${name}</span>
-    </label>
-  `).join('');
-  
-  checklist.innerHTML = html;
-}
-
-function renderHwStudentGrid3() {
-  const grid = document.getElementById('hwrStudentGrid3');
-  if (!grid) return;
-  grid.innerHTML = '<div style="padding:12px;color:#888;">শিক্ষার্থীর তালিকা লোড হচ্ছে...</div>';
-}
-
-function renderHwStudentGrid4() {
-  const grid = document.getElementById('hwrStudentGrid4');
-  if (!grid) return;
-  grid.innerHTML = '<div style="padding:12px;color:#888;">শিক্ষার্থীর তালিকা লোড হচ্ছে...</div>';
-}
-
-function applyHwrSearch() {
-  const searchValue = document.getElementById('hwrSearch3')?.value || '';
-  if (searchValue.trim()) {
-    showToast('খোঁজা হচ্ছে: ' + searchValue);
-  }
-}
 
 </script>
 <script src="pwa-install.js"></script>
 <script src="nq-notify.js"></script>
 <script src="nq-monthly.js"></script>
+<script src="nq-fixes.js"></script>
 <script src="nq-en-digits.js"></script>
 </body>
 </html>
