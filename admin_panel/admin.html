@@ -3618,20 +3618,66 @@
         <button class="add-btn" style="background:#1e88e5;" onclick="showHwResidentialListDetail()">☰ বিস্তারিত</button>
       </div>
       <div style="padding:18px;">
+        <!-- Radio Buttons for Category Selection -->
         <div class="adm-radio-group" style="margin-bottom:16px;">
-          <label><input type="radio" name="hwrCategory" value="নুরানি" checked> নুরানি</label>
-          <label><input type="radio" name="hwrCategory" value="বালিকা শাখা"> বালিকা শাখা</label>
+          <label><input type="radio" name="hwrCategory" value="নুরানি" checked onchange="updateHwFormLayout()"> নুরানি</label>
+          <label><input type="radio" name="hwrCategory" value="বালিকা শাখা" onchange="updateHwFormLayout()"> বালিকা শাখা</label>
           <span style="color:#ccc;">||</span>
-          <label><input type="radio" name="hwrCategory" value="কায়দা"> কায়দা</label>
-          <label><input type="radio" name="hwrCategory" value="আমপারা"> আমপারা</label>
+          <label><input type="radio" name="hwrCategory" value="কায়দা" onchange="updateHwFormLayout()"> কায়দা</label>
+          <label><input type="radio" name="hwrCategory" value="আমপারা" onchange="updateHwFormLayout()"> আমপারা</label>
           <span style="color:#ccc;">||</span>
-          <label><input type="radio" name="hwrCategory" value="কুরআন"> কুরআন</label>
+          <label><input type="radio" name="hwrCategory" value="কুরআন" onchange="updateHwFormLayout()"> কুরআন</label>
         </div>
-        <div class="form-row">
-          <textarea id="hwrComment" rows="3" placeholder="মন্তব্য"></textarea>
+
+        <!-- Form Layout 1: নুরানি/বালিকা শাখা -->
+        <div id="hwrFormLayout1" style="display:none;">
+          <div class="form-row">
+            <textarea id="hwrComment" rows="3" placeholder="মন্তব্য"></textarea>
+          </div>
+          <div style="font-size:14px;color:#333;margin-bottom:8px;">শিক্ষার্থী</div>
+          <div id="hwrStudentGrid" style="border-top:1px solid #eee;padding-top:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;"></div>
         </div>
-        <div style="font-size:14px;color:#333;margin-bottom:8px;">শিক্ষার্থী</div>
-        <div id="hwrStudentGrid" style="border-top:1px solid #eee;padding-top:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;"></div>
+
+        <!-- Form Layout 2: কায়দা -->
+        <div id="hwrFormLayout2" style="display:none;">
+          <div class="form-row">
+            <textarea id="hwrComment2" rows="3" placeholder="মন্তব্য"></textarea>
+          </div>
+          <div style="font-size:14px;color:#333;margin-bottom:12px;">শিক্ষার্থী</div>
+          <div id="hwrStudentGrid2" style="border-top:1px solid #eee;padding-top:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-bottom:16px;"></div>
+          <div style="font-size:14px;color:#333;margin-bottom:8px;font-weight:600;">শিক্ষার্থী অগ্রগতি</div>
+          <div id="hwrStudentChecklist2" style="border-top:1px solid #eee;padding-top:10px;"></div>
+        </div>
+
+        <!-- Form Layout 3: আমপারা -->
+        <div id="hwrFormLayout3" style="display:none;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+            <input type="text" id="hwrSearch3" placeholder="ছাত্র খুঁজুন" style="padding:8px 12px;border:1px solid #ddd;border-radius:4px;font-size:14px;font-family:inherit;">
+            <button class="add-btn" style="background:#2e7d32;padding:8px 14px;border:none;cursor:pointer;border-radius:4px;color:#fff;font-weight:600;" onclick="applyHwrSearch()">আইয়া খুঁজ পরিবর্তন</button>
+          </div>
+          <div class="form-row">
+            <textarea id="hwrComment3" rows="3" placeholder="মন্তব্য"></textarea>
+          </div>
+          <div style="font-size:14px;color:#333;margin-bottom:12px;">শিক্ষার্থী</div>
+          <div id="hwrStudentGrid3" style="border-top:1px solid #eee;padding-top:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;"></div>
+        </div>
+
+        <!-- Form Layout 4: কুরআন -->
+        <div id="hwrFormLayout4" style="display:none;">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;font-size:13px;">
+            <button class="filter-btn4" data-filter="ছাত্র পারা না" style="padding:6px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;font-weight:500;">ছাত্র পারা না</button>
+            <button class="filter-btn4" data-filter="ছাত্র পূর্ণ না" style="padding:6px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;font-weight:500;">ছাত্র পূর্ণ না</button>
+            <button class="filter-btn4" data-filter="সাত ছাত্র পারা না" style="padding:6px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;font-weight:500;">সাত ছাত্র পারা না</button>
+            <button class="filter-btn4" data-filter="সাত ছাত্র পূর্ণ না" style="padding:6px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;font-weight:500;">সাত ছাত্র পূর্ণ না</button>
+            <button class="filter-btn4" data-filter="আমূলকা পারা না" style="padding:6px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;font-weight:500;">আমূলকা পারা না</button>
+            <button class="filter-btn4" data-filter="আমূলকা পূর্ণ না" style="padding:6px;border:1px solid #ddd;border-radius:4px;background:#fff;cursor:pointer;font-weight:500;">আমূলকা পূর্ণ না</button>
+          </div>
+          <div class="form-row">
+            <textarea id="hwrComment4" rows="3" placeholder="মন্তব্য"></textarea>
+          </div>
+          <div style="font-size:14px;color:#333;margin-bottom:12px;">শিক্ষার্থী</div>
+          <div id="hwrStudentGrid4" style="border-top:1px solid #eee;padding-top:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;"></div>
+        </div>
       </div>
     </div>
     <button class="haz-save-bar" style="margin-top:14px;" onclick="saveHwResidential()">✓ সংরক্ষণ করুন</button>
@@ -12761,7 +12807,108 @@ async function refreshMsgBadge() {
 document.addEventListener('DOMContentLoaded', function () {
   refreshMsgBadge();
   setInterval(refreshMsgBadge, 60000);
+  
+  // Initialize homework form layout
+  initializeHwFormLayout();
 });
+
+/* ═══════════ বাড়ির কাজ ফর্ম লেআউট সুইচিং ═══════════ */
+function initializeHwFormLayout() {
+  // Set default layout when page loads
+  updateHwFormLayout();
+  
+  // Add event listeners for filter buttons in layout 4
+  document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('filter-btn4')) {
+      const filterBtns = document.querySelectorAll('.filter-btn4');
+      filterBtns.forEach(btn => btn.style.background = '#fff');
+      e.target.style.background = '#e3f2fd';
+    }
+  });
+}
+
+function updateHwFormLayout() {
+  // Get selected category
+  const selectedCategory = document.querySelector('input[name="hwrCategory"]:checked')?.value || 'নুরানি';
+  
+  // Hide all layouts first
+  document.getElementById('hwrFormLayout1').style.display = 'none';
+  document.getElementById('hwrFormLayout2').style.display = 'none';
+  document.getElementById('hwrFormLayout3').style.display = 'none';
+  document.getElementById('hwrFormLayout4').style.display = 'none';
+  
+  // Show appropriate layout based on selection
+  if (selectedCategory === 'নুরানি' || selectedCategory === 'বালিকা শাখা') {
+    // Layout 1: Simple form
+    document.getElementById('hwrFormLayout1').style.display = 'block';
+    renderHwStudentGrid();
+  } else if (selectedCategory === 'কায়দা') {
+    // Layout 2: Form with checklist
+    document.getElementById('hwrFormLayout2').style.display = 'block';
+    renderHwStudentGrid2();
+    renderHwStudentChecklist2();
+  } else if (selectedCategory === 'আমপারা') {
+    // Layout 3: Form with search bar
+    document.getElementById('hwrFormLayout3').style.display = 'block';
+    renderHwStudentGrid3();
+  } else if (selectedCategory === 'কুরআন') {
+    // Layout 4: Form with filter buttons
+    document.getElementById('hwrFormLayout4').style.display = 'block';
+    renderHwStudentGrid4();
+  }
+}
+
+function renderHwStudentGrid() {
+  const grid = document.getElementById('hwrStudentGrid');
+  if (!grid) return;
+  grid.innerHTML = '<div style="padding:12px;color:#888;">শিক্ষার্থীর তালিকা লোড হচ্ছে...</div>';
+  // This will be populated by existing renderHwResidentialStudents function
+}
+
+function renderHwStudentGrid2() {
+  const grid = document.getElementById('hwrStudentGrid2');
+  if (!grid) return;
+  grid.innerHTML = '<div style="padding:12px;color:#888;">শিক্ষার্থীর তালিকা লোড হচ্ছে...</div>';
+}
+
+function renderHwStudentChecklist2() {
+  const checklist = document.getElementById('hwrStudentChecklist2');
+  if (!checklist) return;
+  
+  const studentNames = [
+    'মো আজিজুম', 'আবু বকর সিদ্দিক', 'ইয়ামিন আহমেদ', 'আয়মান জাহান লোহানা', 'মো সাদিক',
+    'আক্তারুজ্জামান নিরব', 'আদরের রহিম', 'সাফিন আহমেদ নিশির', 'আদরের রহমান', 'আদরাম বারী আয়াস',
+    'আদরহিম বারী আয়াস', 'আদরহাম রানি আয়াস', 'নাদিয়া আপার মাইশা'
+  ];
+  
+  const html = studentNames.map((name, idx) => `
+    <label style="display:flex;align-items:center;gap:8px;padding:8px;margin-bottom:4px;font-size:13px;">
+      <input type="checkbox" value="${idx}" data-name="${name}">
+      <span>${idx + 1}. ${name}</span>
+    </label>
+  `).join('');
+  
+  checklist.innerHTML = html;
+}
+
+function renderHwStudentGrid3() {
+  const grid = document.getElementById('hwrStudentGrid3');
+  if (!grid) return;
+  grid.innerHTML = '<div style="padding:12px;color:#888;">শিক্ষার্থীর তালিকা লোড হচ্ছে...</div>';
+}
+
+function renderHwStudentGrid4() {
+  const grid = document.getElementById('hwrStudentGrid4');
+  if (!grid) return;
+  grid.innerHTML = '<div style="padding:12px;color:#888;">শিক্ষার্থীর তালিকা লোড হচ্ছে...</div>';
+}
+
+function applyHwrSearch() {
+  const searchValue = document.getElementById('hwrSearch3')?.value || '';
+  if (searchValue.trim()) {
+    showToast('খোঁজা হচ্ছে: ' + searchValue);
+  }
+}
 
 </script>
 <script src="pwa-install.js"></script>
