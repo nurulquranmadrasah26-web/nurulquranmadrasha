@@ -3618,15 +3618,15 @@
         <button class="add-btn" style="background:#1e88e5;" onclick="showHwResidentialListDetail()">☰ বিস্তারিত</button>
       </div>
       <div style="padding:18px;">
-        <!-- Radio Buttons for Category Selection -->
+        <!-- Checkboxes for Category Selection -->
         <div class="adm-radio-group" style="margin-bottom:16px;">
-          <label><input type="radio" name="hwrCategory" value="নুরানি" checked onchange="updateHwFormLayout()"> নুরানি</label>
-          <label><input type="radio" name="hwrCategory" value="বালিকা শাখা" onchange="updateHwFormLayout()"> বালিকা শাখা</label>
+          <label><input type="checkbox" class="hwrCategoryCheck" value="নুরানি" onchange="updateHwFormLayout()"> নুরানি</label>
+          <label><input type="checkbox" class="hwrCategoryCheck" value="বালিকা শাখা" onchange="updateHwFormLayout()"> বালিকা শাখা</label>
           <span style="color:#ccc;">||</span>
-          <label><input type="radio" name="hwrCategory" value="কায়দা" onchange="updateHwFormLayout()"> কায়দা</label>
-          <label><input type="radio" name="hwrCategory" value="আমপারা" onchange="updateHwFormLayout()"> আমপারা</label>
+          <label><input type="checkbox" class="hwrCategoryCheck" value="কায়দা" onchange="updateHwFormLayout()"> কায়দা</label>
+          <label><input type="checkbox" class="hwrCategoryCheck" value="আমপারা" onchange="updateHwFormLayout()"> আমপারা</label>
           <span style="color:#ccc;">||</span>
-          <label><input type="radio" name="hwrCategory" value="কুরআন" onchange="updateHwFormLayout()"> কুরআন</label>
+          <label><input type="checkbox" class="hwrCategoryCheck" value="কুরআন" onchange="updateHwFormLayout()"> কুরআন</label>
         </div>
 
         <!-- Form Layout 1: নুরানি/বালিকা শাখা -->
@@ -12814,8 +12814,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
 /* ═══════════ বাড়ির কাজ ফর্ম লেআউট সুইচিং ═══════════ */
 function initializeHwFormLayout() {
-  // Set default layout when page loads
-  updateHwFormLayout();
+  // Set default layout when page loads (show Layout 1 by default)
+  const layout1 = document.getElementById('hwrFormLayout1');
+  if (layout1) {
+    layout1.style.display = 'block';
+    renderHwStudentGrid();
+  }
   
   // Add event listeners for filter buttons in layout 4
   document.addEventListener('click', function(e) {
@@ -12828,8 +12832,9 @@ function initializeHwFormLayout() {
 }
 
 function updateHwFormLayout() {
-  // Get selected category
-  const selectedCategory = document.querySelector('input[name="hwrCategory"]:checked')?.value || 'নুরানি';
+  // Get all selected categories
+  const selectedCheckboxes = Array.from(document.querySelectorAll('.hwrCategoryCheck:checked'));
+  const selectedValues = selectedCheckboxes.map(cb => cb.value);
   
   // Hide all layouts first
   document.getElementById('hwrFormLayout1').style.display = 'none';
@@ -12837,24 +12842,32 @@ function updateHwFormLayout() {
   document.getElementById('hwrFormLayout3').style.display = 'none';
   document.getElementById('hwrFormLayout4').style.display = 'none';
   
-  // Show appropriate layout based on selection
-  if (selectedCategory === 'নুরানি' || selectedCategory === 'বালিকা শাখা') {
-    // Layout 1: Simple form
+  // Determine which layout to show based on selection logic
+  if (selectedValues.length === 0) {
+    // Default: Show Layout 1 when nothing selected
     document.getElementById('hwrFormLayout1').style.display = 'block';
     renderHwStudentGrid();
-  } else if (selectedCategory === 'কায়দা') {
-    // Layout 2: Form with checklist
+  } else if (selectedValues.includes('নুরানি') && selectedValues.includes('কায়দা') && selectedValues.length === 2) {
+    // Layout 2: নুরানি + কায়দা combination
     document.getElementById('hwrFormLayout2').style.display = 'block';
     renderHwStudentGrid2();
     renderHwStudentChecklist2();
-  } else if (selectedCategory === 'আমপারা') {
-    // Layout 3: Form with search bar
+  } else if (selectedValues.includes('আমপারা') && selectedValues.length === 1) {
+    // Layout 3: আমপারা alone
     document.getElementById('hwrFormLayout3').style.display = 'block';
     renderHwStudentGrid3();
-  } else if (selectedCategory === 'কুরআন') {
-    // Layout 4: Form with filter buttons
+  } else if (selectedValues.includes('কুরআন') && selectedValues.length === 1) {
+    // Layout 4: কুরআন alone
     document.getElementById('hwrFormLayout4').style.display = 'block';
     renderHwStudentGrid4();
+  } else if ((selectedValues.includes('নুরানি') || selectedValues.includes('বালিকা শাখা')) && selectedValues.length === 1) {
+    // Layout 1: নুরানি or বালিকা শাখা alone
+    document.getElementById('hwrFormLayout1').style.display = 'block';
+    renderHwStudentGrid();
+  } else {
+    // Default: If any other combination, show Layout 1
+    document.getElementById('hwrFormLayout1').style.display = 'block';
+    renderHwStudentGrid();
   }
 }
 
