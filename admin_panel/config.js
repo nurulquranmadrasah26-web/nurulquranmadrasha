@@ -23,7 +23,7 @@
     // Production: ফ্রন্টএন্ড যদি আলাদা Vercel ডোমেইনে ডিপ্লয় করা থাকে, এখানে তার
     // পূর্ণ (absolute) ঠিকানা দিন। প্রয়োজনে নিচের লিঙ্ক আপনার আসল ফ্রন্টএন্ড ডোমেইন
     // দিয়ে বদলে নিন।
-    return "https://nurulquranmadrasha.vercel.app/";
+    return "https://www.nurulqurane.online/";
   };
 
   window.APP_CONFIG = {

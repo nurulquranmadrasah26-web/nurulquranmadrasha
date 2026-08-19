@@ -22,7 +22,7 @@
     // Production: এডমিন প্যানেল যদি আলাদা Vercel ডোমেইনে ডিপ্লয় করা থাকে
     // (ফ্রন্টএন্ড ও এডমিন প্যানেল ভিন্ন প্রজেক্ট হলে), এখানে তার পূর্ণ (absolute)
     // ঠিকানা দিন। প্রয়োজনে নিচের লিঙ্ক আপনার আসল এডমিন প্যানেল ডোমেইন দিয়ে বদলে নিন।
-    return "https://nurulquranmadrasha-y9xo.vercel.app/admin.html";
+    return "https://admin.nurulqurane.online/admin.html";
   };
 
   window.APP_CONFIG = {
