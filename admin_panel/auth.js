@@ -246,34 +246,49 @@
   }
 
   /* ---------- রোল-ভিত্তিক রিডাইরেক্ট ---------- */
+  /* পরিচ্ছন্ন ঠিকানা (/student, /teacher, /) এবং ফাইল ঠিকানা (student.html)
+     — দুটোই সঠিকভাবে সনাক্ত করা হয়, নইলে বারবার রিডাইরেক্ট হয়ে পেজ "কাঁপে"। */
+  function currentPageKey() {
+    var last = (window.location.pathname || '/').toLowerCase().split('/').filter(Boolean).pop() || '';
+    last = last.replace(/\.html$/, '');
+    if (!last || last === 'index' || last === 'admin') return 'admin';
+    if (last === 'student' || last === 'teacher') return last;
+    return last;
+  }
+
   function handleRoleBasedRedirect() {
     if (!NQAuth.isLoggedIn()) return; // পরে চেক হবে
-    
-    var user = NQAuth.user || {};
-    var role = NQAuth.role || '';
-    
-    var here = (window.location.pathname || '').split('/').pop().toLowerCase();
 
-    // শিক্ষার্থী রোলে Student পেজে রিডাইরেক্ট করা (ইতিমধ্যে সেখানে থাকলে নয়)
-    if (role === 'student') {
-      if (here === 'student.html') return;
-      // ব্যাকএন্ডে student.html থেকে শিক্ষার্থীর ড্যাশবোর্ড দেখাবে
-      // কিন্তু এখানে সরাসরি student.html এ পাঠাচ্ছি (যা তার ব্যক্তিগত ড্যাশবোর্ড)
-      window.location.replace(window.NQ_PAGE ? window.NQ_PAGE('student') : './student.html');
+    var role = NQAuth.role || '';
+    var here = currentPageKey();
+
+    var want = 'admin';
+    if (role === 'student') want = 'student';
+    else if (role === 'teacher') want = 'teacher';
+
+    // অন্য কোনো (অচেনা) পেজে থাকলে হস্তক্ষেপ নয়
+    if (here !== 'admin' && here !== 'student' && here !== 'teacher') return;
+    if (here === want) {
+      // সঠিক পেজে পৌঁছে গেছে — কাউন্টার পরিষ্কার
+      try {
+        ['nq_redir_admin', 'nq_redir_student', 'nq_redir_teacher'].forEach(function (k) {
+          sessionStorage.removeItem(k);
+        });
+      } catch (e) {}
       return;
     }
-    
-    // শিক্ষক রোলে Teacher পেজে রিডাইরেক্ট করা
-    if (role === 'teacher') {
-      if (here === 'teacher.html') return;
-      window.location.replace(window.NQ_PAGE ? window.NQ_PAGE('teacher') : './teacher.html');
-      return;
-    }
-    
-    // অন্যরা (Admin, SuperAdmin, Support) admin.html এ থাকবে
-    if (here === 'teacher.html' || here === 'student.html') {
-      window.location.replace(window.NQ_PAGE ? window.NQ_PAGE('admin') : './admin.html');
-    }
+
+    var target = window.NQ_PAGE ? window.NQ_PAGE(want) : ('./' + want + '.html');
+
+    // নিরাপত্তা: একই সেশনে বারবার রিডাইরেক্ট লুপ ঠেকানো
+    try {
+      var key = 'nq_redir_' + want;
+      var n = parseInt(sessionStorage.getItem(key) || '0', 10) || 0;
+      if (n >= 2) { sessionStorage.removeItem(key); return; }
+      sessionStorage.setItem(key, String(n + 1));
+    } catch (e) {}
+
+    window.location.replace(target);
   }
 
   /* ---------- বুট: গার্ড ---------- */
