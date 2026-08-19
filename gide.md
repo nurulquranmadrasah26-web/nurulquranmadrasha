@@ -38,3 +38,19 @@
 - পুশ নোটিফিকেশন: Render-এ `VAPID_PUBLIC_KEY` ও `VAPID_PRIVATE_KEY` সেট করলেই চালু হবে।
 - Render ফ্রি প্লানে ১৫ মিনিট নিষ্ক্রিয় থাকলে সার্ভার ঘুমায়। সম্পূর্ণ সমাধান
   পেইড প্লান, অথবা cron-job.org থেকে প্রতি ১০ মিনিটে `/api/health` পিং করান।
+
+## ৪) সর্বশেষ আপডেট (১৯ আগস্ট ২০২৬)
+- **বাড়ির কাজ (আবাসিক)** — "বালিকা শাখা" নির্বাচন করলে আগে কোনো শিক্ষার্থী আসত না
+  (ডাটাতে শাখার নাম "বালিকা", রেডিওতে "বালিকা শাখা")। এখন শাখার নাম নরমালাইজ করে
+  মেলানো হয় (`branch`, `dept`, `attDept`, `cls`, `attCls` সব ফিল্ড দেখা হয়) — তাই
+  নাজেরা বালিকা/হেফজ বালিকা সব শিক্ষার্থী তালিকায় আসে (চারটি লেআউট ও কায়দা চেকলিস্টেও)।
+- **Google ইনডেক্সিং ("Robots.txt unreachable")** —
+  `frontend/robots.txt` (Allow + Sitemap), `frontend/sitemap.xml`,
+  `frontend/vercel.json` (robots/sitemap-এর সঠিক Content-Type ও হেডার),
+  `admin_panel/robots.txt` (এডমিন প্যানেল ইনডেক্স হবে না) যোগ করা হয়েছে।
+  সার্ভিস ওয়ার্কার এখন `robots.txt`/`sitemap.xml` ইন্টারসেপ্ট করে না।
+- `frontend/index.html`-এ meta description, canonical, Open Graph, Twitter card ও
+  JSON-LD (EducationalOrganization) যোগ করা হয়েছে।
+- ⚠️ ডোমেইন হিসেবে `https://nurulqurane.online/` ধরা হয়েছে। আপনার মূল সাইটের ডোমেইন
+  ভিন্ন হলে `robots.txt`, `sitemap.xml` ও `index.html`-এর লিঙ্কগুলো বদলে নিন।
+  ডিপ্লয়ের পর Search Console-এ URL Inspection → "Test Live URL" → "Request Indexing" দিন।

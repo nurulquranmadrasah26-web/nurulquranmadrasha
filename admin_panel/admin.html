@@ -12923,8 +12923,12 @@ function hwrStudents(search) {
   initHajiraData();
   const branch = hwrBranchValue();
   const q = (search || '').trim();
+  /* শাখার নাম মিলানোর জন্য নরমালাইজ (যেমন "বালিকা শাখা" ↔ "বালিকা", "হেফজ বালিকা") */
+  const norm = v => String(v || '').replace(/শাখা/g, '').replace(/আবাসিক/g, '').replace(/\s+/g, ' ').trim();
+  const nb = norm(branch);
   return students.filter(s => {
-    const okBranch = !branch || [s.branch, s.dept, s.attDept].filter(Boolean).some(v => String(v).indexOf(branch) !== -1);
+    const fields = [s.branch, s.dept, s.attDept, s.cls, s.attCls].map(norm).filter(Boolean);
+    const okBranch = !nb || fields.some(v => v.indexOf(nb) !== -1 || nb.indexOf(v) !== -1);
     const okSearch = !q || String(s.name || '').indexOf(q) !== -1 || String(s.regNo || '').indexOf(q) !== -1 || String(s.mobile || '').indexOf(q) !== -1;
     return okBranch && okSearch;
   });

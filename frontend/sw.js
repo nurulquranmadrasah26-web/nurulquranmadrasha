@@ -48,6 +48,8 @@ self.addEventListener('fetch', function (e) {
   var url = new URL(req.url);
   // API কল কখনো ক্যাশ করা হবে না
   if (url.pathname.indexOf('/api/') === 0 || url.origin !== self.location.origin) return;
+  // robots.txt / sitemap.xml কখনো ক্যাশ বা ইন্টারসেপ্ট করা হবে না (SEO ক্রলিং)
+  if (/^\/(robots\.txt|sitemap\.xml)$/.test(url.pathname)) return;
 
   var isDoc = req.mode === 'navigate' || (req.headers.get('accept') || '').indexOf('text/html') !== -1;
 
