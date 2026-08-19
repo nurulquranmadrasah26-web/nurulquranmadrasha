@@ -259,20 +259,20 @@
       if (here === 'student.html') return;
       // ব্যাকএন্ডে student.html থেকে শিক্ষার্থীর ড্যাশবোর্ড দেখাবে
       // কিন্তু এখানে সরাসরি student.html এ পাঠাচ্ছি (যা তার ব্যক্তিগত ড্যাশবোর্ড)
-      window.location.replace('./student.html');
+      window.location.replace(window.NQ_PAGE ? window.NQ_PAGE('student') : './student.html');
       return;
     }
     
     // শিক্ষক রোলে Teacher পেজে রিডাইরেক্ট করা
     if (role === 'teacher') {
       if (here === 'teacher.html') return;
-      window.location.replace('./teacher.html');
+      window.location.replace(window.NQ_PAGE ? window.NQ_PAGE('teacher') : './teacher.html');
       return;
     }
     
     // অন্যরা (Admin, SuperAdmin, Support) admin.html এ থাকবে
     if (here === 'teacher.html' || here === 'student.html') {
-      window.location.replace('./admin.html');
+      window.location.replace(window.NQ_PAGE ? window.NQ_PAGE('admin') : './admin.html');
     }
   }
 
