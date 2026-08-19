@@ -26,25 +26,10 @@ const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || "MySuperSecretKey_2026_X9A7Bt8LmN5YQr";
 const MONGODB_URI = process.env.MONGODB_URI;
 
-/* ফ্রন্টএন্ড: https://www.nurulqurane.online
-   এডমিন প্যানেল: https://admin.nurulqurane.online
-   ENV ALLOWED_ORIGINS দিলে সেগুলোও যুক্ত হয়। */
-const DEFAULT_ORIGINS = [
-  "https://www.nurulqurane.online",
-  "https://nurulqurane.online",
-  "https://admin.nurulqurane.online",
-];
-
-const ALLOWED_ORIGINS = Array.from(
-  new Set(
-    DEFAULT_ORIGINS.concat(
-      (process.env.ALLOWED_ORIGINS || "")
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean)
-    )
-  )
-);
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean);
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -65,7 +50,6 @@ app.use(
       if (ALLOWED_ORIGINS.length === 0) return cb(null, true);
       if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
       // Allow any *.vercel.app preview/production deployment
-      if (/(^|\.)nurulqurane\.online$/.test(new URL(origin).hostname)) return cb(null, true);
       if (/\.vercel\.app$/.test(new URL(origin).hostname)) return cb(null, true);
       // Allow localhost and 127.0.0.1
       if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return cb(null, true);

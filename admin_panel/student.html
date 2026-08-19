@@ -1,11 +1,6 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-<script src="./nq-host.js"></script>
-<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
-<meta name="googlebot" content="noindex, nofollow">
-<link rel="canonical" href="https://admin.nurulqurane.online/student">
-
   <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#0b3d24">
   <meta name="mobile-web-app-capable" content="yes">
@@ -418,6 +413,7 @@
   ::-webkit-scrollbar{height:6px; width:6px;}
   ::-webkit-scrollbar-thumb{background:#d1d5db; border-radius:10px;}
 </style>
+<script src="config.js"></script>
 <script src="auth.js"></script>
 </head>
 <body>
@@ -426,7 +422,7 @@
   <header id="app-header" style="background:var(--home-grad);">
     <div class="top-row">
       <div style="display:flex;align-items:center;gap:10px;">
-        <img src="./assets/app-logo.png" alt="লোগো" style="width:42px;height:42px;object-fit:contain;background:#fff;border-radius:50%;padding:2px;flex:none;" onerror="this.onerror=null;this.src='./icons/icon-192.png'">
+        <img src="./assets/app-logo.png" alt="লোগো" style="width:42px;height:42px;object-fit:contain;background:#fff;border-radius:50%;padding:2px;flex:none;">
         <div>
         <h1 id="stuGreet">হ্যালো! 👋</h1>
         <div class="meta" id="stuMeta">লোড হচ্ছে...</div>
@@ -800,8 +796,8 @@ function renderHome(){
   }).join(''))) || '<div class="notice-empty"><div class="bell">🔕</div><div>কোন নোটিশ নেই</div></div>';
 
   var pays = arr(S.payments).filter(function(p){ return ME && p.student === ME.name; });
-  var todayLabel = bnDate(todayISO());
-  var todayPaid = pays.filter(function(p){ return p.date === todayLabel || String(p.date||'').slice(0,10) === today; }).reduce(function(t,p){ return t + (Number(p.amount)||0); }, 0);
+  var today = bnDate(todayISO());
+  var todayPaid = pays.filter(function(p){ return p.date === today; }).reduce(function(t,p){ return t + (Number(p.amount)||0); }, 0);
   var totalPaid = pays.reduce(function(t,p){ return t + (Number(p.amount)||0); }, 0);
   var dues = ME ? arr(obj(S.studentDues)[ME.id]) : [];
   var totalDue = dues.reduce(function(t,d){ return t + (Number(d.amount)||0); }, 0);

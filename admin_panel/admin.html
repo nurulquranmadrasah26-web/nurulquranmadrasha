@@ -1,11 +1,6 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-<script src="./nq-host.js"></script>
-<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
-<meta name="googlebot" content="noindex, nofollow">
-<link rel="canonical" href="https://admin.nurulqurane.online/">
-
   <link rel="manifest" href="./manifest.json">
   <meta name="theme-color" content="#0b3d24">
   <meta name="mobile-web-app-capable" content="yes">
@@ -1394,7 +1389,7 @@
 <!-- ═══════════════ HEADER ═══════════════ -->
 <header class="header">
   <div class="logo-area">
-    <div class="logo-circle"><img src="./assets/app-logo.png" alt="নুরুল কোরআন মাদ্রাসা লোগো" / onerror="this.onerror=null;this.src='./icons/icon-192.png'"></div>
+    <div class="logo-circle"><img src="./assets/app-logo.png" alt="নুরুল কোরআন মাদ্রাসা লোগো" /></div>
     <div class="logo-text">
       <h1>নুরুল কোরআন মাদ্রাসা</h1>
       <p>Nurul Quran Madrasa</p>
@@ -6442,7 +6437,7 @@ async function impersonateUser(id) {
     try { localStorage.removeItem('nq_last_page'); localStorage.removeItem('nq_last_subpage'); } catch (e) {}
 
     const role = String(data.user.role || '').toLowerCase().replace(/[\s_-]+/g, '');
-    const target = (window.NQ_PAGE ? window.NQ_PAGE(role === 'student' ? 'student' : (role === 'teacher' ? 'teacher' : 'admin')) : (role === 'student' ? './student.html' : (role === 'teacher' ? './teacher.html' : './admin.html')));
+    const target = role === 'student' ? './student.html' : (role === 'teacher' ? './teacher.html' : './admin.html');
     window.location.href = target;
   } catch (e) {
     showErrorPopup('লগইন করা যায়নি', 'কারণ: সার্ভারের সাথে সংযোগ করা যায়নি (ইন্টারনেট বা API ঠিকানা পরীক্ষা করুন)।');
