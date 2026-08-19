@@ -38,3 +38,29 @@
 - পুশ নোটিফিকেশন: Render-এ `VAPID_PUBLIC_KEY` ও `VAPID_PRIVATE_KEY` সেট করলেই চালু হবে।
 - Render ফ্রি প্লানে ১৫ মিনিট নিষ্ক্রিয় থাকলে সার্ভার ঘুমায়। সম্পূর্ণ সমাধান
   পেইড প্লান, অথবা cron-job.org থেকে প্রতি ১০ মিনিটে `/api/health` পিং করান।
+
+## ৪) SEO ও ডোমেইন সিস্টেম (নতুন আপডেট)
+- ফ্রন্টএন্ড ডোমেইন: **https://www.nurulqurane.online** (apex `nurulqurane.online` → www এ রিডাইরেক্ট)
+- এডমিন প্যানেল ডোমেইন: **https://admin.nurulqurane.online** (রুট `/` → `admin.html`)
+- `frontend/index.html` — সম্পূর্ণ SEO: টাইটেল, description, বিস্তৃত keywords
+  (নুরুল কুরআন / নুরুল কোরআন / নুরুল কুরআন অনলাইন / নুরুল কুরআন ডট অনলাইন /
+  Nurul Quran / Nurul Quran Online / nurulqurane.online সহ সব বানানভেদ),
+  canonical, hreflang (bn/en/x-default), Open Graph, Twitter Card, geo মেটা,
+  এবং JSON-LD স্কিমা (EducationalOrganization + School + LocalBusiness,
+  WebSite + SearchAction, BreadcrumbList, Course তালিকা)।
+- নতুন `frontend/robots.txt` ও `frontend/sitemap.xml` (Sitemap লিঙ্ক robots.txt-এ)।
+- নতুন `frontend/vercel.json` — cleanUrls, `/admin` → এডমিন সাবডোমেইন রিডাইরেক্ট,
+  robots/sitemap সঠিক Content-Type, নিরাপত্তা হেডার।
+- `admin_panel/` — `robots.txt` (Disallow: /), সব HTML-এ `noindex` মেটা,
+  `vercel.json`-এ `X-Robots-Tag: noindex` ও `/admin`,`/student`,`/teacher` রিরাইট।
+  ফলে এডমিন প্যানেল কখনো Google-এ আসবে না।
+- `backend/server.js` — CORS-এ ডিফল্টভাবেই `www.nurulqurane.online`,
+  `nurulqurane.online`, `admin.nurulqurane.online` এবং যেকোনো
+  `*.nurulqurane.online` অনুমোদিত।
+
+### ডিপ্লয় ধাপ (Vercel)
+1. `frontend` ফোল্ডার = প্রজেক্ট ১ → ডোমেইন `www.nurulqurane.online` (+ apex রিডাইরেক্ট)।
+2. `admin_panel` ফোল্ডার = প্রজেক্ট ২ → ডোমেইন `admin.nurulqurane.online`।
+3. Render backend-এ `ALLOWED_ORIGINS` ঐচ্ছিক (কোডে ডিফল্ট আছে)।
+4. Google Search Console-এ দুই প্রপার্টি যোগ করে
+   `https://www.nurulqurane.online/sitemap.xml` সাবমিট করুন।

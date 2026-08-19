@@ -1,0 +1,16 @@
+# https://www.nurulqurane.online/robots.txt
+User-agent: *
+Allow: /
+
+# এডমিন প্যানেল ইনডেক্স করা হবে না
+Disallow: /admin.html
+Disallow: /student.html
+Disallow: /teacher.html
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+Sitemap: https://www.nurulqurane.online/sitemap.xml

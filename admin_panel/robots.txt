@@ -1,0 +1,4 @@
+# https://admin.nurulqurane.online/robots.txt
+# এডমিন প্যানেল — সার্চ ইঞ্জিনে ইনডেক্স নিষিদ্ধ
+User-agent: *
+Disallow: /
