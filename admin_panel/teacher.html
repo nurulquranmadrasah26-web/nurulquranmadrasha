@@ -459,7 +459,7 @@
         <div class="fee-row">ডিসকাউন্ট <span class="val"><input type="number" id="feeDiscount" value="0" oninput="updateFeeSummary()" style="width:90px;border:1px solid var(--line);border-radius:6px;padding:4px 6px;"></span></div>
         <div class="fee-row">পরিশোধ <span class="val"><input type="number" id="feePaid" value="0" oninput="updateFeeSummary()" style="width:90px;border:1px solid var(--line);border-radius:6px;padding:4px 6px;"></span></div>
         <div class="fee-row bar green">বাকি টাকা <span class="val" id="feeRemaining">0.00 টাকা</span></div>
-        <div class="fee-save" onclick="saveFeeCollection()">✓ সংরক্ষণ করুন</div>
+        <div class="fee-save" onclick="saveFeeCollection()">✓ সুপার এডমিনের অনুমোদনের জন্য পাঠান</div>
       </div>
     </div>
   </section>
@@ -634,7 +634,7 @@
           <div class="workflow-field"><label>ধরন</label><select id="tiMovement"><option value="add">স্টকে যোগ</option><option value="issue">স্টক থেকে বিতরণ</option></select></div>
           <div class="workflow-field"><label>মন্তব্য</label><input id="tiNote" placeholder="ঐচ্ছিক"></div>
         </div>
-        <button class="workflow-submit" onclick="saveTeacherInventory()">স্টক সংরক্ষণ করুন</button>
+      <button class="workflow-submit" onclick="saveTeacherInventory()">সুপার এডমিনের অনুমোদনের জন্য পাঠান</button>
       </div>
       <div style="font-size:13px;color:var(--muted);margin-top:12px;">এই হিসাবটি শিক্ষক প্যানেল ও সুপার এডমিনের ইনভেন্টরিতে একসাথে আপডেট হবে।</div>
     </div>
@@ -703,11 +703,28 @@
     <div class="page-head"><div class="page-head-left"><div class="icon-box">📢</div><h1>নোটিশ বিষয়</h1></div>
       <div class="quicklinks"><button class="qb-dash" onclick="goto('dashboard')">🏠 <span class="lbl">ড্যাশবোর্ড</span></button></div>
     </div>
+    <div class="card">
+      <h2>নতুন নোটিশের আবেদন</h2>
+      <div class="workflow-grid">
+        <div class="workflow-field"><label>শিরোনাম</label><input id="tnTitle" placeholder="নোটিশের শিরোনাম"></div>
+        <div class="workflow-field"><label>প্রকাশের তারিখ</label><input id="tnDate" type="date"></div>
+        <div class="workflow-field full"><label>বিস্তারিত</label><textarea id="tnBody" rows="3" placeholder="নোটিশের বিষয়বস্তু"></textarea></div>
+      </div>
+      <button class="workflow-submit" onclick="submitTeacherNotice()">সুপার এডমিনের অনুমোদনের জন্য পাঠান</button>
+    </div>
     <div class="card"><h2>সুপার এডমিনের প্রকাশিত নোটিশ</h2><div id="teacherNoticeList"></div></div>
   </section>
   <section id="view-exam-subjects" class="view">
     <div class="page-head"><div class="page-head-left"><div class="icon-box">📚</div><h1>পরীক্ষার বিষয়</h1></div>
       <div class="quicklinks"><button class="qb-dash" onclick="goto('dashboard')">🏠 <span class="lbl">ড্যাশবোর্ড</span></button></div>
+    </div>
+    <div class="card">
+      <h2>নতুন পরীক্ষার বিষয়ের আবেদন</h2>
+      <div class="workflow-grid">
+        <div class="workflow-field"><label>বিষয়ের নাম</label><input id="tesName" placeholder="যেমন: আকাইদ"></div>
+        <div class="workflow-field"><label>প্রযোজ্য ক্লাসসমূহ</label><input id="tesClasses" placeholder="কমা দিয়ে লিখুন; খালি রাখলে সব ক্লাস"></div>
+      </div>
+      <button class="workflow-submit" onclick="submitTeacherExamSubject()">সুপার এডমিনের অনুমোদনের জন্য পাঠান</button>
     </div>
     <div class="card"><h2>পরীক্ষায় ব্যবহৃত বিষয়সমূহ</h2><div id="teacherExamSubjects"></div></div>
   </section>
@@ -772,6 +789,7 @@ var DIR = [];               // মেসেজ প্রাপকদের ত�
 var attTempt = {};          // হাজিরার অস্থায়ী অবস্থা
 var attActiveClass = '';
 var feeSelected = {};       // নির্বাচিত বকেয়া আইডি
+var teacherAttendanceLocks = {};
 var teacherApprovalRequests = [];
 var teacherEditingRequestId = null;
 var teacherEditingHomeworkId = null;
@@ -797,7 +815,7 @@ function canTeacherDeleteHomework(){
   return role === 'superadmin' || role === 'admin';
 }
 function requestLabel(kind){
-  return ({homework:'বাড়ির কাজ',syllabus:'সিলেবাস',leave:'ছুটির আবেদন',result:'ফলাফলের তালিকা',admission:'ভর্তি আবেদন'})[kind] || 'আবেদন';
+  return ({homework:'বাড়ির কাজ',syllabus:'সিলেবাস',leave:'ছুটির আবেদন',result:'ফলাফলের তালিকা',admission:'ভর্তি আবেদন',inventory:'ইনভেন্টরি',notice:'নোটিশ', 'exam-subject':'পরীক্ষার বিষয়',fee:'ফি আদায়'})[kind] || 'আবেদন';
 }
 function requestDate(iso){ return iso ? bnDate(String(iso).slice(0,10)) : ''; }
 
@@ -1033,6 +1051,8 @@ function renderAttendance(){
   fillAttendanceFilters();
   var clsF = (document.getElementById('attFilterClass') || {}).value || '';
   var deptF = (document.getElementById('attFilterDept') || {}).value || '';
+  var lockKey = todayISO() + '|' + clsF + '|' + deptF;
+  var locked = !!teacherAttendanceLocks[lockKey];
   var att = obj(S.attendance);
   var rows = arr(S.students).filter(function(st){
     var cls = st.attCls || st.cls || '';
@@ -1049,11 +1069,12 @@ function renderAttendance(){
       : '<span style="display:inline-flex;width:38px;height:38px;border-radius:50%;align-items:center;justify-content:center;background:#e3f2fd;color:#1565c0;font-weight:700;">' + esc(String(st.name || '?').charAt(0)) + '</span>';
     return '<tr><td>' + bn(i+1) + '</td><td>' + avatar + '</td><td>' + bn(st.regNo || st.id) + '</td><td>' + bn(st.classRoll || '-') + '</td><td>' + esc(st.name) + '</td><td>' + esc(st.attCls || st.cls || '-') + '</td><td>' + esc(st.attDept || st.dept || st.branch || '-') + '</td>' +
       '<td><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">' +
-      '<label style="color:#2e7d32;"><input type="radio" name="att-' + st.id + '" ' + (cur==='present'?'checked':'') + ' onchange="setAtt(' + st.id + ',\'present\')"> উপস্থিত</label>' +
-      '<label style="color:#c62828;"><input type="radio" name="att-' + st.id + '" ' + (cur==='absent'?'checked':'') + ' onchange="setAtt(' + st.id + ',\'absent\')"> অনুপস্থিত</label>' +
-      '<label style="color:#1565c0;"><input type="radio" name="att-' + st.id + '" ' + (cur==='leave'?'checked':'') + ' onchange="setAtt(' + st.id + ',\'leave\')"> ছুটিতে</label>' +
+      '<label style="color:#2e7d32;"><input ' + (locked?'disabled':'') + ' type="radio" name="att-' + st.id + '" ' + (cur==='present'?'checked':'') + ' onchange="setAtt(' + st.id + ',\'present\')"> উপস্থিত</label>' +
+      '<label style="color:#c62828;"><input ' + (locked?'disabled':'') + ' type="radio" name="att-' + st.id + '" ' + (cur==='absent'?'checked':'') + ' onchange="setAtt(' + st.id + ',\'absent\')"> অনুপস্থিত</label>' +
+      '<label style="color:#1565c0;"><input ' + (locked?'disabled':'') + ' type="radio" name="att-' + st.id + '" ' + (cur==='leave'?'checked':'') + ' onchange="setAtt(' + st.id + ',\'leave\')"> ছুটিতে</label>' +
       '</div></td></tr>';
   }).join('');
+  if(locked) body.innerHTML = '<tr><td colspan="8" style="padding:10px;background:#fff3cd;color:#7a5b00;">এই শ্রেণীর আজকের হাজিরা ইতিমধ্যে নেওয়া হয়েছে।</td></tr>' + body.innerHTML;
   updateAttSummary();
 }
 function setAtt(id, val){ attTempt[id] = val; updateAttSummary(); }
@@ -1073,18 +1094,37 @@ function switchClassTab(btn){
   renderAttendance();
 }
 function saveAttendance(){
+  var clsF = (document.getElementById('attFilterClass') || {}).value || '';
+  var deptF = (document.getElementById('attFilterDept') || {}).value || '';
+  var key = todayISO() + '|' + clsF + '|' + deptF;
+  if(teacherAttendanceLocks[key]){ toast('এই শ্রেণীর আজকের হাজিরা ইতিমধ্যে নেওয়া হয়েছে'); return; }
   var att = Object.assign({}, obj(S.attendance), attTempt);
   var history = obj(S.attendanceHistory);
   var date = todayISO();
-  arr(S.students).forEach(function(st){
+  var rows = arr(S.students).filter(function(st){
+    return (!clsF || (st.attCls || st.cls) === clsF) && (!deptF || (st.attDept || st.dept || st.branch) === deptF);
+  });
+  if(!rows.length){ toast('শ্রেণী বা বিভাগ নির্বাচন করুন'); return; }
+  var records = rows.map(function(st){ return {studentId:st.id,status:att[st.id] || 'present'}; });
+  window.NQAuth.authFetch('/api/attendance/submit', {
+    method:'POST',
+    body:JSON.stringify({date:date,className:clsF,branch:deptF,records:records})
+  }).then(function(res){
+    return res.json().catch(function(){ return {}; }).then(function(body){
+      if(!res.ok) throw new Error(body.message || 'হাজিরা সংরক্ষণ করা যায়নি');
+      rows.forEach(function(st){
     var status = att[st.id] || 'present';
     var list = arr(history[st.id]).slice();
     var idx = list.findIndex(function(x){ return x && x.date === date; });
     var row = {date:date, status:status, cls:st.attCls || st.cls || '', takenBy:me().name || me().uid || 'শিক্ষক'};
     if(idx >= 0) list[idx] = row; else list.push(row);
     history[st.id] = list;
-  });
-  saveKeys({ attendance: att, attendanceHistory: history }).then(function(){ toast('হাজিরা সংরক্ষণ করা হয়েছে!'); renderDashboard(); });
+      });
+      teacherAttendanceLocks[key] = true;
+      return saveKeys({ attendance: att, attendanceHistory: history });
+    });
+  }).then(function(){ toast('হাজিরা সংরক্ষণ করা হয়েছে!'); renderAttendance(); renderDashboard(); })
+    .catch(function(e){ toast(e.message || 'হাজিরা সংরক্ষণ করা যায়নি'); });
 }
 
 /* ---------- ফি আদায় ---------- */
@@ -1172,27 +1212,22 @@ function saveFeeCollection(){
   var mine = arr(dues[id]);
   var selectedIds = Object.keys(feeSelected).map(Number);
   var collected = mine.filter(function(d){ return selectedIds.indexOf(d.id) !== -1; });
-
-  var payments = arr(S.payments).slice();
-  var paymentDetails = arr(S.paymentDetails).slice();
-  var payId = payments.length ? Math.max.apply(null, payments.map(function(p){ return p.id || 0; })) + 1 : 1;
-  var today = bnDate(todayISO());
-  payments.push({
-    id: payId, student: student.name, amount: paid,
-    month: (collected[0] && collected[0].month) || '-', date: today,
-    by: me().name || 'শিক্ষক', remark: document.getElementById('feeRemark').value || 'শিক্ষক প্যানেল থেকে আদায়'
-  });
-  var billBase = paymentDetails.length ? (paymentDetails[paymentDetails.length-1].billNo || 100) + 1 : 100;
   var rows = collected.length ? collected : [{ label: 'অগ্রিম ফি', amount: paid, month: '-' }];
-  rows.forEach(function(d, i){
-    var pdId = paymentDetails.length ? Math.max.apply(null, paymentDetails.map(function(x){ return x.id || 0; })) + 1 + i : 1 + i;
-    paymentDetails.push({ id: pdId, billNo: billBase + i, studentId: id, date: today + ' ইং', label: d.label, amount: d.amount, month: d.month || '-', by: me().name || 'শিক্ষক' });
-  });
-  dues[id] = mine.filter(function(d){ return selectedIds.indexOf(d.id) === -1; });
-
-  saveKeys({ payments: payments, paymentDetails: paymentDetails, studentDues: dues }).then(function(){
-    toast('ফি আদায় সংরক্ষণ করা হয়েছে!');
+  var payload = {
+    studentId: id, studentName: student.name, regNo: student.regNo || student.id,
+    className: student.cls || student.attCls || '', branch: student.branch || '',
+    dueIds: selectedIds, amount: paid,
+    discount: Number(document.getElementById('feeDiscount').value) || 0,
+    method: document.getElementById('feeMethod').value,
+    remark: document.getElementById('feeRemark').value || 'শিক্ষক প্যানেল থেকে আদায়',
+    month: (rows[0] && rows[0].month) || '-', label: rows.map(function(d){ return d.label; }).join(', '),
+    date: todayISO()
+  };
+  submitApproval('fee', 'ফি আদায়ের অনুমোদনের আবেদন', payload).then(function(){
     document.getElementById('feeRemark').value = '';
+    document.getElementById('feePaid').value = 0;
+    document.getElementById('feeDiscount').value = 0;
+    feeSelected = {};
     renderFeeDues();
     renderDashboard();
   });
@@ -1284,21 +1319,36 @@ function renderTeacherInventory(){
 }
 function saveTeacherInventory(){
   var id=Number(document.getElementById('tiProduct').value), qty=Number(document.getElementById('tiQty').value)||0;
-  var mode=document.getElementById('tiMovement').value, list=arr(S.invProducts).map(function(x){ return Object.assign({},x); });
+  var mode=document.getElementById('tiMovement').value, list=arr(S.invProducts);
   var p=list.find(function(x){ return Number(x.id)===id; });
   if(!p || qty<1){ toast('পণ্য ও সঠিক পরিমাণ নির্বাচন করুন'); return; }
   var stock=Number(p.stock)||0;
   if(mode==='issue' && qty>stock){ toast('বর্তমান স্টকের চেয়ে বেশি বিতরণ করা যাবে না'); return; }
-  p.stock=mode==='add' ? stock+qty : stock-qty;
-  saveKeys({invProducts:list}).then(function(){
+  submitApproval('inventory', 'ইনভেন্টরি পরিবর্তনের অনুমোদনের আবেদন', {
+    productId:id, productName:p.name || '', qty:qty, mode:mode,
+    note:document.getElementById('tiNote').value.trim()
+  }).then(function(){
     document.getElementById('tiQty').value=1; document.getElementById('tiNote').value='';
-    renderTeacherInventory(); renderDashboard(); toast('ইনভেন্টরি স্টক হালনাগাদ হয়েছে');
+    toast('ইনভেন্টরি রিকয়েস্ট পাঠানো হয়েছে; অনুমোদনের পর স্টক বদলাবে');
   });
 }
 function renderTeacherNotices(){
   var box=document.getElementById('teacherNoticeList'); if(!box) return;
   var list=arr(S.notices).slice().reverse();
   box.innerHTML=list.length ? list.map(function(x){ return '<div class="workflow-status approved"><strong>' + esc(x.title || 'নোটিশ') + '</strong><div class="body">' + esc(x.desc || x.body || '') + '</div></div>'; }).join('') : '<div class="empty-row">কোনো নোটিশ নেই</div>';
+}
+function submitTeacherNotice(){
+  var title=document.getElementById('tnTitle').value.trim(), body=document.getElementById('tnBody').value.trim(), date=document.getElementById('tnDate').value || todayISO();
+  if(!title || !body){ toast('নোটিশের শিরোনাম ও বিস্তারিত লিখুন'); return; }
+  submitApproval('notice','নোটিশ প্রকাশের আবেদন',{title:title,body:body,date:date}).then(function(){
+    document.getElementById('tnTitle').value=''; document.getElementById('tnBody').value='';
+  });
+}
+function submitTeacherExamSubject(){
+  var name=document.getElementById('tesName').value.trim();
+  var classes=document.getElementById('tesClasses').value.split(',').map(function(x){ return x.trim(); }).filter(Boolean);
+  if(!name){ toast('বিষয়ের নাম লিখুন'); return; }
+  submitApproval('exam-subject','পরীক্ষার বিষয় যোগের আবেদন',{name:name,classes:classes}).then(function(){ document.getElementById('tesName').value=''; document.getElementById('tesClasses').value=''; });
 }
 function renderTeacherExamSubjects(){
   var box=document.getElementById('teacherExamSubjects'); if(!box) return;

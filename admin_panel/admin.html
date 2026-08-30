@@ -2362,7 +2362,7 @@
 
           <div class="adm-field">
             <label>বয়স</label>
-            <input id="admAge" readonly value="০ বছর" />
+            <input id="admAge" readonly value="০ বছর ০ মাস ০ দিন" />
           </div>
           <div class="adm-field">
             <label>লিঙ্গ নির্বাচন করুন <span class="req">*</span></label>
@@ -2466,7 +2466,7 @@
 
             <div class="adm-field">
               <label>বয়স</label>
-              <input id="sfAge" readonly value="০ বছর" />
+              <input id="sfAge" readonly value="০ বছর ০ মাস ০ দিন" />
             </div>
             <div class="adm-field">
               <label>লিঙ্গ নির্বাচন করুন</label>
@@ -4479,7 +4479,7 @@
         <div class="adm-grid">
           <div class="adm-field"><label>শিক্ষার্থীর নাম</label><input id="stuEditName" placeholder="শিক্ষার্থীর পুরো নাম" /></div>
           <div class="adm-field"><label>জন্ম তারিখ</label><input type="date" id="stuEditDob" oninput="calcStuEditAge()" /></div>
-          <div class="adm-field"><label>বয়স</label><input id="stuEditAge" readonly value="০ বছর" /></div>
+          <div class="adm-field"><label>বয়স</label><input id="stuEditAge" readonly value="০ বছর ০ মাস ০ দিন" /></div>
 
           <div class="adm-field">
             <label>লিঙ্গ নির্বাচন করুন</label>
@@ -5706,6 +5706,8 @@ students.forEach(s => attendance[s.id] = 'present');
 /* প্রতিদিনের হাজিরার ইতিহাস — { studentId: [ {date:'YYYY-MM-DD', status:'present|absent|leave'} ] }
    শিক্ষার্থী প্যানেলের "উপস্থিতির ইতিহাস" এই ডেটা থেকেই মাস ভিত্তিক দেখানো হয়। */
 let attendanceHistory = {};
+/* সার্ভার-সাইড দৈনিক লককে দ্রুত UI-তে দেখানোর জন্য মিরর */
+let attendanceMeta = {};
 
 /* আজকের তারিখ ISO (YYYY-MM-DD) */
 function nqTodayISO() {
@@ -5726,10 +5728,10 @@ function nqCurrentUserName() {
 }
 
 /* আজকের হাজিরা ইতিহাসে সংরক্ষণ করে (একই দিনে বারবার সেভ করলে আপডেট হয়) */
-function nqRecordAttendanceHistory() {
+function nqRecordAttendanceHistory(scope) {
   const date = nqTodayISO();
   if (!attendanceHistory || typeof attendanceHistory !== 'object') attendanceHistory = {};
-  students.forEach(s => {
+  (scope || students).forEach(s => {
     const status = attendance[s.id] || 'present';
     const list = Array.isArray(attendanceHistory[s.id]) ? attendanceHistory[s.id] : [];
     const idx = list.findIndex(x => x && x.date === date);
@@ -5828,21 +5830,34 @@ function isDobTooCloseToToday(dobStr) {
   return diffDays <= 30;
 }
 
+function nqAgeText(dobStr) {
+  if (!dobStr) return '০ বছর ০ মাস ০ দিন';
+  const parts = String(dobStr).split('-').map(Number);
+  if (parts.length !== 3 || parts.some(isNaN)) return '০ বছর ০ মাস ০ দিন';
+  const dob = new Date(parts[0], parts[1] - 1, parts[2]);
+  const now = new Date();
+  let years = now.getFullYear() - dob.getFullYear();
+  let months = now.getMonth() - dob.getMonth();
+  let days = now.getDate() - dob.getDate();
+  if (days < 0) {
+    months--;
+    days += new Date(now.getFullYear(), now.getMonth(), 0).getDate();
+  }
+  if (months < 0) { years--; months += 12; }
+  if (years < 0) return '০ বছর ০ মাস ০ দিন';
+  return `${bn(years)} বছর ${bn(months)} মাস ${bn(days)} দিন`;
+}
+
 function calcAdmAge() {
   const dobStr = document.getElementById('admDob').value;
-  if (!dobStr) { document.getElementById('admAge').value = '০ বছর'; return; }
+  if (!dobStr) { document.getElementById('admAge').value = nqAgeText(''); return; }
   if (isDobTooCloseToToday(dobStr)) {
     showErrorPopup('সঠিক জন্ম তারিখ নির্বাচন করুন। আজকের বা আশপাশের তারিখ জন্ম তারিখ হিসেবে গ্রহণযোগ্য নয়।');
     document.getElementById('admDob').value = '';
-    document.getElementById('admAge').value = '০ বছর';
+    document.getElementById('admAge').value = nqAgeText('');
     return;
   }
-  const dob = new Date(dobStr), now = new Date();
-  let years = now.getFullYear() - dob.getFullYear();
-  const m = now.getMonth() - dob.getMonth();
-  if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) years--;
-  if (years < 0) years = 0;
-  document.getElementById('admAge').value = bn(years) + ' বছর';
+  document.getElementById('admAge').value = nqAgeText(dobStr);
 }
 
 function previewAdmPhoto(e) {
@@ -5861,7 +5876,7 @@ function resetAdmission() {
    'admFatherName','admFatherJob','admFatherMobile','admMotherName','admMotherJob','admMotherMobile',
    'admCurAddr','admPermAddr','admGuardianName','admGuardianRel','admGuardianMobile','admPrevInst',
    'admPrevClass','admReferrer'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-  document.getElementById('admAge').value = '০ বছর';
+  document.getElementById('admAge').value = nqAgeText('');
   document.getElementById('admPhotoPreview').innerHTML = '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>';
   const photoInput = document.getElementById('admPhoto'); if (photoInput) photoInput.value = '';
   document.querySelector('input[name="admYear"]').checked = true;
@@ -5873,19 +5888,14 @@ function resetAdmission() {
 
 function calcStaffAge() {
   const dobStr = document.getElementById('sfDob').value;
-  if (!dobStr) { document.getElementById('sfAge').value = '০ বছর'; return; }
+  if (!dobStr) { document.getElementById('sfAge').value = nqAgeText(''); return; }
   if (isDobTooCloseToToday(dobStr)) {
     showErrorPopup('সঠিক জন্ম তারিখ নির্বাচন করুন। আজকের বা আশপাশের তারিখ জন্ম তারিখ হিসেবে গ্রহণযোগ্য নয়।');
     document.getElementById('sfDob').value = '';
-    document.getElementById('sfAge').value = '০ বছর';
+    document.getElementById('sfAge').value = nqAgeText('');
     return;
   }
-  const dob = new Date(dobStr), now = new Date();
-  let years = now.getFullYear() - dob.getFullYear();
-  const m = now.getMonth() - dob.getMonth();
-  if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) years--;
-  if (years < 0) years = 0;
-  document.getElementById('sfAge').value = bn(years) + ' বছর';
+  document.getElementById('sfAge').value = nqAgeText(dobStr);
 }
 
 function previewStaffPhoto(e) {
@@ -5904,7 +5914,7 @@ function resetStaffAdmission() {
   ['sfGender','sfMarital','sfPosition','sfClassDuty','sfDeptDuty'].forEach(id => {
     const el = document.getElementById(id); if (el) el.selectedIndex = 0;
   });
-  document.getElementById('sfAge').value = '০ বছর';
+  document.getElementById('sfAge').value = nqAgeText('');
   document.getElementById('sfPhotoPreview').innerHTML = '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>';
   const photoInput = document.getElementById('sfPhoto'); if (photoInput) photoInput.value = '';
 }
@@ -6879,9 +6889,7 @@ function editStudent(id) {
 }
 function calcStuEditAge() {
   const dobStr = document.getElementById('stuEditDob').value;
-  if (!dobStr) { document.getElementById('stuEditAge').value = '০ বছর'; return; }
-  const diff = new Date().getFullYear() - new Date(dobStr).getFullYear();
-  document.getElementById('stuEditAge').value = bn(Math.max(diff, 0)) + ' বছর';
+  document.getElementById('stuEditAge').value = nqAgeText(dobStr);
 }
 function previewStuEditPhoto(event) {
   const file = event.target.files[0];
@@ -8232,10 +8240,21 @@ function sendMessage() {
 }
 
 function saveAttendance() {
-  const p = Object.values(attendance).filter(v=>v==='present').length;
-  const a = Object.values(attendance).filter(v=>v==='absent').length;
-  nqRecordAttendanceHistory();
-  showToast(`হাজিরা সংরক্ষিত — উপস্থিত: ${bn(p)}, অনুপস্থিত: ${bn(a)}`);
+  const rows = students.slice();
+  const key = nqAttendanceKey(nqTodayISO(), '', '');
+  if (nqAttendanceLocked(key)) { showErrorPopup('আজকের হাজিরা ইতিমধ্যে নেওয়া হয়েছে'); return; }
+  const p = rows.filter(s => attendance[s.id] === 'present').length;
+  const a = rows.filter(s => attendance[s.id] === 'absent').length;
+  window.NQAuth.authFetch('/api/attendance/submit', {
+    method: 'POST',
+    body: JSON.stringify({ date: nqTodayISO(), className: '', branch: '', records: rows.map(s => ({ studentId: s.id, status: attendance[s.id] || 'present' })) })
+  }).then(async res => {
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(body.message || 'হাজিরা সংরক্ষণ করা যায়নি');
+    attendanceMeta[key] = { date: nqTodayISO(), className: '', branch: '', takenBy: nqCurrentUserName(), takenAt: new Date().toISOString() };
+    nqRecordAttendanceHistory(rows);
+    showToast(`হাজিরা সংরক্ষিত — উপস্থিত: ${bn(p)}, অনুপস্থিত: ${bn(a)}`);
+  }).catch(e => showErrorPopup(e.message || 'হাজিরা সংরক্ষণ করা যায়নি'));
 }
 
 /* ─── Modal helpers ─── */
@@ -8298,6 +8317,25 @@ function initHajiraData() {
   }
 }
 
+function nqAttendanceUserRole() {
+  const u = (window.NQAuth && window.NQAuth.user) || {};
+  return u.role || (window.NQAuth && window.NQAuth.role) || '';
+}
+function nqIsSuperAdmin() {
+  return String(nqAttendanceUserRole()).toLowerCase().replace(/[\s_-]+/g, '') === 'superadmin';
+}
+function nqAttendanceKey(date, cls, dept) {
+  return [date || nqTodayISO(), cls || '', dept || ''].join('|');
+}
+function nqSelectedAttendanceRows() {
+  const clsF = document.getElementById('hazFilterClass')?.value || '';
+  const deptF = document.getElementById('hazFilterDept')?.value || '';
+  return students.filter(s => (!clsF || (s.attCls || s.cls) === clsF) && (!deptF || (s.attDept || s.dept || s.branch) === deptF));
+}
+function nqAttendanceLocked(key) {
+  return !!(attendanceMeta && attendanceMeta[key] && !nqIsSuperAdmin());
+}
+
 /* ─── Shared inline icon strings (used instead of emoji in generated markup) ─── */
 const icoEye      = '<svg class="btn-ic solo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>';
 const icoEdit     = '<svg class="btn-ic solo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>';
@@ -8314,41 +8352,68 @@ const icoDelete   = '<svg class="btn-ic solo" viewBox="0 0 24 24" fill="none" st
 function renderHajira() {
   const clsF  = document.getElementById('hazFilterClass').value;
   const deptF = document.getElementById('hazFilterDept').value;
-  const rows = students.filter(s => (!clsF || s.attCls === clsF) && (!deptF || s.attDept === deptF));
-  document.getElementById('hazTableBody').innerHTML = rows.map((s,i) => `
+  const rows = students.filter(s => (!clsF || (s.attCls || s.cls) === clsF) && (!deptF || (s.attDept || s.dept || s.branch) === deptF));
+  const locked = nqAttendanceLocked(nqAttendanceKey(nqTodayISO(), clsF, deptF));
+  const lockText = locked
+    ? '<tr><td colspan="8" style="padding:10px 12px;background:#fff3cd;color:#7a5b00;">এই শ্রেণীর আজকের হাজিরা ইতিমধ্যে নেওয়া হয়েছে। শুধু সুপার এডমিন পুনরায় নিতে পারবেন।</td></tr>'
+    : '';
+  const table = rows.map((s,i) => `
     <tr>
       <td>${bn(i+1)}</td>
       <td><div class="haz-avatar">${hazAvatarSvg}</div></td>
       <td>${bn(s.regNo)}</td>
       <td>${bn(s.classRoll)}</td>
       <td>${s.name}</td>
-      <td>${s.attCls}</td>
-      <td>${s.attDept}</td>
+      <td>${s.attCls || s.cls}</td>
+      <td>${s.attDept || s.dept || s.branch || ''}</td>
       <td>
         <div class="haz-att-choices">
-          <label style="color:#2e7d32"><input type="radio" name="haz-${s.id}" ${attendance[s.id]==='present'?'checked':''} onchange="attendance[${s.id}]='present'; updateHajiraSummary();"> উপস্থিত</label>
+          <label style="color:#2e7d32"><input ${locked ? 'disabled' : ''} type="radio" name="haz-${s.id}" ${attendance[s.id]==='present'?'checked':''} onchange="attendance[${s.id}]='present'; updateHajiraSummary();"> উপস্থিত</label>
           <span class="sep">|</span>
-          <label style="color:#c62828"><input type="radio" name="haz-${s.id}" ${attendance[s.id]==='absent'?'checked':''} onchange="attendance[${s.id}]='absent'; updateHajiraSummary();"> অনুপস্থিত</label>
+          <label style="color:#c62828"><input ${locked ? 'disabled' : ''} type="radio" name="haz-${s.id}" ${attendance[s.id]==='absent'?'checked':''} onchange="attendance[${s.id}]='absent'; updateHajiraSummary();"> অনুপস্থিত</label>
           <span class="sep">|</span>
-          <label style="color:#1565c0"><input type="radio" name="haz-${s.id}" ${attendance[s.id]==='leave'?'checked':''} onchange="attendance[${s.id}]='leave'; updateHajiraSummary();"> ছুটিতে</label>
+          <label style="color:#1565c0"><input ${locked ? 'disabled' : ''} type="radio" name="haz-${s.id}" ${attendance[s.id]==='leave'?'checked':''} onchange="attendance[${s.id}]='leave'; updateHajiraSummary();"> ছুটিতে</label>
         </div>
       </td>
     </tr>`).join('');
+  document.getElementById('hazTableBody').innerHTML = lockText + table;
   updateHajiraSummary();
 }
 
 function updateHajiraSummary() {
-  const p = Object.values(attendance).filter(v => v === 'present').length;
-  const a = Object.values(attendance).filter(v => v === 'absent').length;
-  const l = Object.values(attendance).filter(v => v === 'leave').length;
+  const rows = nqSelectedAttendanceRows();
+  const p = rows.filter(s => attendance[s.id] === 'present').length;
+  const a = rows.filter(s => attendance[s.id] === 'absent').length;
+  const l = rows.filter(s => attendance[s.id] === 'leave').length;
   const el = document.getElementById('hazSummary');
   if (el) el.textContent = `মোট : ${bn(p)} উপস্থিত – ${bn(a)} অনুপস্থিত – ${bn(l)} ছুটিতে`;
 }
 
-function saveHajira() {
+async function saveHajira() {
+  const rows = nqSelectedAttendanceRows();
+  const cls = document.getElementById('hazFilterClass')?.value || '';
+  const dept = document.getElementById('hazFilterDept')?.value || '';
+  const key = nqAttendanceKey(nqTodayISO(), cls, dept);
+  if (!cls) { showErrorPopup('আগে একটি শ্রেণী নির্বাচন করুন'); return; }
+  if (!rows.length) { showErrorPopup('এই শ্রেণীতে কোনো শিক্ষার্থী পাওয়া যায়নি'); return; }
+  if (nqAttendanceLocked(key)) { showErrorPopup('এই শ্রেণীর আজকের হাজিরা ইতিমধ্যে নেওয়া হয়েছে'); return; }
+  const records = rows.map(s => ({ studentId: s.id, status: attendance[s.id] || 'present' }));
+  try {
+    const res = await window.NQAuth.authFetch('/api/attendance/submit', {
+      method: 'POST',
+      body: JSON.stringify({ date: nqTodayISO(), className: cls, branch: dept, records })
+    });
+    const result = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(result.message || 'হাজিরা সংরক্ষণ করা যায়নি');
+    attendanceMeta[key] = { date: nqTodayISO(), className: cls, branch: dept, takenBy: nqCurrentUserName(), takenAt: new Date().toISOString() };
+  } catch (e) {
+    showErrorPopup(e.message || 'হাজিরা সংরক্ষণ করা যায়নি');
+    return;
+  }
   updateHajiraSummary();
-  nqRecordAttendanceHistory();
+  nqRecordAttendanceHistory(rows);
   showToast('হাজিরা সফলভাবে সংরক্ষিত হয়েছে!');
+  renderHajira();
 }
 
 /* ═══════════ হাজিরার তালিকা (Attendance List / Summary) ═══════════ */
@@ -12126,6 +12191,54 @@ function currentUserName() {
 let financeTx = [];
 let financeTxSeq = financeTx.length ? Math.max(...financeTx.map(t => t.id)) + 1 : 1;
 
+function nqFinanceDate(value) {
+  if (!value) return todayISO();
+  const raw = String(value);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) return raw;
+  const p = raw.replace(/[০-৯]/g, d => String('০১২৩৪৫৬৭৮৯'.indexOf(d))).split(/[\/-]/);
+  if (p.length === 3) {
+    if (p[0].length === 4) return `${p[0]}-${String(p[1]).padStart(2, '0')}-${String(p[2]).padStart(2, '0')}`;
+    return `${p[2]}-${String(p[1]).padStart(2, '0')}-${String(p[0]).padStart(2, '0')}`;
+  }
+  return todayISO();
+}
+
+/* ফি, ডোনেশন, ইনভেন্টরি ও ড্রাইভার পেমেন্ট—সব নগদ লেনদেন একই হিসাব খাতায় আসে। */
+function syncFinanceFromOperations() {
+  const generated = [];
+  const add = (sourceKey, date, name, desc, type, amount, by, extra) => {
+    const value = Number(amount) || 0;
+    if (value <= 0) return;
+    generated.push(Object.assign({
+      id: `auto-${sourceKey}`,
+      source: 'auto',
+      sourceKey,
+      date: nqFinanceDate(date),
+      name: name || '-',
+      desc,
+      type,
+      amount: value,
+      by: by || 'ব্যবহারকারী',
+    }, extra || {}));
+  };
+  (payments || []).forEach(p => add(`payment:${p.id}`, p.dateISO || p.date, p.student, 'ফি আদায়', 'income', p.amount, p.by, { method: p.method, category: 'student-fee' }));
+  (donationTx || []).forEach(p => {
+    const group = (donationGroups || []).find(g => g.id === p.groupId);
+    add(`donation:${p.id}`, p.date, p.donor, 'ডোনেশন' + (group ? ' — ' + group.name : ''), 'income', p.amount, p.by || currentUserName(), { category: 'donation' });
+  });
+  (invSales || []).forEach(p => add(`inventory-sale:${p.id}`, p.dateISO || p.date, p.customer, 'ইনভেন্টরি বিক্রয়', 'income', p.paid != null ? p.paid : p.net, p.by || currentUserName(), { category: 'inventory-sale' }));
+  (invPurchases || []).forEach(p => add(`inventory-purchase:${p.id}`, p.dateISO || p.date, p.supplier, 'ইনভেন্টরি ক্রয়', 'expense', p.paid != null ? p.paid : p.net, p.by || currentUserName(), { category: 'inventory-purchase' }));
+  (driverPayments || []).forEach(p => {
+    const bus = (buses || []).find(b => b.id === p.busId);
+    add(`driver-payment:${p.id}`, p.date, bus ? bus.driver : 'ড্রাইভার', 'ড্রাইভার পেমেন্ট', 'expense', p.amount, p.by || currentUserName(), { category: 'driver-payment', note: p.note });
+  });
+  const autoKeys = new Set(generated.map(x => x.sourceKey));
+  financeTx = (financeTx || []).filter(t => t.source !== 'auto' || autoKeys.has(t.sourceKey));
+  const existing = new Set(financeTx.filter(t => t.source === 'auto').map(t => t.sourceKey));
+  generated.forEach(t => { if (!existing.has(t.sourceKey)) financeTx.push(t); });
+  financeTxSeq = Math.max(0, ...financeTx.map(t => Number(t.id)).filter(Number.isFinite)) + 1;
+}
+
 function addFinanceTx(prefix, forcedType) {
   const dateEl = document.getElementById(prefix + 'Date');
   const nameEl = document.getElementById(prefix + 'Name');
@@ -12141,7 +12254,7 @@ function addFinanceTx(prefix, forcedType) {
 
   if (!date || !desc || !amount) { showErrorPopup('তারিখ, বিবরণ ও পরিমাণ আবশ্যক'); return; }
 
-  financeTx.unshift({ id: financeTxSeq++, date, name: name || '-', desc, type, amount, by: currentUserName() });
+  financeTx.unshift({ id: financeTxSeq++, source: 'manual', date, name: name || '-', desc, type, amount, by: currentUserName() });
 
   [dateEl, nameEl, descEl, amtEl].forEach(el => { if (el) el.value = ''; });
   if (typeEl) typeEl.selectedIndex = 0;
@@ -12158,9 +12271,15 @@ function deleteFinanceTx(id) {
   if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
   showToast('মুছে ফেলা হয়েছে।');
 }
+function financeDeleteButton(t) {
+  return t.source === 'auto'
+    ? '<span style="font-size:11px;color:#777;">অটো</span>'
+    : `<button class="ldg-del" title="মুছুন" onclick="deleteFinanceTx(${JSON.stringify(t.id)})">✕</button>`;
+}
 
 /* সব হিসাব-সম্পর্কিত পেজ একসাথে রিফ্রেশ করে (যেকোনো আয়/ব্যয়/ডোনেশন পরিবর্তনের পর কল হয়) */
 function refreshFinanceViews() {
+  syncFinanceFromOperations();
   renderStudentFinance(); renderExpenseList(); renderCashbookPage();
   renderAccountsPage(); renderFinance(); renderIncomePage(); renderExpensePage();
 }
@@ -12176,7 +12295,7 @@ function saveIncome() {
   if (!source || !amount) { showErrorPopup('আয়ের খাত ও টাকার পরিমাণ আবশ্যক'); return; }
 
   financeTx.unshift({
-    id: financeTxSeq++, date: todayISO(), name: party || '-', desc: source,
+    id: financeTxSeq++, source: 'manual', date: todayISO(), name: party || '-', desc: source,
     type: 'income', amount, by: currentUserName(), category: type, method, note
   });
 
@@ -12207,7 +12326,7 @@ function renderIncomePage() {
       <td>${t.method || '-'}</td>
       <td>${t.note || '-'}</td>
       <td>${bnTaka(t.amount)}</td>
-      <td><button class="ldg-del" title="মুছুন" onclick="deleteFinanceTx(${t.id})">✕</button></td>
+      <td>${financeDeleteButton(t)}</td>
     </tr>`).join('') : `<tr><td colspan="9" style="text-align:center;background:#f8bbd0;color:#c2185b;font-weight:600;padding:14px;">আজকের কোন রেকর্ড পাওয়া যায়নি !</td></tr>`;
 }
 
@@ -12228,7 +12347,7 @@ function saveExpense() {
     .filter(Boolean).join(' | ');
 
   financeTx.unshift({
-    id: financeTxSeq++, date, name: fund || '-', desc: head,
+    id: financeTxSeq++, source: 'manual', date, name: fund || '-', desc: head,
     type: 'expense', amount, by: currentUserName(), method, note: receiptNote
   });
 
@@ -12253,7 +12372,7 @@ function renderExpensePage() {
       <td>${t.method || '-'}</td>
       <td>${t.note || '-'}</td>
       <td>${bnTaka(t.amount)}</td>
-      <td><button class="ldg-del" title="মুছুন" onclick="deleteFinanceTx(${t.id})">✕</button></td>
+      <td>${financeDeleteButton(t)}</td>
     </tr>`).join('') : `<tr><td colspan="7" style="text-align:center;color:#888;">কোনো আইটেম যোগ করা হয়নি</td></tr>`;
 }
 
@@ -12347,7 +12466,7 @@ function renderStudentFinance() {
       <td><span class="ledger-badge ${t.type}">${t.type === 'income' ? 'আয়' : 'ব্যয়'}</span></td>
       <td>${bnTaka(t.amount)}</td>
       <td>${t.by}</td>
-      <td><button class="ldg-del" title="মুছুন" onclick="deleteFinanceTx(${t.id})">✕</button></td>
+      <td>${financeDeleteButton(t)}</td>
     </tr>`).join('') : `<tr class="ledger-empty-row"><td colspan="8">কোনো রেকর্ড পাওয়া যায়নি</td></tr>`;
 
   const income = rows.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0);
@@ -12373,7 +12492,7 @@ function renderExpenseList() {
       <td>${t.name}</td>
       <td>${bnTaka(t.amount)}</td>
       <td>${t.by}</td>
-      <td><button class="ldg-del" title="মুছুন" onclick="deleteFinanceTx(${t.id})">✕</button></td>
+      <td>${financeDeleteButton(t)}</td>
     </tr>`).join('') : `<tr class="ledger-empty-row"><td colspan="7">কোনো ব্যয় পাওয়া যায়নি</td></tr>`;
 
   const total = rows.reduce((s, t) => s + t.amount, 0);
@@ -12607,7 +12726,7 @@ function saveDonationCollect() {
   ['dcDonor', 'dcAmount', 'dcNote'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('dcDate').value = '';
   renderDonationCollectList(); renderDonationGroupList(); renderDonationReport();
-  if (typeof renderFinance === 'function') renderFinance();
+  if (typeof refreshFinanceViews === 'function') refreshFinanceViews();
   if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
   showToast('ডোনেশন লগ করা হয়েছে');
   printReceipt({
@@ -12630,7 +12749,7 @@ function deleteDonationTx(id) {
   if (!confirm('এই এন্ট্রিটি মুছে ফেলবেন?')) return;
   donationTx = donationTx.filter(t => t.id !== id);
   renderDonationCollectList(); renderDonationGroupList(); renderDonationReport();
-  if (typeof renderFinance === 'function') renderFinance();
+  if (typeof refreshFinanceViews === 'function') refreshFinanceViews();
   if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
   showToast('মুছে ফেলা হয়েছে।');
 }
@@ -12699,6 +12818,7 @@ const NQ_SAVE_DEBOUNCE_MS = 900;
 
 /* বর্তমান অবস্থার একটি স্ন্যাপশট তৈরি করে (সেভ করার জন্য) */
 function nqStateSnapshot() {
+  syncFinanceFromOperations();
   return {
     students, teachers, committeeMembers, staffDesignations, staffAttendanceRecords, staffOutWork, staffLeaveRequests,
     payments, paymentDetails, dueDetails, messages, invProducts, invSales, invPurchases,
@@ -12706,7 +12826,7 @@ function nqStateSnapshot() {
     dailyRoutines, residentialRoutineItems, crTimeSlots, examSubjects, examTypes, exams,
     syllabusItems, examResults, results, resultPublishes, otClasses, otDivisions,
     classGroups, ieFunds, ieCategories, notices, buses, transportAssignments, driverPayments,
-    siteRegistrations, financeTx, donationGroups, donationTx, attendance, attendanceHistory, studentDues,
+    siteRegistrations, financeTx, donationGroups, donationTx, attendance, attendanceHistory, attendanceMeta, studentDues,
     feeTypes, mealRoutine, siteInfo, siteSlides, siteRules, siteProgs
   };
 }
@@ -12760,6 +12880,7 @@ function nqApplyLoadedState(data) {
   if (hasContent(data.donationTx)) donationTx = data.donationTx;
   if (hasContent(data.attendance)) attendance = data.attendance;
   if (hasContent(data.attendanceHistory)) attendanceHistory = data.attendanceHistory;
+  if (hasContent(data.attendanceMeta)) attendanceMeta = data.attendanceMeta;
   if (hasContent(data.studentDues)) studentDues = data.studentDues;
   if (hasContent(data.feeTypes)) feeTypes = data.feeTypes;
   if (hasContent(data.mealRoutine)) mealRoutine = data.mealRoutine;
@@ -12767,6 +12888,7 @@ function nqApplyLoadedState(data) {
   if (hasContent(data.siteSlides)) siteSlides = data.siteSlides;
   if (hasContent(data.siteRules)) siteRules = data.siteRules;
   if (hasContent(data.siteProgs)) siteProgs = data.siteProgs;
+  syncFinanceFromOperations();
 }
 
 /* এখনই সেভ করে দেয় — আগে বাল্ক এন্ডপয়েন্ট ট্রাই করে, ব্যাকএন্ড এখনো আপডেট না
@@ -13131,7 +13253,7 @@ function renderAdminMessages() {
   }
   const approvalHtml = nqApprovalRequests.map(r => {
     const p = r.payload || {};
-    const label = ({homework:'বাড়ির কাজ',syllabus:'সিলেবাস',leave:'ছুটির আবেদন',result:'ফলাফলের তালিকা',admission:'ভর্তি আবেদন'})[r.kind] || 'আবেদন';
+    const label = ({homework:'বাড়ির কাজ',syllabus:'সিলেবাস',leave:'ছুটির আবেদন',result:'ফলাফলের তালিকা',admission:'ভর্তি আবেদন',inventory:'ইনভেন্টরি',notice:'নোটিশ','exam-subject':'পরীক্ষার বিষয়',fee:'ফি আদায়'})[r.kind] || 'আবেদন';
     const detail = r.kind === 'homework'
       ? `${p.className || '-'} • ${p.subject || '-'}\n${p.task || ''}`
       : r.kind === 'syllabus'
@@ -13140,7 +13262,17 @@ function renderAdminMessages() {
           ? `${p.studentName || '-'} • ${p.reason || ''}\n${p.from || ''} — ${p.to || ''}`
           : r.kind === 'result'
             ? `${p.studentName || '-'} • ${p.exam || ''} • প্রাপ্ত নম্বর: ${p.total == null ? '-' : p.total}`
-            : `${p.name || '-'} • ${p.className || '-'}`;
+            : r.kind === 'admission'
+              ? `${p.name || '-'} • ${p.className || '-'}`
+              : r.kind === 'inventory'
+                ? `${p.productName || '-'} • ${p.mode === 'add' ? 'স্টকে যোগ' : 'স্টক থেকে বিতরণ'} • পরিমাণ: ${p.qty || '-'}`
+                : r.kind === 'notice'
+                  ? `${p.title || '-'}\n${p.body || p.desc || ''}`
+                  : r.kind === 'exam-subject'
+                    ? `${p.name || p.subject || '-'} • ${(p.classes || []).join ? (p.classes || []).join(', ') : 'সব শ্রেণী'}`
+                    : r.kind === 'fee'
+                      ? `${p.studentName || '-'} • ${p.amount || 0} টাকা • ${p.method || ''}`
+                      : `${p.name || '-'} • ${p.className || '-'}`;
     const status = r.status === 'approved' ? 'অনুমোদিত' : r.status === 'rejected' ? 'প্রত্যাখ্যাত' : 'অপেক্ষমান';
     const actions = r.status === 'pending'
       ? `<div class="nq-msg-actions">

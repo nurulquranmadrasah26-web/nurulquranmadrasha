@@ -2,7 +2,7 @@
 
 Teacher-created homework, syllabus, leave applications, result entries, and admission applications are stored as pending approval requests. Super Admins receive them in the notification bell, can inspect the submitted details, and approve or reject them. Only approved records are written to the shared student-facing store and approved items generate a student notification.
 
-The teacher panel keeps attendance, fee collection, and inventory stock updates active as direct operations, while notices and exam subjects are available for teacher viewing. Pending teacher requests can be edited by their creator until a Super Admin makes a decision.
+The teacher panel sends admission, fee collection, inventory changes, homework, syllabus, leave, result, notice, and exam-subject changes to Super Admin for approval. Attendance is restricted to one submission per date/class/branch on the server; only Super Admin can submit that same scope again. Pending teacher requests can be edited by their creator until a Super Admin makes a decision.
 
 # নূরুল কোরআন মাদরাসা — আপডেট নোট
 

@@ -1448,7 +1448,7 @@ const approvalRequestSchema = new mongoose.Schema(
     submittedByName: { type: String, default: "" },
     kind: {
       type: String,
-      enum: ["homework", "syllabus", "leave", "result", "admission"],
+      enum: ["homework", "syllabus", "leave", "result", "admission", "inventory", "notice", "exam-subject", "fee"],
       required: true,
     },
     title: { type: String, required: true },
@@ -1466,6 +1466,22 @@ const approvalRequestSchema = new mongoose.Schema(
   { timestamps: true }
 );
 const ApprovalRequest = mongoose.model("ApprovalRequest", approvalRequestSchema);
+
+// এক শ্রেণীর হাজিরা একই দিনে একবারের বেশি নেওয়া ঠেকাতে সার্ভার-সাইড রেকর্ড।
+// Super Admin বিদ্যমান রেকর্ডটি আপডেট করতে পারবেন।
+const attendanceSubmissionSchema = new mongoose.Schema(
+  {
+    key: { type: String, required: true, unique: true },
+    date: { type: String, required: true, index: true },
+    className: { type: String, default: "" },
+    branch: { type: String, default: "" },
+    records: { type: mongoose.Schema.Types.Mixed, default: [] },
+    takenBy: { type: String, default: "" },
+    takenByRole: { type: String, default: "" },
+  },
+  { timestamps: true }
+);
+const AttendanceSubmission = mongoose.model("AttendanceSubmission", attendanceSubmissionSchema);
 
 // Web Push সাবস্ক্রিপশন (প্রতি ডিভাইস একটি)
 const pushSubSchema = new mongoose.Schema(
@@ -1628,6 +1644,10 @@ const APPROVAL_LABELS = {
   leave: "ছুটির আবেদন",
   result: "ফলাফলের তালিকা",
   admission: "ভর্তি আবেদন",
+  inventory: "ইনভেন্টরি",
+  notice: "নোটিশ",
+  "exam-subject": "পরীক্ষার বিষয়",
+  fee: "ফি আদায়",
 };
 
 function workflowDateBn(iso) {
@@ -1643,6 +1663,10 @@ function workflowSummary(kind, payload) {
   if (kind === "leave") return `${p.studentName || "-"} • ${p.reason || "-"} • ${p.from || ""} — ${p.to || ""}`;
   if (kind === "result") return `${p.studentName || "-"} • ${p.exam || "-"} • প্রাপ্ত নম্বর: ${p.total == null ? "-" : p.total}`;
   if (kind === "admission") return `${p.name || "-"} • ${p.className || "-"} • ${p.mobileNo || ""}`;
+  if (kind === "inventory") return `${p.productName || "-"} • ${p.mode === "add" ? "স্টকে যোগ" : "স্টক থেকে বিতরণ"} • পরিমাণ: ${p.qty || "-"}`;
+  if (kind === "notice") return `${p.title || "-"} • ${p.body || p.desc || ""}`;
+  if (kind === "exam-subject") return `${p.name || p.subject || "-"} • ${p.classes || "সব শ্রেণী"}`;
+  if (kind === "fee") return `${p.studentName || "-"} • ${p.amount || 0} টাকা • ${p.remark || ""}`;
   return "";
 }
 
@@ -1808,8 +1832,107 @@ async function applyApprovedWorkflow(request, approver) {
     }));
   }
 
+  if (request.kind === "inventory") {
+    const productsDoc = await Store.findOne({ key: "invProducts" }).lean();
+    const products = Array.isArray(productsDoc && productsDoc.data) ? productsDoc.data.slice() : [];
+    const product = products.find((x) => String(x && x.id) === String(p.productId));
+    if (!product) throw new Error("ইনভেন্টরি পণ্য পাওয়া যায়নি");
+    const qty = Number(p.qty);
+    if (!Number.isFinite(qty) || qty < 1) throw new Error("সঠিক পরিমাণ দিন");
+    const stock = Number(product.stock) || 0;
+    if (p.mode === "issue" && qty > stock) throw new Error("বর্তমান স্টকের চেয়ে বেশি বিতরণ করা যাবে না");
+    product.stock = p.mode === "add" ? stock + qty : stock - qty;
+    await Store.findOneAndUpdate({ key: "invProducts" }, { data: products }, { upsert: true });
+    return product;
+  }
+
+  if (request.kind === "notice") {
+    return appendStoreArray("notices", Object.assign({}, common, {
+      title: p.title || "নোটিশ",
+      desc: p.body || p.desc || "",
+      date: workflowDateBn(p.date),
+      dateISO: p.date || "",
+      status: "প্রকাশিত",
+    }));
+  }
+
+  if (request.kind === "exam-subject") {
+    return appendStoreArray("examSubjects", Object.assign({}, common, {
+      name: p.name || p.subject || "",
+      classes: Array.isArray(p.classes) ? p.classes : [],
+      status: "প্রকাশিত",
+    }));
+  }
+
+  if (request.kind === "fee") {
+    const studentId = p.studentId;
+    const paymentsDoc = await Store.findOne({ key: "payments" }).lean();
+    const paymentDetailsDoc = await Store.findOne({ key: "paymentDetails" }).lean();
+    const duesDoc = await Store.findOne({ key: "studentDues" }).lean();
+    const payments = Array.isArray(paymentsDoc && paymentsDoc.data) ? paymentsDoc.data.slice() : [];
+    const paymentDetails = Array.isArray(paymentDetailsDoc && paymentDetailsDoc.data) ? paymentDetailsDoc.data.slice() : [];
+    const dues = duesDoc && duesDoc.data && typeof duesDoc.data === "object" ? Object.assign({}, duesDoc.data) : {};
+    const amount = Number(p.amount) || 0;
+    if (studentId == null || amount <= 0) throw new Error("শিক্ষার্থী ও সঠিক পরিশোধের পরিমাণ প্রয়োজন");
+    const dateISO = p.date || new Date().toISOString().slice(0, 10);
+    const nextPaymentId = Math.max(0, ...payments.map((x) => Number(x && x.id) || 0)) + 1;
+    const billNo = Math.max(99, ...paymentDetails.map((x) => Number(x && x.billNo) || 0)) + 1;
+    payments.push({
+      id: nextPaymentId, studentId, student: p.studentName || "", regNo: p.regNo || "",
+      cls: p.className || "", amount, month: p.month || "-", date: workflowDateBn(dateISO),
+      dateISO, by: common.teacher, method: p.method || "নগদ",
+      remark: p.remark || "শিক্ষক প্যানেল থেকে আদায়", approvalRequestId: request._id,
+    });
+    paymentDetails.push({
+      id: Math.max(0, ...paymentDetails.map((x) => Number(x && x.id) || 0)) + 1,
+      billNo, studentId, studentName: p.studentName || "", date: workflowDateBn(dateISO),
+      dateISO, label: p.label || "ফি আদায়", amount, month: p.month || "-",
+      method: p.method || "নগদ", by: common.teacher, remark: p.remark || "",
+      approvalRequestId: request._id,
+    });
+    if (Array.isArray(dues[String(studentId)])) {
+      const selectedIds = Array.isArray(p.dueIds) ? p.dueIds.map(String) : [];
+      if (selectedIds.length) dues[String(studentId)] = dues[String(studentId)].filter((d) => !selectedIds.includes(String(d.id)));
+    }
+    await Promise.all([
+      Store.findOneAndUpdate({ key: "payments" }, { data: payments }, { upsert: true }),
+      Store.findOneAndUpdate({ key: "paymentDetails" }, { data: paymentDetails }, { upsert: true }),
+      Store.findOneAndUpdate({ key: "studentDues" }, { data: dues }, { upsert: true }),
+    ]);
+    return payments[payments.length - 1];
+  }
+
   throw new Error("অজানা approval type");
 }
+
+// POST /api/attendance/submit
+// একই date + class + branch-এ Teacher/Admin একবারই জমা দিতে পারবেন।
+app.post("/api/attendance/submit", auth, async (req, res) => {
+  try {
+    if (!["Teacher", "Admin", "Super Admin"].includes(req.user.role))
+      return res.status(403).json({ message: "হাজিরা নেওয়ার অনুমতি নেই" });
+    const date = String(req.body && req.body.date || "").slice(0, 10);
+    const className = String(req.body && req.body.className || "").trim();
+    const branch = String(req.body && req.body.branch || "").trim();
+    const records = req.body && req.body.records;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Array.isArray(records) || !records.length)
+      return res.status(400).json({ message: "তারিখ, শ্রেণী ও হাজিরার তথ্য প্রয়োজন" });
+    const key = `${date}|${className}|${branch}`;
+    const existing = await AttendanceSubmission.findOne({ key }).lean();
+    if (existing && req.user.role !== "Super Admin")
+      return res.status(409).json({ message: "এই শ্রেণীর হাজিরা আজ ইতিমধ্যে নেওয়া হয়েছে", takenBy: existing.takenBy });
+    const item = await AttendanceSubmission.findOneAndUpdate(
+      { key },
+      { key, date, className, branch, records, takenBy: req.user.name || req.user.uid || "", takenByRole: req.user.role },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    ).lean();
+    res.json({ ok: true, updated: !!existing, item });
+  } catch (e) {
+    if (e && e.code === 11000) return res.status(409).json({ message: "এই শ্রেণীর হাজিরা আজ ইতিমধ্যে নেওয়া হয়েছে" });
+    console.error(e);
+    res.status(500).json({ message: "হাজিরা সংরক্ষণ করা যায়নি" });
+  }
+});
 
 async function notifyApprovalRequest(request) {
   const admins = await User.find({ role: "Super Admin", active: true }).select("_id").lean();
