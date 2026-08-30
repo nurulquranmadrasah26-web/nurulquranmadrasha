@@ -985,6 +985,7 @@
 
     /* ───── Fee collection page (আদায়) ───── */
     .adai-topbar { display: flex; gap: 12px; flex-wrap: wrap; align-items: stretch; margin-bottom: 18px; }
+    #page-adai .adai-topbar { padding: 10px; border-radius: 12px; background: linear-gradient(135deg,#e3f2fd,#f3e5f5 48%,#e8f5e9); }
     .adai-field {
       position: relative; flex: 1 1 190px; min-width: 170px; display: flex; align-items: center; gap: 8px;
       border: 1.5px solid #ddd; background: #fff; padding: 9px 14px;
@@ -1000,6 +1001,11 @@
     }
     .adai-due-box-lbl { font-size: 14px; color: #555; font-weight: 600; }
     .adai-due-box-val { font-size: 18px; font-weight: 700; color: #c62828; margin-top: 2px; }
+    #page-adai .adai-topbar .adai-field:nth-child(1) { background: linear-gradient(135deg,#fff8e1,#fff3e0); border-color:#ffcc80; }
+    #page-adai .adai-topbar .adai-field:nth-child(2) { background: linear-gradient(135deg,#e3f2fd,#e8eaf6); border-color:#90caf9; }
+    #page-adai .adai-topbar .adai-field:nth-child(3) { background: linear-gradient(135deg,#e8f5e9,#f1f8e9); border-color:#a5d6a7; }
+    #page-adai .adai-topbar .adai-field:nth-child(4) { background: linear-gradient(135deg,#fce4ec,#f3e5f5); border-color:#f48fb1; }
+    #page-adai .adai-topbar .adai-due-box { background:linear-gradient(135deg,#fff,#ffebee); border-color:#ef9a9a; }
 
     .adai-suggest-list {
       position: absolute; top: 100%; left: 0; right: 0; background: #fff;
@@ -1064,6 +1070,11 @@
       background: #43a047; color: #fff; border: none; padding: 8px 16px; cursor: pointer;
       font-family: 'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif; font-size: 13.5px; font-weight: 700;
     }
+    .adai-month-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; width:100%; }
+    .adai-month-option { display:flex; align-items:center; gap:6px; padding:8px 9px; border:1px solid #c5cae9; border-radius:7px; background:#fff; font-size:12.5px; cursor:pointer; }
+    .adai-month-option.paid { background:#eeeeee; color:#888; border-color:#d5d5d5; cursor:not-allowed; }
+    .adai-month-option.selected { background:#e8f5e9; border-color:#66bb6a; color:#1b5e20; font-weight:700; }
+    .adai-month-option small { margin-left:auto; color:#757575; font-weight:400; }
 
     /* ───── Fee module extra pages (ফি ড্যাশবোর্ড / যোগ / তালিকা / বকেয়া / বিস্তারিত) ───── */
     .fee-hero-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 6px; }
@@ -2761,10 +2772,10 @@
 
     <div class="adai-topbar">
       <div class="adai-field">
-        <span class="lbl">রেজিস্ট্রেশন নং.</span>
-        <input id="adaiRegInput" placeholder="রেজিস্ট্রেশন নং" autocomplete="off"
+        <span class="lbl">আইডি / নাম</span>
+        <input id="adaiRegInput" placeholder="আইডি বা শিক্ষার্থীর নাম" autocomplete="off"
                oninput="searchAdaiStudent(this.value)"
-               onkeydown="if(event.key==='Enter'){ const m = students.find(s=>String(s.regNo)===this.value.trim()); if(m) selectAdaiStudent(m.id); }" />
+               onkeydown="if(event.key==='Enter'){ selectAdaiStudentByQuery(this.value); }" />
         <div class="adai-suggest-list" id="adaiSuggestList" style="display:none;"></div>
       </div>
       <div class="adai-field">
@@ -2816,9 +2827,11 @@
         </div>
 
         <button class="adai-adv-btn" onclick="toggleAdaiAdvanceMode()"><svg class="btn-ic" viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 5 12 12 6 19"/><polyline points="12 5 18 12 12 19"/></svg> অগ্রিম ফি</button>
-        <div class="adai-advance-wrap" id="adaiAdvanceInputWrap">
-          <input id="adaiAdvanceInput" type="number" placeholder="অগ্রিম পরিমাণ" />
-          <button onclick="addAdaiAdvance()">যোগ করুন</button>
+        <div class="adai-advance-wrap" id="adaiAdvanceInputWrap" style="flex-direction:column;">
+          <div style="font-size:12.5px;color:#555;font-weight:700;">আগামী এক বছরের মাস নির্বাচন করুন</div>
+          <div id="adaiAdvanceMonthList" class="adai-month-grid"></div>
+          <div id="adaiAdvanceMonthSummary" style="font-size:12px;color:#2e7d32;"></div>
+          <input id="adaiAdvanceInput" type="number" placeholder="মোট অগ্রিম (প্রয়োজনে পরিবর্তন করুন)" oninput="updateAdaiTotals()" />
         </div>
 
         <button class="fee-save-btn" onclick="saveAdai()">সংরক্ষণ করুন</button>
@@ -8619,6 +8632,7 @@ function doClassTransfer() {
 let studentDues = {};
 let adaiSelectedStudent = null;
 let adaiSelectedDueIds = new Set();
+let adaiAdvanceMonths = new Set();
 
 function initAdaiData() {
   /* কোনো ডেমো/হার্ডকোড বকেয়া বসানো হয় না — "ফি যোগ করুন" পেজ থেকে যা যোগ
@@ -8667,26 +8681,43 @@ function fmtTk(n) {
 
 function searchAdaiStudent(query) {
   const box = document.getElementById('adaiSuggestList');
-  const q = query.trim();
+  const q = query.trim().toLowerCase();
   if (!q) { box.style.display = 'none'; box.innerHTML = ''; return; }
-  const matches = students.filter(s => String(s.regNo).includes(q) || s.name.includes(q)).slice(0, 8);
+  const matches = students.filter(s =>
+    String(s.regNo || '').toLowerCase().includes(q) ||
+    String(s.id || '').toLowerCase().includes(q) ||
+    String(s.name || '').toLowerCase().includes(q)).slice(0, 8);
   if (!matches.length) { box.style.display = 'none'; box.innerHTML = ''; return; }
   box.innerHTML = matches.map(s => `
     <div class="adai-suggest-item" onclick="selectAdaiStudent(${s.id})">
       ${bn(s.regNo)} - ${s.name} - ${s.parent} - ${s.attCls || s.cls} - ${s.branch}
     </div>`).join('');
   box.style.display = 'block';
+  const exact = matches.find(s => String(s.regNo || '').toLowerCase() === q || String(s.id || '').toLowerCase() === q || String(s.name || '').toLowerCase() === q);
+  if (exact) selectAdaiStudent(exact.id);
+}
+
+function selectAdaiStudentByQuery(query) {
+  const q = String(query || '').trim().toLowerCase();
+  const s = students.find(x =>
+    String(x.regNo || '').toLowerCase() === q ||
+    String(x.id || '').toLowerCase() === q ||
+    String(x.name || '').toLowerCase() === q);
+  if (s) selectAdaiStudent(s.id);
 }
 
 function selectAdaiStudent(id) {
   adaiSelectedStudent = students.find(s => s.id === id);
   adaiSelectedDueIds = new Set();
+  adaiAdvanceMonths = new Set();
   document.getElementById('adaiRegInput').value = adaiSelectedStudent.regNo;
   document.getElementById('adaiSuggestList').style.display = 'none';
   document.getElementById('adaiSuggestList').innerHTML = '';
   const payInput = document.getElementById('adaiPayAmount');
   delete payInput.dataset.userEdited;
   document.getElementById('adaiDiscount').value = '0';
+  const advanceWrap = document.getElementById('adaiAdvanceInputWrap');
+  if (advanceWrap) advanceWrap.style.display = 'none';
   renderAdaiStudent();
 }
 
@@ -8749,6 +8780,72 @@ function renderAdaiStudent() {
   updateAdaiTotals();
 }
 
+function adaiMonthKey(label) {
+  const text = String(label || '').toLowerCase();
+  const month = NQ_BN_MONTHS.findIndex(m => text.includes(m.toLowerCase()));
+  const year = (text.match(/20\d{2}/) || [])[0] || '';
+  return month >= 0 ? month + '-' + year : text.replace(/\s+/g, '');
+}
+function adaiAdvanceMonthList(s) {
+  if (!s) return [];
+  const now = new Date();
+  const list = [];
+  for (let i = 0; i < 12; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+    const iso = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-01';
+    const label = nqMonthLabelBn(iso);
+    list.push({ iso, label, key: adaiMonthKey(label) });
+  }
+  return list;
+}
+function adaiPaidMonthKeys(s) {
+  const labels = [];
+  paymentDetails.filter(p =>
+    (String(p.studentId) === String(s.id) || String(p.studentName || '') === String(s.name)) &&
+    p.month && p.month !== '-').forEach(p => labels.push(...String(p.month).split(/\s*,\s*/)));
+  payments.filter(p =>
+    (String(p.studentId) === String(s.id) || String(p.student || '') === String(s.name)) &&
+    p.month && p.month !== '-').forEach(p => labels.push(...String(p.month).split(/\s*,\s*/)));
+  return new Set(labels.map(adaiMonthKey));
+}
+function renderAdaiAdvanceMonths() {
+  const box = document.getElementById('adaiAdvanceMonthList');
+  const summary = document.getElementById('adaiAdvanceMonthSummary');
+  if (!box) return;
+  const s = adaiSelectedStudent;
+  if (!s) { box.innerHTML = '<div style="color:#c62828;">আগে একজন শিক্ষার্থী নির্বাচন করুন</div>'; return; }
+  const paid = adaiPaidMonthKeys(s);
+  const months = adaiAdvanceMonthList(s);
+  box.innerHTML = months.map(m => {
+    const locked = paid.has(m.key);
+    const checked = adaiAdvanceMonths.has(m.key);
+    return `<label class="adai-month-option ${locked ? 'paid' : checked ? 'selected' : ''}">
+      <input type="checkbox" ${checked ? 'checked' : ''} ${locked ? 'disabled' : ''} onchange="toggleAdaiAdvanceMonth('${m.key}')">
+      <span>${m.label}</span><small>${locked ? 'আদায় আছে' : 'নির্বাচনযোগ্য'}</small>
+    </label>`;
+  }).join('');
+  const monthly = getStudentCurrentFee(s);
+  if (summary) summary.textContent = `নির্বাচিত মাস: ${bn(adaiAdvanceMonths.size)}টি • মাসিক হিসাব: ${fmtTk(monthly * adaiAdvanceMonths.size)} টাকা`;
+}
+function toggleAdaiAdvanceMode() {
+  if (!adaiSelectedStudent) { showErrorPopup('অগ্রিম ফি', 'আগে একজন শিক্ষার্থী নির্বাচন করুন।'); return; }
+  const wrap = document.getElementById('adaiAdvanceInputWrap');
+  const open = wrap && wrap.style.display !== 'flex';
+  if (wrap) wrap.style.display = open ? 'flex' : 'none';
+  if (open) {
+    adaiSelectedDueIds.clear();
+    renderAdaiAdvanceMonths();
+    updateAdaiTotals();
+  }
+}
+function toggleAdaiAdvanceMonth(key) {
+  if (adaiAdvanceMonths.has(key)) adaiAdvanceMonths.delete(key); else adaiAdvanceMonths.add(key);
+  const payInput = document.getElementById('adaiPayAmount');
+  if (payInput) delete payInput.dataset.userEdited;
+  renderAdaiAdvanceMonths();
+  updateAdaiTotals();
+}
+
 function toggleAdaiDue(id) {
   if (adaiSelectedDueIds.has(id)) adaiSelectedDueIds.delete(id); else adaiSelectedDueIds.add(id);
   renderAdaiStudent();
@@ -8763,18 +8860,16 @@ function updateAdaiTotals() {
   const discount = parseFloat(document.getElementById('adaiDiscount').value) || 0;
   const netDue = Math.max(selectedTotal - discount, 0);
   const payInput = document.getElementById('adaiPayAmount');
-  if (!payInput.dataset.userEdited) payInput.value = netDue || 0;
+  if (!payInput.dataset.userEdited) {
+    const advanceTotal = s ? getStudentCurrentFee(s) * adaiAdvanceMonths.size : 0;
+    payInput.value = adaiAdvanceMonths.size ? advanceTotal.toFixed(2) : (netDue || 0);
+  }
 
   const paid = parseFloat(payInput.value) || 0;
   const advance = Math.max(paid - netDue, 0);
   const remaining = Math.max(netDue - paid, 0);
   document.getElementById('adaiAdvanceVal').innerHTML = fmtTk(advance) + '<span class="unit">টাকা</span>';
   document.getElementById('adaiRemainingVal').innerHTML = fmtTk(remaining) + '<span class="unit">টাকা</span>';
-}
-
-function toggleAdaiAdvanceMode() {
-  const wrap = document.getElementById('adaiAdvanceInputWrap');
-  wrap.style.display = (wrap.style.display === 'flex') ? 'none' : 'flex';
 }
 
 function addAdaiAdvance() {
@@ -8789,23 +8884,33 @@ function addAdaiAdvance() {
 
 function saveAdai() {
   const s = adaiSelectedStudent;
-  if (!s) { showErrorPopup('রেজিস্ট্রেশন নং দিয়ে শিক্ষার্থী নির্বাচন করুন'); return; }
+  if (!s) { showErrorPopup('আইডি বা নাম দিয়ে শিক্ষার্থী নির্বাচন করুন'); return; }
   const method = document.getElementById('adaiMethod').value;
   if (method === '-') { showErrorPopup('পরিশোধের পদ্ধতি নির্বাচন করুন'); return; }
+  const dues = studentDues[s.id] || [];
+  const collectedDues = dues.filter(d => adaiSelectedDueIds.has(d.id));
+  if (!collectedDues.length && !adaiAdvanceMonths.size) {
+    showErrorPopup('বকেয়া বিল নির্বাচন করুন অথবা অগ্রিম ফি থেকে মাস নির্বাচন করুন');
+    return;
+  }
   const paid = parseFloat(document.getElementById('adaiPayAmount').value) || 0;
   if (paid <= 0) { showErrorPopup('পরিশোধের পরিমাণ দিন'); return; }
 
   const remark = document.getElementById('adaiRemark').value.trim();
   const collectedBy = nqCurrentUserName();
   const discount = parseFloat(document.getElementById('adaiDiscount').value) || 0;
+  const selectedAdvanceMonths = adaiAdvanceMonthList(s).filter(m => adaiAdvanceMonths.has(m.key));
+  const advanceKeys = new Set(selectedAdvanceMonths.map(m => m.key));
 
-  const dues = studentDues[s.id] || [];
-  const collectedDues = dues.filter(d => adaiSelectedDueIds.has(d.id));
-  studentDues[s.id] = dues.filter(d => !adaiSelectedDueIds.has(d.id));
+  studentDues[s.id] = dues.filter(d =>
+    !adaiSelectedDueIds.has(d.id) &&
+    !(advanceKeys.size && advanceKeys.has(adaiMonthKey(d.month))));
   rebuildDueDetails();
 
   const isoNow = nqTodayISO();
-  const monthLabel = nqMonthLabelBn(isoNow);
+  const monthLabel = selectedAdvanceMonths.length
+    ? selectedAdvanceMonths.map(m => m.label).join(', ')
+    : nqMonthLabelBn(isoNow);
   const id = payments.length ? payments[payments.length - 1].id + 1 : 1;
   const billBase = paymentDetails.length ? paymentDetails[paymentDetails.length - 1].billNo + 1 : 100;
   payments.push({
@@ -8814,7 +8919,17 @@ function saveAdai() {
     by: collectedBy, method, billNo: billBase, remark
   });
 
-  const rows = collectedDues.length ? collectedDues : [{ label: 'অগ্রিম ফি', amount: paid }];
+  let rows;
+  if (selectedAdvanceMonths.length) {
+    const monthlyAmount = Math.floor((paid / selectedAdvanceMonths.length) * 100) / 100;
+    rows = selectedAdvanceMonths.map((m, i) => ({
+      label: 'মাসিক বেতন', amount: i === selectedAdvanceMonths.length - 1
+        ? Math.max(0, paid - monthlyAmount * (selectedAdvanceMonths.length - 1))
+        : monthlyAmount, month: m.label
+    }));
+  } else {
+    rows = collectedDues;
+  }
   rows.forEach((d, i) => {
     const pdId = paymentDetails.length ? paymentDetails[paymentDetails.length - 1].id + 1 : 1;
     paymentDetails.push({
@@ -8856,6 +8971,7 @@ function resetAdai() {
   initAdaiData();
   adaiSelectedStudent = null;
   adaiSelectedDueIds = new Set();
+  adaiAdvanceMonths = new Set();
   const regInput = document.getElementById('adaiRegInput'); if (regInput) regInput.value = '';
   const methodSel = document.getElementById('adaiMethod'); if (methodSel) methodSel.selectedIndex = 0;
   const remarkInput = document.getElementById('adaiRemark'); if (remarkInput) remarkInput.value = '';
@@ -8864,6 +8980,8 @@ function resetAdai() {
   if (payInput) { payInput.value = '0'; delete payInput.dataset.userEdited; }
   const advWrap = document.getElementById('adaiAdvanceInputWrap'); if (advWrap) advWrap.style.display = 'none';
   const advInput = document.getElementById('adaiAdvanceInput'); if (advInput) advInput.value = '';
+  const advList = document.getElementById('adaiAdvanceMonthList'); if (advList) advList.innerHTML = '';
+  const advSummary = document.getElementById('adaiAdvanceMonthSummary'); if (advSummary) advSummary.textContent = '';
   const suggestBox = document.getElementById('adaiSuggestList');
   if (suggestBox) { suggestBox.style.display = 'none'; suggestBox.innerHTML = ''; }
   renderAdaiStudent();

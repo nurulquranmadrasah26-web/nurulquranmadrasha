@@ -408,14 +408,16 @@
       </div>
     </div>
 
-    <div class="tabbar" id="attTabs"></div>
-
     <div class="card">
+      <div class="form-row" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;">
+        <div class="form-field" style="min-width:180px;flex:1;"><label>শ্রেণী</label><select id="attFilterClass" onchange="renderAttendance()"><option value="">সকল শ্রেণী</option></select></div>
+        <div class="form-field" style="min-width:180px;flex:1;"><label>বিভাগ</label><select id="attFilterDept" onchange="renderAttendance()"><option value="">সকল বিভাগ</option><option>বালিকা</option><option>নুরানি</option><option>বালক</option></select></div>
+      </div>
       <table>
         <thead>
-          <tr><th>#</th><th>রেজিঃ নং</th><th>নাম</th><th>শ্রেণী</th><th>মোবাইল</th><th>হাজিরা</th></tr>
+          <tr><th>#</th><th>ছবি</th><th>রেজিস্ট্রেশন নং</th><th>শ্রেণী রোল</th><th>নাম</th><th>শ্রেণী</th><th>বিভাগ</th><th>হাজিরা</th></tr>
         </thead>
-        <tbody id="attBody"><tr><td colspan="6" class="empty-row">লোড হচ্ছে...</td></tr></tbody>
+        <tbody id="attBody"><tr><td colspan="8" class="empty-row">লোড হচ্ছে...</td></tr></tbody>
       </table>
       <div class="save-bar" onclick="saveAttendance()">
         ✓ সংরক্ষণ করুন
@@ -438,7 +440,12 @@
     </div>
 
     <div class="form-row">
-      <div class="form-field"><label>শিক্ষার্থী</label><select id="feeStudent" onchange="renderFeeDues()"></select></div>
+      <div class="form-field" style="position:relative;">
+        <label>শিক্ষার্থী (আইডি বা নাম)</label>
+        <input id="feeStudentSearch" placeholder="শিক্ষার্থীর আইডি বা নাম লিখুন" autocomplete="off" oninput="searchTeacherFeeStudent(this.value)" onkeydown="if(event.key==='Enter') selectTeacherFeeExact(this.value)" />
+        <div id="feeStudentSuggest" style="display:none;position:absolute;left:0;right:0;top:100%;z-index:20;background:#fff;border:1px solid var(--line);max-height:230px;overflow:auto;"></div>
+        <select id="feeStudent" onchange="renderFeeDues()" style="display:none;"></select>
+      </div>
       <div class="form-field"><label>পরিশোধের পদ্ধতি</label><select id="feeMethod"><option>নগদ</option><option>বিকাশ</option><option>ব্যাংক</option></select></div>
       <div class="form-field"><label>আদায়কারীর নাম</label><input type="text" id="feeCollector" data-user-name disabled></div>
       <div class="form-field"><label>মন্তব্য</label><input type="text" id="feeRemark" placeholder="মন্তব্য"></div>
@@ -1003,32 +1010,62 @@ function renderTeacherRoutine(){
 }
 
 /* ---------- হাজিরা ---------- */
+function fillAttendanceFilters(){
+  var sel = document.getElementById('attFilterClass');
+  if(sel && sel.options.length <= 1){
+    classList().forEach(function(c){ var o=document.createElement('option'); o.value=c; o.textContent=c; sel.appendChild(o); });
+  }
+  var deptSel = document.getElementById('attFilterDept');
+  if(deptSel && deptSel.options.length <= 4){
+    var depts = [];
+    arr(S.students).forEach(function(st){
+      var d = st.attDept || st.dept || st.branch || '';
+      if(d && depts.indexOf(d) === -1) depts.push(d);
+    });
+    depts.forEach(function(d){
+      if(!Array.prototype.some.call(deptSel.options, function(o){ return o.value === d; })){
+        var o=document.createElement('option'); o.value=d; o.textContent=d; deptSel.appendChild(o);
+      }
+    });
+  }
+}
 function renderAttendance(){
-  var cls = classList();
-  if(!attActiveClass || cls.indexOf(attActiveClass) === -1) attActiveClass = cls[0];
-  document.getElementById('attTabs').innerHTML = cls.map(function(c){
-    return '<button class="tabbtn' + (c === attActiveClass ? ' active' : '') + '" onclick="switchClassTab(this)">' + esc(c) + '</button>';
-  }).join('');
+  fillAttendanceFilters();
+  var clsF = (document.getElementById('attFilterClass') || {}).value || '';
+  var deptF = (document.getElementById('attFilterDept') || {}).value || '';
   var att = obj(S.attendance);
-  var rows = arr(S.students).filter(function(st){ return st.cls === attActiveClass; });
+  var rows = arr(S.students).filter(function(st){
+    var cls = st.attCls || st.cls || '';
+    var dept = st.attDept || st.dept || st.branch || '';
+    return (!clsF || cls === clsF) && (!deptF || dept === deptF);
+  });
   var body = document.getElementById('attBody');
-  if(!rows.length){ body.innerHTML = '<tr><td colspan="6" class="empty-row">এই শ্রেণীতে কোনো শিক্ষার্থী নেই</td></tr>'; updateAttSummary(); return; }
+  if(!rows.length){ body.innerHTML = '<tr><td colspan="8" class="empty-row">কোনো শিক্ষার্থী পাওয়া যায়নি</td></tr>'; updateAttSummary(); return; }
   body.innerHTML = rows.map(function(st, i){
     var cur = attTempt[st.id] || att[st.id] || 'present';
     attTempt[st.id] = cur;
-    return '<tr><td>' + bn(i+1) + '</td><td>' + bn(st.id) + '</td><td>' + esc(st.name) + '</td><td>' + esc(st.cls) + '</td><td>' + esc(st.mobile || '-') + '</td>' +
-      '<td><select onchange="setAtt(' + st.id + ', this.value)" style="padding:6px;border:1px solid var(--line);border-radius:6px;">' +
-      '<option value="present"' + (cur==='present'?' selected':'') + '>উপস্থিত</option>' +
-      '<option value="absent"' + (cur==='absent'?' selected':'') + '>অনুপস্থিত</option>' +
-      '<option value="leave"' + (cur==='leave'?' selected':'') + '>ছুটিতে</option></select></td></tr>';
+    var avatar = st.photo
+      ? '<img src="' + esc(st.photo) + '" style="width:38px;height:38px;object-fit:cover;border-radius:50%;">'
+      : '<span style="display:inline-flex;width:38px;height:38px;border-radius:50%;align-items:center;justify-content:center;background:#e3f2fd;color:#1565c0;font-weight:700;">' + esc(String(st.name || '?').charAt(0)) + '</span>';
+    return '<tr><td>' + bn(i+1) + '</td><td>' + avatar + '</td><td>' + bn(st.regNo || st.id) + '</td><td>' + bn(st.classRoll || '-') + '</td><td>' + esc(st.name) + '</td><td>' + esc(st.attCls || st.cls || '-') + '</td><td>' + esc(st.attDept || st.dept || st.branch || '-') + '</td>' +
+      '<td><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">' +
+      '<label style="color:#2e7d32;"><input type="radio" name="att-' + st.id + '" ' + (cur==='present'?'checked':'') + ' onchange="setAtt(' + st.id + ',\'present\')"> উপস্থিত</label>' +
+      '<label style="color:#c62828;"><input type="radio" name="att-' + st.id + '" ' + (cur==='absent'?'checked':'') + ' onchange="setAtt(' + st.id + ',\'absent\')"> অনুপস্থিত</label>' +
+      '<label style="color:#1565c0;"><input type="radio" name="att-' + st.id + '" ' + (cur==='leave'?'checked':'') + ' onchange="setAtt(' + st.id + ',\'leave\')"> ছুটিতে</label>' +
+      '</div></td></tr>';
   }).join('');
   updateAttSummary();
 }
 function setAtt(id, val){ attTempt[id] = val; updateAttSummary(); }
 function updateAttSummary(){
-  var rows = arr(S.students).filter(function(st){ return st.cls === attActiveClass; });
+  var clsF = (document.getElementById('attFilterClass') || {}).value || '';
+  var deptF = (document.getElementById('attFilterDept') || {}).value || '';
+  var rows = arr(S.students).filter(function(st){
+    return (!clsF || (st.attCls || st.cls) === clsF) && (!deptF || (st.attDept || st.dept || st.branch) === deptF);
+  });
   var p=0,a=0,l=0;
-  rows.forEach(function(st){ var v = attTempt[st.id] || 'present'; if(v==='present')p++; else if(v==='absent')a++; else l++; });
+  var att = obj(S.attendance);
+  rows.forEach(function(st){ var v = attTempt[st.id] || att[st.id] || 'present'; if(v==='present')p++; else if(v==='absent')a++; else l++; });
   document.getElementById('attSummary').textContent = 'মোট : ' + bn(p) + ' উপস্থিত – ' + bn(a) + ' অনুপস্থিত – ' + bn(l) + ' ছুটিতে';
 }
 function switchClassTab(btn){
@@ -1037,7 +1074,17 @@ function switchClassTab(btn){
 }
 function saveAttendance(){
   var att = Object.assign({}, obj(S.attendance), attTempt);
-  saveKeys({ attendance: att }).then(function(){ toast('হাজিরা সংরক্ষণ করা হয়েছে!'); renderDashboard(); });
+  var history = obj(S.attendanceHistory);
+  var date = todayISO();
+  arr(S.students).forEach(function(st){
+    var status = att[st.id] || 'present';
+    var list = arr(history[st.id]).slice();
+    var idx = list.findIndex(function(x){ return x && x.date === date; });
+    var row = {date:date, status:status, cls:st.attCls || st.cls || '', takenBy:me().name || me().uid || 'শিক্ষক'};
+    if(idx >= 0) list[idx] = row; else list.push(row);
+    history[st.id] = list;
+  });
+  saveKeys({ attendance: att, attendanceHistory: history }).then(function(){ toast('হাজিরা সংরক্ষণ করা হয়েছে!'); renderDashboard(); });
 }
 
 /* ---------- ফি আদায় ---------- */
@@ -1047,7 +1094,43 @@ function renderFeeStudents(){
   sel.innerHTML = '<option value="">-- শিক্ষার্থী নির্বাচন করুন --</option>' + students.map(function(st){
     return '<option value="' + st.id + '">' + esc(st.name) + ' (' + esc(st.cls) + ')</option>';
   }).join('');
+  var collector = document.getElementById('feeCollector');
+  if(collector) collector.value = me().name || me().uid || 'ব্যবহারকারী';
   renderFeeDues();
+}
+function selectTeacherFeeStudent(id){
+  var st = arr(S.students).find(function(x){ return String(x.id) === String(id); });
+  if(!st) return;
+  document.getElementById('feeStudent').value = st.id;
+  document.getElementById('feeStudentSearch').value = (st.regNo || st.id) + ' - ' + st.name;
+  var box = document.getElementById('feeStudentSuggest');
+  if(box){ box.style.display='none'; box.innerHTML=''; }
+  renderFeeDues();
+}
+function selectTeacherFeeExact(value){
+  var q = String(value || '').trim();
+  var st = arr(S.students).find(function(x){
+    return String(x.regNo || '') === q || String(x.id) === q || String(x.name || '') === q;
+  });
+  if(st) selectTeacherFeeStudent(st.id);
+}
+function searchTeacherFeeStudent(value){
+  var q = String(value || '').trim().toLowerCase();
+  var box = document.getElementById('feeStudentSuggest');
+  if(!box) return;
+  if(!q){ box.style.display='none'; box.innerHTML=''; return; }
+  var rows = arr(S.students).filter(function(st){
+    return String(st.regNo || '').toLowerCase().indexOf(q) !== -1 ||
+      String(st.id || '').toLowerCase().indexOf(q) !== -1 ||
+      String(st.name || '').toLowerCase().indexOf(q) !== -1;
+  }).slice(0, 10);
+  box.innerHTML = rows.map(function(st){
+    return '<div onclick="selectTeacherFeeStudent(' + st.id + ')" style="padding:9px 12px;border-bottom:1px solid var(--line);cursor:pointer;">' +
+      '<strong>' + esc(st.regNo || st.id) + '</strong> — ' + esc(st.name) + ' <small style="color:var(--muted);">(' + esc(st.cls || st.attCls || '') + ')</small></div>';
+  }).join('') || '<div style="padding:10px;color:var(--muted);">কোনো শিক্ষার্থী পাওয়া যায়নি</div>';
+  box.style.display = 'block';
+  var exact = rows.find(function(st){ return String(st.regNo || '') === q || String(st.id || '') === q; });
+  if(exact) selectTeacherFeeStudent(exact.id);
 }
 function renderFeeDues(){
   feeSelected = {};
