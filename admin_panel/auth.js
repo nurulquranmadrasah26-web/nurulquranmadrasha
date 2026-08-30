@@ -72,7 +72,16 @@
       return;
     }
     localStorage.setItem('nq_token', original.token);
-    localStorage.setItem('nq_user', JSON.stringify(original.user));
+    var originalUser = original.user;
+    if (typeof originalUser === 'string') {
+      try { originalUser = JSON.parse(originalUser); } catch (e) { originalUser = null; }
+    }
+    if (!originalUser || typeof originalUser !== 'object') {
+      localStorage.removeItem('nq_impersonator');
+      window.location.replace(LOGIN_URL);
+      return;
+    }
+    localStorage.setItem('nq_user', JSON.stringify(originalUser));
     sessionStorage.removeItem('nq_token');
     sessionStorage.removeItem('nq_user');
     localStorage.removeItem('nq_impersonator');

@@ -308,6 +308,34 @@
     .form-row{grid-template-columns:1fr;}
     .tabbar.three{grid-template-columns:1fr;}
   }
+  /* মূল Admin admission form-এর responsive layout */
+  .wizard-steps{display:flex;gap:2px;margin-bottom:16px;}
+  .wizard-step{flex:1;padding:14px 20px;font-weight:700;font-size:15px;background:#eee;color:#888;}
+  .wizard-step.active{background:#43a047;color:#fff;}
+  .adm-panel{background:#fff;padding:24px;}
+  .adm-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px 22px;margin-bottom:18px;}
+  .adm-field label{display:block;font-size:13px;color:#444;margin-bottom:5px;font-weight:600;}
+  .adm-field label .req{color:#e53935;}
+  .adm-field input,.adm-field select{width:100%;padding:9px 12px;border:1.5px solid #ddd;font-family:inherit;font-size:14px;background:#fff;}
+  .adm-field input:focus,.adm-field select:focus{outline:none;border-color:#1565c0;}
+  .adm-field input[readonly]{background:#f0f0f0;color:#666;}
+  .adm-radio-group{display:flex;align-items:center;gap:16px;flex-wrap:wrap;font-size:14px;}
+  .adm-radio-group label{display:flex;align-items:center;gap:5px;font-weight:500;font-size:14px;white-space:nowrap;flex-shrink:0;}
+  .adm-photo-box{border:1.5px dashed #bbb;padding:16px;text-align:center;background:#fafafa;}
+  .adm-photo-preview{width:90px;height:90px;margin:0 auto 12px;border:1.5px solid #ccc;display:flex;align-items:center;justify-content:center;background:#fff;overflow:hidden;}
+  .adm-photo-preview img{width:100%;height:100%;object-fit:cover;}
+  .adm-next-btn{width:100%;background:#1a5fb4;color:#fff;border:none;padding:14px;font-family:inherit;font-size:16px;font-weight:700;cursor:pointer;}
+  .adm-next-btn:hover{background:#154d91;}
+  .subject-admin-layout{display:grid;grid-template-columns:1.6fr 1fr;gap:20px;align-items:start;}
+  .subject-admin-card{background:#fff;padding:18px;box-shadow:0 1px 4px rgba(0,0,0,.08);}
+  .subject-admin-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+  .subj-chk-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px 10px;margin-bottom:14px;}
+  .subj-chk-grid label{display:flex;align-items:center;gap:6px;font-size:13.5px;color:#333;cursor:pointer;}
+  .subject-admin-card table{width:100%;border-collapse:collapse;font-size:13px;}
+  .subject-admin-card th,.subject-admin-card td{padding:10px 7px;border-bottom:1px solid var(--line);text-align:left;}
+  .subject-admin-card input{width:100%;padding:10px;border:1px solid #dfe3ea;font:inherit;}
+  @media(max-width:900px){.adm-grid{grid-template-columns:repeat(2,1fr);}.subject-admin-layout{grid-template-columns:1fr;}}
+  @media(max-width:600px){.adm-grid{grid-template-columns:1fr;}.adm-panel{padding:16px;}.adm-field[style*="span 2"]{grid-column:span 1!important;}.wizard-step{padding:11px 8px;font-size:13px;}.subj-chk-grid{grid-template-columns:1fr;}}
 </style>
 <script src="config.js"></script>
 <script src="auth.js"></script>
@@ -330,15 +358,13 @@
     <a href="#" onclick="goto('hw-subject');return false;"><span class="plusicon">+</span> বাড়ির কাজ</a>
     <a href="#" onclick="goto('syllabus');return false;">📃 সিলেবাস</a>
     <a href="#" onclick="goto('leave');return false;">📄 ছুটি</a>
-    <a href="#" onclick="goto('result');return false;">📋 ফলাফল</a>
     <a href="#" onclick="goto('notice');return false;">📢 নোটিশ</a>
     <a href="#" onclick="goto('exam-subjects');return false;">📚 পরীক্ষার বিষয়</a>
     <a href="#" onclick="goto('hw-list');return false;">📖 তালিকা</a>
     <a href="#" onclick="goto('requests');return false;">⏳ অনুমোদন</a>
-    <a href="#" onclick="goto('messages');return false;">💬 বার্তা</a>
   </nav>
   <div class="topbar-right">
-    <div class="bell" onclick="goto('messages')">🔔<span class="badge" id="msgBadge">0</span></div>
+    <div class="bell" onclick="goto('requests')">🔔<span class="badge" id="msgBadge">0</span></div>
     <span style="font-size:14px;font-weight:600;" data-user-name>—</span>
     <span style="font-size:12px;color:var(--muted);" data-user-role></span>
     <button data-logout style="background:#fdeaea;color:#c81452;padding:8px 14px;border-radius:8px;font-weight:600;">লগআউট</button>
@@ -364,9 +390,6 @@
       <div class="tile sm t-list1" onclick="goto('attendance')">📋 হাজিরার তালিকা</div>
       <div class="tile sm t-list2" onclick="goto('syllabus')">📃 সিলেবাস</div>
       <div class="tile sm t-list3" onclick="goto('leave')">📄 ছুটির আবেদন</div>
-    </div>
-    <div class="tile-grid row-1">
-      <div class="tile sm t-result" onclick="goto('result')">📋 ফলাফলের তালিকা</div>
     </div>
     <div class="tile-grid row-1">
       <div class="tile t-absent" id="dashAbsent" onclick="goto('attendance')">০ জন<br>অনুপস্থিত শিক্ষার্থী</div>
@@ -565,57 +588,57 @@
     </div>
   </section>
 
-  <!-- ============ MESSAGING ============ -->
-  <section id="view-messages" class="view">
-    <div class="page-head">
-      <div class="page-head-left"><div class="icon-box">💬</div><h1>মেসেজিং সিস্টেম</h1></div>
-      <div class="quicklinks">
-        <button class="qb-dash" onclick="goto('dashboard')">🏠 <span class="lbl">ড্যাশবোর্ড</span></button>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>📥 গৃহীত মেসেজ</h2>
-      <div id="teacher-inbox" style="max-height:300px;overflow-y:auto;">
-        <div style="text-align:center;color:var(--muted);padding:20px;">লোড হচ্ছে...</div>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2>📤 মেসেজ পাঠান</h2>
-      <div class="form-row">
-        <div class="form-field" style="grid-column:span 2;"><label>প্রাপক (শিক্ষার্থী/কর্মী)</label><select id="teacher-msg-to"><option value="">-- নির্বাচন করুন --</option></select></div>
-        <div class="form-field" style="grid-column:span 2;"><label>বিষয়</label><input type="text" id="teacher-msg-subject" placeholder="বিষয় (ঐচ্ছিক)"></div>
-      </div>
-      <div style="margin-bottom:16px;"><label style="display:block;font-size:13px;color:#374151;margin-bottom:6px;">বার্তা</label><textarea id="teacher-msg-body" placeholder="আপনার বার্তা লিখুন..." style="width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:8px;font-size:14px;font-family:inherit;resize:vertical;min-height:80px;"></textarea></div>
-      <button onclick="sendTeacherMessage()" style="background:var(--blue);color:#fff;padding:12px 24px;border-radius:8px;font-weight:600;cursor:pointer;">পাঠান</button>
-    </div>
-
-    <div class="card">
-      <h2>📋 পাঠানো মেসেজ</h2>
-      <div id="teacher-sent" style="max-height:300px;overflow-y:auto;">
-        <div style="text-align:center;color:var(--muted);padding:20px;">লোড হচ্ছে...</div>
-      </div>
-    </div>
-  </section>
-
   <!-- ============ TEACHER APPROVAL: ADMISSION ============ -->
   <section id="view-admission" class="view">
     <div class="page-head"><div class="page-head-left"><div class="icon-box">＋</div><h1>ভর্তি আবেদন</h1></div>
       <div class="quicklinks"><button class="qb-dash" onclick="goto('dashboard')">🏠 <span class="lbl">ড্যাশবোর্ড</span></button></div>
     </div>
-    <div class="workflow-card">
-      <h2>শিক্ষার্থীর ভর্তি তথ্য</h2>
-      <div class="workflow-grid">
-        <div class="workflow-field"><label>শিক্ষার্থীর নাম</label><input id="taName"></div>
-        <div class="workflow-field"><label>শ্রেণী</label><select id="taClass"></select></div>
-        <div class="workflow-field"><label>শাখা</label><select id="taBranch"><option>নুরানি</option><option>বালিকা</option><option>বালক</option></select></div>
-        <div class="workflow-field"><label>মোবাইল</label><input id="taMobile" type="tel"></div>
-        <div class="workflow-field"><label>পিতার নাম</label><input id="taFather"></div>
-        <div class="workflow-field"><label>সেশন</label><input id="taSession" value="২০২৬"></div>
-        <div class="workflow-field full"><label>ঠিকানা</label><textarea id="taAddress" rows="2"></textarea></div>
+    <div class="wizard-steps">
+      <div class="wizard-step active">ধাপ-১ : শিক্ষার্থীর তথ্য</div>
+      <div class="wizard-step">ধাপ-২ : সুপার এডমিনের অনুমোদন</div>
+    </div>
+    <div class="adm-panel" id="teacherAdmissionStep1">
+      <div class="adm-grid">
+        <div class="adm-field"><label>বিভাগ নির্বাচন করুন <span class="req">*</span></label><select id="admDept"><option value="">বিভাগ নির্বাচন করুন</option><option>নূরানী বিভাগ</option><option>নাজেরা বিভাগ</option><option>হিফজ বিভাগ</option><option>কিতাব বিভাগ</option></select></div>
+        <div class="adm-field"><label>শ্রেণী নির্বাচন করুন <span class="req">*</span></label><select id="admClass"><option value="">শ্রেণী নির্বাচন করুন</option></select></div>
+        <div class="adm-field"><label>ক্লাশ শুরুর মাস <span class="req">*</span></label><select id="admStartMonth"><option value="">-----ক্লাশ শুরুর মাস-----</option><option>জানুয়ারি ২০২৬</option><option>ফেব্রুয়ারি ২০২৬</option><option>মার্চ ২০২৬</option><option>এপ্রিল ২০২৬</option><option>মে ২০২৬</option><option>জুন ২০২৬</option><option selected>জুলাই ২০২৬</option><option>আগস্ট ২০২৬</option></select></div>
+        <div class="adm-field"><label>শিক্ষাবর্ষ</label><div class="adm-radio-group"><label><input type="radio" name="admYear" value="২০২৬ ইং" checked> ২০২৬ ইং</label><label><input type="radio" name="admYear" value="২০২৭ ইং"> ২০২৭ ইং</label></div></div>
+        <div class="adm-field"><label>শাখা</label><div class="adm-radio-group"><label><input type="radio" name="admBranch" value="আবাসিক" checked> আবাসিক</label><label><input type="radio" name="admBranch" value="অনাবাসিক"> অনাবাসিক</label><label><input type="radio" name="admBranch" value="ডে-কেয়ার"> ডে-কেয়ার</label></div></div>
+        <div class="adm-field"><label>ক্লাশ গ্রুপ</label><select id="admGroup"><option value="">---ক্লাশ গ্রুপ---</option><option>ক</option><option>খ</option><option>গ</option></select></div>
+        <div class="adm-field"><label>জন্ম নিবন্ধন নাম্বার</label><input id="admBirthReg" placeholder="জন্ম নিবন্ধন নাম্বার"></div>
+        <div class="adm-field"><label>শিক্ষার্থীর নাম <span class="req">*</span></label><input id="admName" placeholder="শিক্ষার্থীর পুরো নাম"></div>
+        <div class="adm-field"><label>জন্ম তারিখ <span class="req">*</span></label><input type="date" id="admDob" oninput="teacherCalcAdmAge()"></div>
+        <div class="adm-field"><label>বয়স</label><input id="admAge" readonly value="০ বছর ০ মাস ০ দিন"></div>
+        <div class="adm-field"><label>লিঙ্গ নির্বাচন করুন <span class="req">*</span></label><select id="admGender"><option value="">লিঙ্গ নির্বাচন করুন</option><option>ছেলে</option><option>মেয়ে</option></select></div>
+        <div class="adm-field"><label>পিতার নাম <span class="req">*</span></label><input id="admFatherName" placeholder="পিতার নাম"></div>
+        <div class="adm-field"><label>পিতার পেশা</label><input id="admFatherJob" placeholder="পিতার পেশা"></div>
+        <div class="adm-field"><label>পিতার মোবাইল নং</label><input id="admFatherMobile" placeholder="০১XXXXXXXXX"></div>
+        <div class="adm-field"><label>মাতার নাম</label><input id="admMotherName" placeholder="মাতার নাম"></div>
+        <div class="adm-field"><label>মাতার পেশা</label><input id="admMotherJob" placeholder="মাতার পেশা"></div>
+        <div class="adm-field"><label>মাতার মোবাইল নং</label><input id="admMotherMobile" placeholder="০১XXXXXXXXX"></div>
+        <div class="adm-field"><label>বর্তমান ঠিকানা</label><input id="admCurAddr" placeholder="বর্তমান ঠিকানা"></div>
+        <div class="adm-field"><label>স্থায়ী ঠিকানা</label><input id="admPermAddr" placeholder="স্থায়ী ঠিকানা"></div>
+        <div class="adm-field"><label>অভিভাবকের নাম <span class="req">*</span></label><input id="admGuardianName" placeholder="অভিভাবকের নাম"></div>
+        <div class="adm-field"><label>অভিভাবকের সাথে সম্পর্ক <span class="req">*</span></label><input id="admGuardianRel" placeholder="যেমন: পিতা, চাচা"></div>
+        <div class="adm-field"><label>অভিভাবকের মোবাইল নং <span class="req">*</span></label><input id="admGuardianMobile" placeholder="০১XXXXXXXXX"></div>
+        <div class="adm-field"><label>পূর্ববর্তী প্রতিষ্ঠানের নাম</label><input id="admPrevInst" placeholder="পূর্ববর্তী প্রতিষ্ঠানের নাম"></div>
+        <div class="adm-field"><label>পূর্ববর্তী শ্রেণী</label><select id="admPrevClass"><option value="">শ্রেণী নির্বাচন করুন</option></select></div>
+        <div class="adm-field" style="grid-column:span 2;"><label>যার মারফতে ভর্তি তার নাম, মোবাইল নং</label><input id="admReferrer" placeholder="নাম, মোবাইল নং"></div>
+        <div class="adm-field"><label>শিক্ষার্থীর ছবি</label><div class="adm-photo-box"><div class="adm-photo-preview" id="admPhotoPreview"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#999" stroke-width="1.6"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2.6 8 7"/></svg></div><input type="file" id="admPhoto" accept="image/*" onchange="previewTeacherAdmPhoto(event)"></div></div>
       </div>
-      <button class="workflow-submit" onclick="submitTeacherAdmission()">সুপার এডমিনের অনুমোদনের জন্য পাঠান</button>
+      <button class="adm-next-btn" onclick="teacherAdmissionNext()">Next <span aria-hidden="true">→</span></button>
+      <div id="teacherAdmissionHint" style="text-align:center;color:#6b7280;font-size:13px;margin-top:10px;">পরবর্তী ধাপে গিয়ে তথ্য যাচাই করে Super Admin-এর অনুমোদনের জন্য পাঠান।</div>
+    </div>
+    <div id="teacherAdmissionStep2" style="display:none">
+      <div class="wizard-steps">
+        <div class="wizard-step done" style="cursor:pointer" onclick="teacherAdmissionBack()">ধাপ-১ : শিক্ষার্থীর তথ্য</div>
+        <div class="wizard-step active">ধাপ-২ : অনুমোদন</div>
+      </div>
+      <div class="subject-admin-card" style="margin-bottom:16px;">
+        <h2 style="margin-top:0;">ভর্তি আবেদনের সারসংক্ষেপ</h2>
+        <div id="admSummaryInfo" class="workflow-grid"></div>
+      </div>
+      <button class="adm-next-btn" onclick="submitTeacherAdmission()">সুপার এডমিনের অনুমোদনের জন্য পাঠান</button>
     </div>
   </section>
 
@@ -678,26 +701,6 @@
     </div>
   </section>
 
-  <!-- ============ RESULT ============ -->
-  <section id="view-result" class="view">
-    <div class="page-head"><div class="page-head-left"><div class="icon-box">📋</div><h1>ফলাফলের তালিকা</h1></div>
-      <div class="quicklinks"><button class="qb-dash" onclick="goto('dashboard')">🏠 <span class="lbl">ড্যাশবোর্ড</span></button></div>
-    </div>
-    <div class="workflow-card">
-      <h2>ফলাফল প্রকাশের আবেদন</h2>
-      <div class="workflow-grid">
-        <div class="workflow-field"><label>শ্রেণী</label><select id="trClass" onchange="fillTeacherResultStudents()"></select></div>
-        <div class="workflow-field"><label>পরীক্ষার নাম</label><input id="trExam" placeholder="যেমন: অর্ধবার্ষিক পরীক্ষা"></div>
-        <div class="workflow-field"><label>শিক্ষার্থী</label><select id="trStudent"></select></div>
-        <div class="workflow-field"><label>প্রাপ্ত নম্বর</label><input id="trTotal" type="number" min="0"></div>
-        <div class="workflow-field"><label>গ্রেড</label><input id="trGrade" placeholder="A+"></div>
-        <div class="workflow-field"><label>অবস্থান</label><input id="trPosition" type="number" min="1"></div>
-        <div class="workflow-field full"><label>মন্তব্য</label><textarea id="trRemark" rows="3"></textarea></div>
-      </div>
-      <button class="workflow-submit" onclick="submitTeacherResult()">সুপার এডমিনের অনুমোদনের জন্য পাঠান</button>
-    </div>
-  </section>
-
   <!-- ============ NOTICE / EXAM SUBJECTS ============ -->
   <section id="view-notice" class="view">
     <div class="page-head"><div class="page-head-left"><div class="icon-box">📢</div><h1>নোটিশ বিষয়</h1></div>
@@ -718,15 +721,21 @@
     <div class="page-head"><div class="page-head-left"><div class="icon-box">📚</div><h1>পরীক্ষার বিষয়</h1></div>
       <div class="quicklinks"><button class="qb-dash" onclick="goto('dashboard')">🏠 <span class="lbl">ড্যাশবোর্ড</span></button></div>
     </div>
-    <div class="card">
-      <h2>নতুন পরীক্ষার বিষয়ের আবেদন</h2>
-      <div class="workflow-grid">
-        <div class="workflow-field"><label>বিষয়ের নাম</label><input id="tesName" placeholder="যেমন: কায়দা"></div>
-        <div class="workflow-field"><label>প্রযোজ্য ক্লাসসমূহ</label><input id="tesClasses" placeholder="কমা দিয়ে লিখুন; খালি রাখলে সব ক্লাস"></div>
+    <div class="subject-admin-layout">
+      <div class="subject-admin-card">
+        <div class="subject-admin-head"><div style="font-size:18px;font-weight:700;">পরীক্ষার বিষয়ের তালিকা</div></div>
+        <div style="overflow-x:auto;"><table><thead><tr><th>#</th><th>বিষয়</th><th>শ্রেণী</th></tr></thead><tbody id="examSubjectBody"></tbody></table></div>
       </div>
-      <button class="workflow-submit" onclick="submitTeacherExamSubject()">সুপার এডমিনের অনুমোদনের জন্য পাঠান</button>
+      <div class="subject-admin-card">
+        <div style="font-size:18px;font-weight:700;margin-bottom:16px;">পরীক্ষার বিষয়ের তথ্য</div>
+        <label style="display:block;font-size:13px;color:#444;margin-bottom:5px;font-weight:600;">বিষয়</label>
+        <input id="esName" placeholder="বিষয়ের নাম">
+        <label style="display:block;font-size:13px;color:#444;margin:16px 0 7px;font-weight:600;">শ্রেণী</label>
+        <div class="subj-chk-grid" id="esClassGrid"></div>
+        <button class="workflow-submit" style="width:100%;" onclick="submitTeacherExamSubject()">সুপার এডমিনের অনুমোদনের জন্য পাঠান</button>
+        <div style="text-align:center;color:#6b7280;font-size:12px;margin-top:9px;">মূল Admin-এর মতোই বিষয় ও শ্রেণী নির্বাচন করুন; সংরক্ষণের আগে Super Admin অনুমোদন করবেন।</div>
+      </div>
     </div>
-    <div class="card"><h2>পরীক্ষায় ব্যবহৃত বিষয়সমূহ</h2><div id="teacherExamSubjects"></div></div>
   </section>
 
   <!-- ============ APPROVAL STATUS ============ -->
@@ -771,7 +780,6 @@
 
 <nav class="bottomnav">
   <a href="#" data-view="dashboard" class="active" onclick="goto('dashboard');return false;"><span class="ic">🏠</span>ড্যাশবোর্ড</a>
-  <a href="#" data-view="messages" onclick="goto('messages');return false;"><span class="ic">💬</span>বার্তা</a>
   <a href="#" data-view="attendance" onclick="goto('attendance');return false;"><span class="ic">📅</span>হাজিরা</a>
   <a href="#" data-view="fee" onclick="goto('fee');return false;"><span class="ic">💰</span>আদায়</a>
   <a href="#" data-view="hw-list" onclick="goto('hw-list');return false;"><span class="ic">📖</span>বাড়ির কাজ</a>
@@ -921,7 +929,6 @@ function goto(name){
   document.querySelectorAll('nav.bottomnav a').forEach(function(a){ a.classList.remove('active'); });
   var navLink = document.querySelector('nav.bottomnav a[data-view="' + name + '"]');
   if(navLink) navLink.classList.add('active');
-  if(name === 'messages'){ loadTeacherInbox(); loadTeacherSent(); }
   if(name === 'attendance') renderAttendance();
   if(name === 'fee') renderFeeStudents();
   if(name === 'hw-subject'){ fillHwClasses(); renderHwDailyTable(); }
@@ -931,7 +938,6 @@ function goto(name){
   if(name === 'inventory') renderTeacherInventory();
   if(name === 'syllabus') { fillTeacherWorkflowOptions(); renderTeacherSyllabus(); }
   if(name === 'leave') fillTeacherLeaveStudents();
-  if(name === 'result') { fillTeacherResultOptions(); fillTeacherResultStudents(); }
   if(name === 'notice') renderTeacherNotices();
   if(name === 'exam-subjects') renderTeacherExamSubjects();
   if(name === 'requests') loadTeacherApprovals();
@@ -961,8 +967,6 @@ function boot(){
     renderHwList();
     fillTeacherWorkflowOptions();
     fillTeacherLeaveStudents();
-    fillTeacherResultOptions();
-    fillTeacherResultStudents();
     fillTeacherAdmission();
     renderTeacherInventory();
     renderTeacherSyllabus();
@@ -970,14 +974,7 @@ function boot(){
     renderTeacherExamSubjects();
     loadTeacherApprovals();
   });
-  window.NQAuth.getJSON('/api/directory').then(function(list){
-    DIR = list || [];
-    var sel = document.getElementById('teacher-msg-to');
-    sel.innerHTML = '<option value="">-- নির্বাচন করুন --</option>' + DIR.map(function(u){
-      return '<option value="' + u.id + '">' + esc(u.name) + ' (' + esc(u.role) + ')</option>';
-    }).join('');
-  }).catch(function(){});
-  loadTeacherInbox();
+  document.getElementById('msgBadge').textContent = '0';
 }
 
 /* ---------- ড্যাশবোর্ড ---------- */
@@ -1285,25 +1282,83 @@ function submitTeacherLeave(){
   if(!p.studentId || !p.from || !p.to || !p.detail){ toast('শিক্ষার্থী, তারিখ ও কারণ পূরণ করুন'); return; }
   submitApproval('leave','ছুটির আবেদন',p).then(function(){ document.getElementById('tlDetail').value=''; });
 }
-function fillTeacherResultOptions(){
-  fillTeacherClassSelect('trClass');
+function teacherAgeText(iso){
+  if(!iso) return '০ বছর ০ মাস ০ দিন';
+  var dob=new Date(iso+'T00:00:00'), now=new Date();
+  if(isNaN(dob.getTime())) return '০ বছর ০ মাস ০ দিন';
+  var y=now.getFullYear()-dob.getFullYear(), m=now.getMonth()-dob.getMonth(), d=now.getDate()-dob.getDate();
+  if(d<0){ m--; d+=new Date(now.getFullYear(),now.getMonth(),0).getDate(); }
+  if(m<0){ y--; m+=12; }
+  return bn(y)+' বছর '+bn(m)+' মাস '+bn(d)+' দিন';
 }
-function fillTeacherResultStudents(){
-  var cls=document.getElementById('trClass') && document.getElementById('trClass').value;
-  var sel=document.getElementById('trStudent'); if(!sel) return;
-  sel.innerHTML=arr(S.students).filter(function(st){ return !cls || st.cls===cls; }).map(function(st){ return '<option value="' + st.id + '">' + esc(st.name) + '</option>'; }).join('');
+function teacherCalcAdmAge(){
+  var dob=document.getElementById('admDob'), age=document.getElementById('admAge');
+  if(age) age.value=teacherAgeText(dob && dob.value);
 }
-function submitTeacherResult(){
-  var sid=Number(document.getElementById('trStudent').value);
-  var st=arr(S.students).find(function(x){ return Number(x.id)===sid; });
-  var p={className:document.getElementById('trClass').value,studentId:sid,studentName:st ? st.name : '',exam:document.getElementById('trExam').value.trim(),total:document.getElementById('trTotal').value,grade:document.getElementById('trGrade').value.trim(),position:document.getElementById('trPosition').value,remark:document.getElementById('trRemark').value.trim()};
-  if(!p.studentId || !p.exam || p.total===''){ toast('পরীক্ষা, শিক্ষার্থী ও প্রাপ্ত নম্বর দিন'); return; }
-  submitApproval('result','ফলাফল প্রকাশের আবেদন',p).then(function(){ ['trExam','trTotal','trGrade','trPosition','trRemark'].forEach(function(id){document.getElementById(id).value='';}); });
+function previewTeacherAdmPhoto(ev){
+  var file=ev.target.files && ev.target.files[0], box=document.getElementById('admPhotoPreview');
+  if(!file || !box) return;
+  var reader=new FileReader();
+  reader.onload=function(){ box.innerHTML='<img src="'+reader.result+'" alt="শিক্ষার্থীর ছবি">'; };
+  reader.readAsDataURL(file);
+}
+function fillTeacherAdmission(){
+  fillTeacherClassSelect('admClass');
+  fillTeacherClassSelect('admPrevClass');
+  teacherCalcAdmAge();
+  var one=document.getElementById('teacherAdmissionStep1'), two=document.getElementById('teacherAdmissionStep2');
+  if(one) one.style.display='block';
+  if(two) two.style.display='none';
+}
+function teacherAdmissionNext(){
+  var required=[['admDept','বিভাগ'],['admClass','শ্রেণী'],['admStartMonth','ক্লাশ শুরুর মাস'],['admName','শিক্ষার্থীর নাম'],['admDob','জন্ম তারিখ'],['admGender','লিঙ্গ'],['admFatherName','পিতার নাম'],['admGuardianName','অভিভাবকের নাম'],['admGuardianRel','সম্পর্ক'],['admGuardianMobile','অভিভাবকের মোবাইল']];
+  var missing=required.filter(function(x){ var el=document.getElementById(x[0]); return !el || !el.value.trim(); }).map(function(x){ return x[1]; });
+  if(missing.length){ toast('প্রয়োজনীয় তথ্য পূরণ করুন: '+missing.join(', ')); return; }
+  teacherCalcAdmAge();
+  var rows=[
+    ['শিক্ষার্থীর নাম','admName'],['বিভাগ','admDept'],['শ্রেণী','admClass'],['শিক্ষাবর্ষ','admYear'],
+    ['শাখা','admBranch'],['জন্ম তারিখ','admDob'],['বয়স','admAge'],['লিঙ্গ','admGender'],
+    ['পিতার নাম','admFatherName'],['অভিভাবক','admGuardianName'],['অভিভাবকের মোবাইল','admGuardianMobile']
+  ];
+  var box=document.getElementById('admSummaryInfo');
+  if(box) box.innerHTML=rows.map(function(r){
+    var el=document.getElementById(r[1]), val=el ? (el.value || el.textContent || '') : '';
+    if(r[1]==='admYear' || r[1]==='admBranch') val=(document.querySelector('input[name="'+r[1]+'"]:checked')||{}).value||'';
+    return '<div class="workflow-field"><label>'+esc(r[0])+'</label><div style="padding:10px 12px;background:#f5f7fa;border:1px solid #e2e6ec;">'+esc(val)+'</div></div>';
+  }).join('');
+  document.getElementById('teacherAdmissionStep1').style.display='none';
+  document.getElementById('teacherAdmissionStep2').style.display='block';
+}
+function teacherAdmissionBack(){
+  document.getElementById('teacherAdmissionStep1').style.display='block';
+  document.getElementById('teacherAdmissionStep2').style.display='none';
 }
 function submitTeacherAdmission(){
-  var p={name:document.getElementById('taName').value.trim(),className:document.getElementById('taClass').value,branch:document.getElementById('taBranch').value,mobileNo:document.getElementById('taMobile').value.trim(),fatherName:document.getElementById('taFather').value.trim(),session:document.getElementById('taSession').value.trim(),address:document.getElementById('taAddress').value.trim()};
-  if(!p.name || !p.className || !p.mobileNo){ toast('নাম, শ্রেণী ও মোবাইল দিন'); return; }
-  submitApproval('admission','ভর্তি আবেদন',p).then(function(){ ['taName','taMobile','taFather','taAddress'].forEach(function(id){document.getElementById(id).value='';}); });
+  var value=function(id){ var el=document.getElementById(id); return el ? el.value.trim() : ''; };
+  var p={
+    dept:value('admDept'), className:value('admClass'), group:value('admGroup'),
+    startMonth:value('admStartMonth'), year:(document.querySelector('input[name="admYear"]:checked')||{}).value||'',
+    branch:(document.querySelector('input[name="admBranch"]:checked')||{}).value||'',
+    birthReg:value('admBirthReg'), name:value('admName'), dob:value('admDob'), age:value('admAge'),
+    gender:value('admGender'), fatherName:value('admFatherName'), fatherJob:value('admFatherJob'),
+    fatherMobile:value('admFatherMobile'), motherName:value('admMotherName'), motherJob:value('admMotherJob'),
+    motherMobile:value('admMotherMobile'), curAddr:value('admCurAddr'), permAddr:value('admPermAddr'),
+    guardianName:value('admGuardianName'), guardianRel:value('admGuardianRel'),
+    guardianMobile:value('admGuardianMobile'), prevInst:value('admPrevInst'), prevClass:value('admPrevClass'),
+    referrer:value('admReferrer'), mobileNo:value('admGuardianMobile'), session:value('admStartMonth'),
+    type:(document.querySelector('input[name="admBranch"]:checked')||{}).value||'অনাবাসিক',
+    photo:(document.querySelector('#admPhotoPreview img')||{}).src||''
+  };
+  if(!p.dept || !p.className || !p.startMonth || !p.name || !p.dob || !p.gender || !p.fatherName || !p.guardianName || !p.guardianRel || !p.guardianMobile){
+    toast('লাল চিহ্নিত প্রয়োজনীয় তথ্যগুলো পূরণ করুন'); return;
+  }
+  submitApproval('admission','ভর্তি আবেদন',p).then(function(){
+    ['admBirthReg','admName','admFatherName','admFatherJob','admFatherMobile','admMotherName','admMotherJob','admMotherMobile','admCurAddr','admPermAddr','admGuardianName','admGuardianRel','admGuardianMobile','admPrevInst','admReferrer'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+    var photo=document.getElementById('admPhoto'); if(photo) photo.value='';
+    var preview=document.getElementById('admPhotoPreview'); if(preview) preview.innerHTML='<span style="color:#999;font-size:12px;">ছবি</span>';
+    teacherCalcAdmAge();
+    teacherAdmissionBack();
+  });
 }
 function fillTeacherAdmission(){ fillTeacherWorkflowOptions(); }
 function renderTeacherInventory(){
@@ -1345,15 +1400,23 @@ function submitTeacherNotice(){
   });
 }
 function submitTeacherExamSubject(){
-  var name=document.getElementById('tesName').value.trim();
-  var classes=document.getElementById('tesClasses').value.split(',').map(function(x){ return x.trim(); }).filter(Boolean);
+  var name=document.getElementById('esName').value.trim();
+  var classes=Array.prototype.slice.call(document.querySelectorAll('.esClassChk:checked')).map(function(x){ return x.value; });
   if(!name){ toast('বিষয়ের নাম লিখুন'); return; }
-  submitApproval('exam-subject','পরীক্ষার বিষয় যোগের আবেদন',{name:name,classes:classes}).then(function(){ document.getElementById('tesName').value=''; document.getElementById('tesClasses').value=''; });
+  submitApproval('exam-subject','পরীক্ষার বিষয় যোগের আবেদন',{name:name,classes:classes}).then(function(){
+    document.getElementById('esName').value='';
+    document.querySelectorAll('.esClassChk:checked').forEach(function(x){ x.checked=false; });
+  });
 }
 function renderTeacherExamSubjects(){
-  var box=document.getElementById('teacherExamSubjects'); if(!box) return;
+  var box=document.getElementById('examSubjectBody'), grid=document.getElementById('esClassGrid'); if(!box) return;
+  var classes=classList();
+  if(grid) grid.innerHTML=classes.map(function(c){ return '<label><input type="checkbox" class="esClassChk" value="'+esc(c)+'"> '+esc(c)+'</label>'; }).join('');
   var list=arr(S.examSubjects);
-  box.innerHTML=list.length ? '<div class="workflow-grid">'+list.map(function(x){ return '<div class="workflow-status approved"><strong>📚 ' + esc(x.name || x.subject || x) + '</strong><div class="meta">' + esc(arr(x.classes).join(', ') || 'সব শ্রেণী') + '</div></div>'; }).join('')+'</div>' : '<div class="empty-row">পরীক্ষার বিষয় পাওয়া যায়নি</div>';
+  box.innerHTML=list.length ? list.map(function(x,i){
+    var subject=typeof x==='string' ? x : (x.name || x.subject || '');
+    return '<tr><td>'+bn(i+1)+'</td><td><strong>📚 '+esc(subject)+'</strong></td><td>'+esc(arr(x.classes).join(', ') || 'সব শ্রেণী')+'</td></tr>';
+  }).join('') : '<tr><td colspan="3" class="empty-row">পরীক্ষার বিষয় পাওয়া যায়নি</td></tr>';
 }
 
 /* ---------- বাড়ির কাজ (বিষয়ভিত্তিক) ---------- */
