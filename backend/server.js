@@ -232,6 +232,8 @@ const ContactMessage = mongoose.model("ContactMessage", contactSchema);
 // Automass SMS gateway-এর পাঠানো রেকর্ড
 const smsLogSchema = new mongoose.Schema(
   {
+    // একই অনুরোধে network timeout/retry হলেও যেন দ্বিতীয়বার SMS না যায়
+    requestId: { type: String, default: "", index: true, sparse: true },
     sentBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     sentByName: { type: String, default: "" },
     recipients: { type: [String], default: [] },
@@ -240,6 +242,7 @@ const smsLogSchema = new mongoose.Schema(
     status: { type: String, enum: ["success", "partial", "failed"], default: "failed" },
     successCount: { type: Number, default: 0 },
     failedCount: { type: Number, default: 0 },
+    results: { type: [mongoose.Schema.Types.Mixed], default: [] },
     gatewayResponse: { type: mongoose.Schema.Types.Mixed, default: null },
   },
   { timestamps: true }
@@ -251,8 +254,10 @@ function normalizeSmsNumber(value) {
     .trim()
     .replace(/[০-৯]/g, (d) => String("০১২৩৪৫৬৭৮৯".indexOf(d)))
     .replace(/[^\d]/g, "");
-  if (/^01\d{9}$/.test(digits)) return "880" + digits.slice(1);
-  if (/^8801\d{9}$/.test(digits)) return digits;
+  // Automass-এর ডকুমেন্টে 017XXXXXXXX ফরম্যাটই canonical example।
+  // 8801XXXXXXXXX ইনপুট এলেও gateway-তে local 01 ফরম্যাট পাঠাই।
+  if (/^01\d{9}$/.test(digits)) return digits;
+  if (/^8801\d{9}$/.test(digits)) return "0" + digits.slice(2);
   return "";
 }
 
@@ -273,6 +278,9 @@ function smsStatusMeaning(code) {
     2300: "Destination route সমস্যা",
     2400: "Destination route অনুমোদিত নয়",
     3300: "সিস্টেম সমস্যা",
+    2000: "Destination provider সাময়িকভাবে unavailable",
+    3000: "Destination provider সাময়িকভাবে unavailable",
+    4000: "Destination provider সাময়িকভাবে unavailable",
   };
   return meanings[Number(code)] || "গেটওয়ে ত্রুটি";
 }
@@ -1223,6 +1231,9 @@ app.post("/api/sms/send", auth, requirePerm("message"), async (req, res) => {
   const invalidNumbers = [...new Set(inputNumbers.filter((n) => !normalizeSmsNumber(n)))];
   const message = String(body.message || "").trim().slice(0, 1000);
   const scheduledDateTime = String(body.scheduledDateTime || "").trim().slice(0, 60);
+  const requestId = String(
+    body.requestId || req.get("Idempotency-Key") || ""
+  ).trim().slice(0, 120);
 
   if (!numbers.length) return res.status(400).json({ message: "সঠিক মোবাইল নাম্বার দিন" });
   if (invalidNumbers.length) {
@@ -1236,16 +1247,41 @@ app.post("/api/sms/send", auth, requirePerm("message"), async (req, res) => {
     return res.status(400).json({ message: "একবারে সর্বোচ্চ ২০০০টি নাম্বারে পাঠানো যাবে" });
   }
 
+  // Browser/network retry বা user-এর double-click-এ একই request আবার এলে
+  // gateway-তে দ্বিতীয়বার পাঠাব না—এটাই অযথা balance কাটার প্রধান সুরক্ষা।
+  if (requestId) {
+    const previous = await SmsLog.findOne({ requestId, sentBy: req.user.id }).lean();
+    if (previous) {
+      const previousBody = {
+        ok: previous.successCount > 0,
+        status: previous.status,
+        sent: previous.successCount,
+        failed: previous.failedCount,
+        total: previous.recipients.length,
+        results: previous.results || [],
+        duplicate: true,
+        deliveryConfirmed: false,
+        notice: "এই অনুরোধটি আগে gateway-তে পাঠানো হয়েছে; পুনরায় charge করা হয়নি।",
+      };
+      return res.status(previous.successCount > 0 ? 200 : 502).json(previousBody);
+    }
+  }
+
+  const unicode = /[^\x00-\x7F]/.test(message);
+  const messageLength = Array.from(message).length;
+  const isLong = unicode ? messageLength > 70 : messageLength > 160;
   const requestBody = {
     api_key: SMS_API_KEY,
     senderid: SMS_SENDER_ID,
-    type: "text",
+    // Automass long SMS-এ type=long চায়; এটি না দিলে balance কেটে
+    // message reject/অসম্পূর্ণ হওয়ার ঝুঁকি থাকে।
+    type: isLong ? "long" : "text",
     scheduledDateTime,
     msg: message,
     contacts: numbers.join("+"),
   };
   // বাংলা/Unicode SMS-এর জন্য ডকুমেন্টে দেওয়া smsformat=8 ব্যবহার করা হয়।
-  if (/[^\x00-\x7F]/.test(message)) requestBody.smsformat = 8;
+  if (unicode) requestBody.smsformat = 8;
 
   try {
     const controller = new AbortController();
@@ -1260,12 +1296,21 @@ app.post("/api/sms/send", auth, requirePerm("message"), async (req, res) => {
 
     const gateway = await readSmsGatewayResponse(upstream);
     const rows = Array.isArray(gateway && gateway.response) ? gateway.response : [];
-    const results = rows.map((row, index) => ({
-      number: row && row.msisdn ? String(row.msisdn) : numbers[index] || "",
-      status: Number(row && row.status),
-      id: row && (row.id != null ? row.id : row.sid != null ? row.sid : null),
-      message: smsStatusMeaning(row && row.status),
-    }));
+    // Per-recipient response না এলে success ধরে নেব না—এতে gateway error-এও
+    // ভুল success দেখানো এবং balance কাটার পর delivery না হওয়ার সমস্যা লুকায়।
+    const results = rows.length
+      ? rows.map((row, index) => ({
+          number: row && row.msisdn ? String(row.msisdn) : numbers[index] || "",
+          status: Number(row && row.status),
+          id: row && (row.id != null ? row.id : row.sid != null ? row.sid : null),
+          message: smsStatusMeaning(row && row.status),
+        }))
+      : numbers.map((number) => ({
+          number,
+          status: 3300,
+          id: null,
+          message: "গেটওয়ে কোনো recipient status দেয়নি",
+        }));
     const successCount = results.filter((row) => row.status === 0).length;
     const failedCount = Math.max(numbers.length - successCount, 0);
     const deliveryStatus =
@@ -1273,6 +1318,7 @@ app.post("/api/sms/send", auth, requirePerm("message"), async (req, res) => {
 
     try {
       await SmsLog.create({
+        requestId,
         sentBy: req.user.id,
         sentByName: req.user.name || "",
         recipients: numbers,
@@ -1281,6 +1327,7 @@ app.post("/api/sms/send", auth, requirePerm("message"), async (req, res) => {
         status: deliveryStatus,
         successCount,
         failedCount,
+        results,
         gatewayResponse: gateway,
       });
     } catch (logError) {
@@ -1295,10 +1342,21 @@ app.post("/api/sms/send", auth, requirePerm("message"), async (req, res) => {
       failed: failedCount,
       total: numbers.length,
       results,
+      // Automass status 0 = gateway accepted. PDF-তে handset delivery receipt
+      // endpoint নেই, তাই এটিকে delivered বলে দাবি করা যাবে না।
+      deliveryConfirmed: false,
+      notice: successCount
+        ? "Gateway SMS গ্রহণ করেছে; handset delivery report এই API থেকে নিশ্চিত করা যায় না।"
+        : undefined,
     };
+    const firstFailure = results.find((row) => row.status !== 0);
+    const failureMessage = firstFailure
+      ? `SMS gateway status ${firstFailure.status}: ${firstFailure.message}`
+      : "SMS গেটওয়ে ম্যাসেজ গ্রহণ করেনি";
     if (!upstream.ok && successCount === 0) {
-      return res.status(502).json({ ...responseBody, message: "SMS গেটওয়ে ম্যাসেজ গ্রহণ করেনি" });
+      return res.status(502).json({ ...responseBody, message: failureMessage });
     }
+    if (successCount === 0) responseBody.message = failureMessage;
     res.status(successCount > 0 ? 200 : 502).json(responseBody);
   } catch (e) {
     console.error("SMS send error:", e.message);

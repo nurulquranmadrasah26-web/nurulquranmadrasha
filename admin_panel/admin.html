@@ -8256,7 +8256,9 @@ async function loadSmsLogs() {
       message: log.message || '',
       date: log.createdAt ? bnDate(new Date(log.createdAt).toISOString().slice(0, 10)) : '',
       status: log.status || 'failed',
-      result: `${bn(log.successCount || 0)}টি সফল, ${bn(log.failedCount || 0)}টি ব্যর্থ`,
+      result: log.status === 'success'
+        ? `${bn(log.successCount || 0)}টি gateway-তে গৃহীত • delivery নিশ্চিত নয়`
+        : `${bn(log.successCount || 0)}টি সফল, ${bn(log.failedCount || 0)}টি ব্যর্থ`,
       successCount: log.successCount || 0,
       failedCount: log.failedCount || 0
     }));
@@ -8287,10 +8289,20 @@ async function sendSmsMessage() {
   const button = document.getElementById('smsSendBtn');
   if (button) { button.disabled = true; button.textContent = '⏳ পাঠানো হচ্ছে...'; }
   try {
+    const requestId = (window.crypto && window.crypto.randomUUID)
+      ? window.crypto.randomUUID()
+      : 'sms-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+    // SMS POST-এ retry বন্ধ: timeout হলেও provider request গ্রহণ করে থাকতে পারে,
+    // তাই automatic retry করলে একই SMS ও balance দুবার যেতে পারে।
     const res = await NQAuth.authFetch('/api/sms/send', {
       method: 'POST',
-      body: JSON.stringify({ numbers: parsed.valid, message: msgVal, scheduledDateTime })
-    });
+      body: JSON.stringify({
+        numbers: parsed.valid,
+        message: msgVal,
+        scheduledDateTime,
+        requestId
+      })
+    }, { retries: 0, timeout: 90000 });
     const data = await res.json().catch(() => ({}));
     if (!res.ok || !data.ok) {
       const invalid = data.invalidNumbers && data.invalidNumbers.length ? ' ভুল নাম্বার: ' + data.invalidNumbers.join(', ') : '';
@@ -8302,7 +8314,7 @@ async function sendSmsMessage() {
       : [dept, msgGroupLabel(group)].filter(Boolean).join(' / ');
     const status = data.status || (data.failed ? 'partial' : 'success');
     const result = status === 'success'
-      ? `${bn(data.sent || parsed.valid.length)}টি সফল`
+      ? `${bn(data.sent || parsed.valid.length)}টি gateway-তে গৃহীত • delivery নিশ্চিত নয়`
       : `${bn(data.sent || 0)}টি সফল, ${bn(data.failed || 0)}টি ব্যর্থ`;
     sentMessages.push({
       id: 'sms-' + Date.now() + '-' + sentMessages.length,
@@ -8323,7 +8335,9 @@ async function sendSmsMessage() {
     updateMsgMobileCount(); updateMsgTextCount();
     renderMsgSendTable(); renderMsgDashboard();
     if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
-    showToast(status === 'success' ? 'SMS সফলভাবে পাঠানো হয়েছে!' : 'কিছু SMS পাঠানো হয়েছে, কিছু ব্যর্থ হয়েছে');
+    showToast(status === 'success'
+      ? 'SMS gateway-তে গৃহীত হয়েছে; মোবাইলে পৌঁছানোর রিপোর্ট নিশ্চিত নয়'
+      : 'কিছু SMS পাঠানো হয়েছে, কিছু ব্যর্থ হয়েছে');
     loadSmsBalance();
   } catch (e) {
     showErrorPopup('SMS পাঠানো যায়নি', e.message || 'সার্ভারের সাথে সংযোগ করা যায়নি');

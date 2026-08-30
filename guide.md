@@ -61,8 +61,28 @@ The teacher panel sends admission, fee collection, inventory changes, homework, 
 - SMS-এর জন্য: `SMS_API_KEY`, `SMS_SENDER_ID`
 
 Root Directory `backend` না দিলে Render `server.js` খুঁজে পাবে না এবং কোনো port open হবে না।
+এই কারণেই একই ZIP-এর project root-এ `package.json` ও `render.yaml`-ও রাখা হয়েছে। Existing
+Render service-এর Root Directory যদি পরিবর্তন করা না যায়, project root-এ থেকে Build Command
+`npm install` এবং Start Command `npm start` ব্যবহার করলেও backend চালু হবে।
 `MONGODB_URI` না থাকলেও server এখন Render-এর `PORT`-এ bind করবে, তবে database/auth API
 চালাতে অবশ্যই Render Environment-এ সেটি যোগ করতে হবে।
+
+## SMS না পৌঁছানো ও balance কাটার সুরক্ষা
+
+- Automass-এর `status: 0` মানে gateway request গ্রহণ করেছে; এই API-তে handset delivery
+  report নেই। তাই panel এখন “gateway-তে গৃহীত, delivery নিশ্চিত নয়” দেখায়—মিথ্যা delivered
+  success দেখায় না।
+- বাংলা ৭০ অক্ষর বা ASCII ১৬০ অক্ষরের বেশি হলে request-এ `type: "long"` পাঠানো হয় এবং
+  বাংলা হলে `smsformat: 8` যোগ হয়।
+- মোবাইল নাম্বার `017XXXXXXXX` standard ফরম্যাটে পাঠানো হয়; বাংলা অঙ্ক ও `8801...`
+  ইনপুটও normalize হয়।
+- একই request-এর browser retry/double-send আটকাতে `requestId` ও server-side log check যোগ
+  করা হয়েছে। SMS POST-এ automatic retry বন্ধ করা হয়েছে, কারণ timeout-এর পরে provider
+  request গ্রহণ করে থাকলে retry করলে balance দুবার কাটতে পারে।
+- নতুন test না করে আগে balance, sender ID approval, DND/route এবং gateway portal-এর
+  delivery report যাচাই করুন। Provider যদি `status: 0` দিয়ে charge করে কিন্তু delivery না
+  দেয়, refund/route correction Automass account support-এর মাধ্যমেই করতে হবে; application
+  code provider-এর charge ফেরত দিতে পারে না।
 
 ## ৪) সর্বশেষ আপডেট (১৯ আগস্ট ২০২৬)
 - **বাড়ির কাজ (আবাসিক)** — "বালিকা শাখা" নির্বাচন করলে আগে কোনো শিক্ষার্থী আসত না

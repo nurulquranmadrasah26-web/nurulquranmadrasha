@@ -236,8 +236,9 @@
     },
 
     // টোকেনসহ fetch — 401 হলে লগআউট
-    authFetch: function (path, options) {
+    authFetch: function (path, options, fetchOpts) {
       options = options || {};
+      fetchOpts = fetchOpts || {};
       options.headers = options.headers || {};
       options.headers['Authorization'] = 'Bearer ' + getToken();
       if (!(options.body instanceof FormData) && options.body && !options.headers['Content-Type']) {
@@ -246,7 +247,10 @@
       var url = /^https?:/.test(path) ? path : (API + path);
       // সার্ভার ঘুমিয়ে থাকলে (Render cold start) টাইমআউট/রিট্রাইসহ কল
       var call = (window.NQ_API && window.NQ_API.fetch && !/^https?:/.test(path))
-        ? window.NQ_API.fetch(path, options, { retries: 2, timeout: 60000 })
+        ? window.NQ_API.fetch(path, options, {
+            retries: fetchOpts.retries != null ? fetchOpts.retries : 2,
+            timeout: fetchOpts.timeout || 60000
+          })
         : fetch(url, options);
       return call.then(function (res) {
         if (res.status === 401) { NQAuth.logout(); throw new Error('unauthorized'); }

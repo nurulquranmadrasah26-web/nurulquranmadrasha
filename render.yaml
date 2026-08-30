@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: nurulquranmadrasha-backend
+    runtime: node
+    rootDir: backend
+    buildCommand: npm ci
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: SEED_SUPERADMIN_NAME
+        sync: false
+      - key: SEED_SUPERADMIN_UID
+        sync: false
+      - key: SEED_SUPERADMIN_PASSWORD
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: SMS_API_KEY
+        sync: false
+      - key: SMS_SENDER_ID
+        sync: false
