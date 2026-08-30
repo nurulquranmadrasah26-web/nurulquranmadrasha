@@ -8057,6 +8057,16 @@ function renderMsgSendPage() {
   renderMsgSendTable();
 }
 
+function msgGatewayIdSummary(results) {
+  const ids = (Array.isArray(results) ? results : [])
+    .map(row => row && row.id != null ? String(row.id) : '')
+    .filter(Boolean);
+  if (!ids.length) return '';
+  const shown = ids.slice(0, 12);
+  const more = ids.length > shown.length ? ` + ${bn(ids.length - shown.length)}টি` : '';
+  return ` • Gateway ID: ${shown.join(', ')}${more}`;
+}
+
 function renderMsgSendTable() {
   const body = document.getElementById('msgSendTableBody');
   if (!body) return;
@@ -8272,10 +8282,11 @@ async function loadSmsLogs() {
       date: log.createdAt ? bnDate(new Date(log.createdAt).toISOString().slice(0, 10)) : '',
       status: log.status || 'failed',
       result: log.status === 'success'
-        ? `${bn(log.successCount || 0)}টি gateway-তে গৃহীত • delivery নিশ্চিত নয়`
-        : `${bn(log.successCount || 0)}টি সফল, ${bn(log.failedCount || 0)}টি ব্যর্থ${log.gatewayMessage ? ' • ' + log.gatewayMessage : ''}`,
+        ? `${bn(log.successCount || 0)}টি gateway-তে গৃহীত • delivery নিশ্চিত নয়${msgGatewayIdSummary(log.results)}`
+        : `${bn(log.successCount || 0)}টি সফল, ${bn(log.failedCount || 0)}টি ব্যর্থ${log.gatewayMessage ? ' • ' + log.gatewayMessage : ''}${msgGatewayIdSummary(log.results)}`,
       successCount: log.successCount || 0,
-      failedCount: log.failedCount || 0
+      failedCount: log.failedCount || 0,
+      gatewayIds: (log.results || []).map(row => row && row.id).filter(id => id != null)
     }));
     renderMsgSendTable();
     renderMsgListPage();
@@ -8346,8 +8357,8 @@ async function sendSmsMessage() {
       : [dept, msgGroupLabel(group)].filter(Boolean).join(' / ');
     const status = data.status || (data.failed ? 'partial' : 'success');
     const result = status === 'success'
-      ? `${bn(data.sent || parsed.valid.length)}টি gateway-তে গৃহীত • delivery নিশ্চিত নয়`
-      : `${bn(data.sent || 0)}টি সফল, ${bn(data.failed || 0)}টি ব্যর্থ`;
+      ? `${bn(data.sent || parsed.valid.length)}টি gateway-তে গৃহীত • delivery নিশ্চিত নয়${msgGatewayIdSummary(data.results)}`
+      : `${bn(data.sent || 0)}টি সফল, ${bn(data.failed || 0)}টি ব্যর্থ${msgGatewayIdSummary(data.results)}`;
     sentMessages.push({
       id: 'sms-' + Date.now() + '-' + sentMessages.length,
       target: target || parsed.valid.join(', '),
@@ -8357,6 +8368,7 @@ async function sendSmsMessage() {
       result,
       successCount: data.sent || 0,
       failedCount: data.failed || 0,
+      gatewayIds: (data.results || []).map(row => row && row.id).filter(id => id != null),
     });
     document.getElementById('msgMobile').value = '';
     document.getElementById('msgText2').value = '';
