@@ -1418,7 +1418,7 @@ app.post("/api/sms/send", auth, requirePerm("message"), async (req, res) => {
       // endpoint নেই, তাই এটিকে delivered বলে দাবি করা যাবে না।
       deliveryConfirmed: false,
       notice: successCount
-        ? "Gateway SMS গ্রহণ করেছে; handset delivery report এই API থেকে নিশ্চিত করা যায় না।"
+        ? "Gateway SMS গ্রহণ করেছে; প্রকৃত Delivered/Failed status Automass SMS History বা Delivery Report-এ Gateway ID দিয়ে যাচাই করুন।"
         : undefined,
     };
     const failureMessage = firstFailure

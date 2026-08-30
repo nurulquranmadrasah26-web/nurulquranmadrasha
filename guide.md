@@ -72,8 +72,8 @@ Render service-এর Root Directory যদি পরিবর্তন কর�
 ## SMS না পৌঁছানো ও balance কাটার সুরক্ষা
 
 - Automass-এর `status: 0` মানে gateway request গ্রহণ করেছে; এই API-তে handset delivery
-  report নেই। তাই panel এখন “gateway-তে গৃহীত, delivery নিশ্চিত নয়” দেখায়—মিথ্যা delivered
-  success দেখায় না।
+  report নেই। তাই panel এখন gateway acceptance দেখিয়ে Automass SMS History/Delivery Report-এ
+  প্রকৃত delivery status যাচাই করতে বলে—মিথ্যা delivered success দেখায় না।
 - বাংলা ৭০ অক্ষর বা ASCII ১৬০ অক্ষরের বেশি হলে request-এ `type: "long"` পাঠানো হয় এবং
   বাংলা হলে `smsformat: 8` যোগ হয়।
 - মোবাইল নাম্বারের বাংলা অঙ্ক, `017XXXXXXXX` এবং `8801...` ইনপুট normalize হয়;
@@ -85,6 +85,9 @@ Render service-এর Root Directory যদি পরিবর্তন কর�
   provider-এর message log/panel-এ দেখাবে; আগে এই অবস্থাকে ভুলভাবে শুধু `3300` বলা হতো।
 - Gateway যে `id` ফেরত দেয়, সেটি এখন ম্যাসেজ তালিকায় দেখা যাবে; Automass-এর Delivery Log
   Report বা support-এ অনুসন্ধানের সময় এই ID ব্যবহার করুন।
+- Admin Panel-এর send API-তে `status: 0` পাওয়া মানে gateway acceptance; প্রকৃত
+  `Delivered/Failed` status Automass SMS History/Delivery Report থেকে যাচাই করতে হবে।
+  বর্তমান প্রকাশিত API documentation-এ DLR fetch endpoint বা webhook schema দেওয়া নেই।
 - নতুন test না করে আগে balance, sender ID approval, DND/route এবং gateway portal-এর
   delivery report যাচাই করুন। Provider যদি `status: 0` দিয়ে charge করে কিন্তু delivery না
   দেয়, refund/route correction Automass account support-এর মাধ্যমেই করতে হবে; application

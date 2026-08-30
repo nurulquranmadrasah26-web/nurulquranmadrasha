@@ -3810,6 +3810,10 @@
         <button class="add-btn" style="background:#1565c0;padding:6px 10px;" onclick="loadSmsBalance()">রিফ্রেশ</button>
       </span>
     </div>
+    <div style="background:#fff8e1;border-left:4px solid #f9a825;padding:9px 14px;margin-bottom:14px;color:#6d4c00;font-size:13px;">
+      Send API শুধু gateway acceptance ও Gateway ID দেয়। প্রকৃত Delivered/Failed status Automass-এর
+      <strong>SMS History</strong> বা Delivery Report-এ Gateway ID দিয়ে যাচাই করতে হবে।
+    </div>
     <div class="two-col">
       <div>
         <div class="list-title-bar">
@@ -8282,7 +8286,7 @@ async function loadSmsLogs() {
       date: log.createdAt ? bnDate(new Date(log.createdAt).toISOString().slice(0, 10)) : '',
       status: log.status || 'failed',
       result: log.status === 'success'
-        ? `${bn(log.successCount || 0)}টি gateway-তে গৃহীত • delivery নিশ্চিত নয়${msgGatewayIdSummary(log.results)}`
+        ? `${bn(log.successCount || 0)}টি gateway গ্রহণ করেছে • Automass SMS History-তে delivery যাচাই করুন${msgGatewayIdSummary(log.results)}`
         : `${bn(log.successCount || 0)}টি সফল, ${bn(log.failedCount || 0)}টি ব্যর্থ${log.gatewayMessage ? ' • ' + log.gatewayMessage : ''}${msgGatewayIdSummary(log.results)}`,
       successCount: log.successCount || 0,
       failedCount: log.failedCount || 0,
@@ -8357,7 +8361,7 @@ async function sendSmsMessage() {
       : [dept, msgGroupLabel(group)].filter(Boolean).join(' / ');
     const status = data.status || (data.failed ? 'partial' : 'success');
     const result = status === 'success'
-      ? `${bn(data.sent || parsed.valid.length)}টি gateway-তে গৃহীত • delivery নিশ্চিত নয়${msgGatewayIdSummary(data.results)}`
+      ? `${bn(data.sent || parsed.valid.length)}টি gateway গ্রহণ করেছে • Automass SMS History-তে delivery যাচাই করুন${msgGatewayIdSummary(data.results)}`
       : `${bn(data.sent || 0)}টি সফল, ${bn(data.failed || 0)}টি ব্যর্থ${msgGatewayIdSummary(data.results)}`;
     sentMessages.push({
       id: 'sms-' + Date.now() + '-' + sentMessages.length,
@@ -8549,8 +8553,8 @@ async function sendMessage() {
     const data = await nqSendSmsRequest(numbers, text);
     const status = data.status || (data.failed ? 'partial' : 'success');
     const result = status === 'success'
-      ? `${bn(data.sent || numbers.length)}টি gateway-তে গৃহীত • delivery নিশ্চিত নয়`
-      : `${bn(data.sent || 0)}টি সফল, ${bn(data.failed || 0)}টি ব্যর্থ`;
+      ? `${bn(data.sent || numbers.length)}টি gateway গ্রহণ করেছে • Automass SMS History-তে delivery যাচাই করুন${msgGatewayIdSummary(data.results)}`
+      : `${bn(data.sent || 0)}টি সফল, ${bn(data.failed || 0)}টি ব্যর্থ${msgGatewayIdSummary(data.results)}`;
     const id = messages.length ? messages[messages.length - 1].id + 1 : 1;
     messages.push({
       id, text, to: toLabel,
@@ -8565,7 +8569,8 @@ async function sendMessage() {
       status,
       result,
       successCount: data.sent || 0,
-      failedCount: data.failed || 0
+      failedCount: data.failed || 0,
+      gatewayIds: (data.results || []).map(row => row && row.id).filter(id => id != null)
     });
     document.getElementById('msgText').value = '';
     renderMessages(); renderMsgSendTable(); renderMsgListPage(); renderMsgDashboard();
