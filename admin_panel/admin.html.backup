@@ -1609,7 +1609,6 @@
       </div>
       <div class="nav-drop-group">
         <div class="nav-drop-group-title">হিসাব</div>
-        <button class="nav-drop-item" onclick="showPage('completeLedger')">সম্পূর্ণ হিসাব</button>
         <button class="nav-drop-item" onclick="showPage('accounts')">আদায়কারীর হিসাব</button>
         <button class="nav-drop-item" onclick="showPage('cashbook')">ক্যাশ বুক</button>
         <button class="nav-drop-item" onclick="showPage('finance')">লাভ/ক্ষতি</button>
@@ -2202,35 +2201,6 @@
   </div>
 
   <!-- ▌ ক্যাশ বুক ▌ -->
-  <!-- ▌ সম্পূর্ণ হিসাব ▌ -->
-  <div class="page" id="page-completeLedger">
-    <div class="list-title-bar">
-      <div class="section-title" style="margin:0;">সম্পূর্ণ হিসাব</div>
-      <div style="display:flex; gap:8px;">
-        <button class="add-btn" onclick="window.print()">🖶 প্রিন্ট</button>
-        <button class="add-btn" style="background:#43a047;" onclick="exportSectionAsPDF('#page-completeLedger', 'সম্পূর্ণ হিসাব')">পিডিএফ</button>
-      </div>
-    </div>
-    <div class="ledger-filterbar">
-      <input type="date" id="clFrom" onchange="renderCompleteLedger()" />
-      <input type="date" id="clTo" onchange="renderCompleteLedger()" />
-      <button class="lf-btn lf-filter" onclick="renderCompleteLedger()" title="ফিল্টার">▼</button>
-      <button class="lf-btn lf-reset" onclick="document.getElementById('clFrom').value='';document.getElementById('clTo').value='';renderCompleteLedger();" title="রিসেট">↺</button>
-    </div>
-    <div class="ledger-cards" style="grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));">
-      <div class="ledger-card income">শিক্ষার্থী ফি:<span class="lc-val" id="clFeeTotal">৳ ০/-</span></div>
-      <div class="ledger-card income">ডোনেশন:<span class="lc-val" id="clDonationTotal">৳ ০/-</span></div>
-      <div class="ledger-card income">অন্যান্য আয়:<span class="lc-val" id="clOtherIncome">৳ ০/-</span></div>
-      <div class="ledger-card income">মোট আয়:<span class="lc-val" id="clTotalIncome">৳ ০/-</span></div>
-      <div class="ledger-card expense">মোট ব্যয়:<span class="lc-val" id="clTotalExpense">৳ ০/-</span></div>
-      <div class="ledger-card balance">নেট ব্যালেন্স:<span class="lc-val" id="clNetBalance">৳ ০/-</span></div>
-    </div>
-    <div class="section-title" style="margin-top:20px;font-size:14px;">আয়ের উৎস</div>
-    <div id="clIncomeBreakdown" style="background:#fff;border-radius:8px;overflow:hidden;margin-bottom:20px;"></div>
-    <div class="section-title" style="font-size:14px;">ব্যয়ের তালিকা</div>
-    <div id="clExpenseBreakdown" style="background:#fff;border-radius:8px;overflow:hidden;"></div>
-  </div>
-
   <div class="page" id="page-cashbook">
     <div class="list-title-bar">
       <div class="section-title" style="margin:0;">ক্যাশ বুক</div>
@@ -2431,7 +2401,7 @@
 
           <div class="adm-field">
             <label>বয়স</label>
-            <input id="admAge" readonly value="০ বছর ০ মাস ০ দিন" />
+            <input id="admAge" readonly value="০ বছর" />
           </div>
           <div class="adm-field">
             <label>লিঙ্গ নির্বাচন করুন <span class="req">*</span></label>
@@ -4553,7 +4523,7 @@
         <div class="adm-grid">
           <div class="adm-field"><label>শিক্ষার্থীর নাম</label><input id="stuEditName" placeholder="শিক্ষার্থীর পুরো নাম" /></div>
           <div class="adm-field"><label>জন্ম তারিখ</label><input type="date" id="stuEditDob" oninput="calcStuEditAge()" /></div>
-          <div class="adm-field"><label>বয়স</label><input id="stuEditAge" readonly value="০ বছর ০ মাস ০ দিন" /></div>
+          <div class="adm-field"><label>বয়স</label><input id="stuEditAge" readonly value="০ বছর" /></div>
 
           <div class="adm-field">
             <label>লিঙ্গ নির্বাচন করুন</label>
@@ -5781,11 +5751,6 @@ students.forEach(s => attendance[s.id] = 'present');
    শিক্ষার্থী প্যানেলের "উপস্থিতির ইতিহাস" এই ডেটা থেকেই মাস ভিত্তিক দেখানো হয়। */
 let attendanceHistory = {};
 
-/* শিক্ষার্থীর হাজিরা সর্বশেষ যে তারিখে সংরক্ষণ করা হয়েছিল (YYYY-MM-DD)।
-   একই দিনে একাধিকবার হাজিরা নেওয়া ঠেকাতে ব্যবহৃত হয়। শুধুমাত্র সুপার এডমিন
-   এই বাধা এড়িয়ে দিনে যতবার ইচ্ছা হাজিরা নিতে পারবেন। */
-let hajiraLastTakenDate = null;
-
 /* আজকের তারিখ ISO (YYYY-MM-DD) */
 function nqTodayISO() {
   const d = new Date();
@@ -5907,37 +5872,21 @@ function isDobTooCloseToToday(dobStr) {
   return diffDays <= 30;
 }
 
-/* জন্ম তারিখ থেকে বছর-মাস-দিন হিসেবে বয়স বের করে (যেমন: ৮ বছর ৩ মাস ১২ দিন) */
-function nqCalcAgeYMD(dobStr, refDate) {
-  const dob = new Date(dobStr);
-  const now = refDate || new Date();
-  let years = now.getFullYear() - dob.getFullYear();
-  let months = now.getMonth() - dob.getMonth();
-  let days = now.getDate() - dob.getDate();
-  if (days < 0) {
-    months--;
-    const prevMonthLastDay = new Date(now.getFullYear(), now.getMonth(), 0).getDate();
-    days += prevMonthLastDay;
-  }
-  if (months < 0) { years--; months += 12; }
-  if (years < 0) { years = 0; months = 0; days = 0; }
-  return { years, months, days };
-}
-function nqFormatAgeYMD(dobStr, refDate) {
-  const { years, months, days } = nqCalcAgeYMD(dobStr, refDate);
-  return `${bn(years)} বছর ${bn(months)} মাস ${bn(days)} দিন`;
-}
-
 function calcAdmAge() {
   const dobStr = document.getElementById('admDob').value;
-  if (!dobStr) { document.getElementById('admAge').value = '০ বছর ০ মাস ০ দিন'; return; }
+  if (!dobStr) { document.getElementById('admAge').value = '০ বছর'; return; }
   if (isDobTooCloseToToday(dobStr)) {
     showErrorPopup('সঠিক জন্ম তারিখ নির্বাচন করুন। আজকের বা আশপাশের তারিখ জন্ম তারিখ হিসেবে গ্রহণযোগ্য নয়।');
     document.getElementById('admDob').value = '';
-    document.getElementById('admAge').value = '০ বছর ০ মাস ০ দিন';
+    document.getElementById('admAge').value = '০ বছর';
     return;
   }
-  document.getElementById('admAge').value = nqFormatAgeYMD(dobStr);
+  const dob = new Date(dobStr), now = new Date();
+  let years = now.getFullYear() - dob.getFullYear();
+  const m = now.getMonth() - dob.getMonth();
+  if (m < 0 || (m === 0 && now.getDate() < dob.getDate())) years--;
+  if (years < 0) years = 0;
+  document.getElementById('admAge').value = bn(years) + ' বছর';
 }
 
 function previewAdmPhoto(e) {
@@ -6974,8 +6923,9 @@ function editStudent(id) {
 }
 function calcStuEditAge() {
   const dobStr = document.getElementById('stuEditDob').value;
-  if (!dobStr) { document.getElementById('stuEditAge').value = '০ বছর ০ মাস ০ দিন'; return; }
-  document.getElementById('stuEditAge').value = nqFormatAgeYMD(dobStr);
+  if (!dobStr) { document.getElementById('stuEditAge').value = '০ বছর'; return; }
+  const diff = new Date().getFullYear() - new Date(dobStr).getFullYear();
+  document.getElementById('stuEditAge').value = bn(Math.max(diff, 0)) + ' বছর';
 }
 function previewStuEditPhoto(event) {
   const file = event.target.files[0];
@@ -8375,8 +8325,6 @@ function addPayment() {
   closeModal('payModal');
   ['pStudent','pAmount','pRemark'].forEach(f => document.getElementById(f).value='');
   renderPayments(); renderRecentPayments();
-  if (typeof refreshFinanceViews === 'function') refreshFinanceViews();
-  if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
   showToast('ফি গ্রহণ সংরক্ষিত হয়েছে!');
 }
 
@@ -8495,39 +8443,20 @@ function renderHajira() {
         </div>
       </td>
     </tr>`).join('');
-  updateHajiraSummary(rows);
+  updateHajiraSummary();
 }
 
-/* বর্তমানে ফিল্টার করা (নির্বাচিত শ্রেণী/বিভাগ) তালিকার উপর ভিত্তি করে সারাংশ দেখায়,
-   সকল শ্রেণীর মোট নয়। rows না দিলে বর্তমান ফিল্টার অনুযায়ী নতুন করে বের করে নেয়। */
-function updateHajiraSummary(rows) {
-  if (!rows) {
-    const clsF  = document.getElementById('hazFilterClass')?.value || '';
-    const deptF = document.getElementById('hazFilterDept')?.value || '';
-    rows = students.filter(s => (!clsF || s.attCls === clsF) && (!deptF || s.attDept === deptF));
-  }
-  const p = rows.filter(s => (attendance[s.id] || 'present') === 'present').length;
-  const a = rows.filter(s => attendance[s.id] === 'absent').length;
-  const l = rows.filter(s => attendance[s.id] === 'leave').length;
+function updateHajiraSummary() {
+  const p = Object.values(attendance).filter(v => v === 'present').length;
+  const a = Object.values(attendance).filter(v => v === 'absent').length;
+  const l = Object.values(attendance).filter(v => v === 'leave').length;
   const el = document.getElementById('hazSummary');
   if (el) el.textContent = `মোট : ${bn(p)} উপস্থিত – ${bn(a)} অনুপস্থিত – ${bn(l)} ছুটিতে`;
 }
 
-/* একই দিনে একাধিকবার হাজিরা সংরক্ষণ ঠেকানোর জন্য চেক করে — সুপার এডমিন ছাড়া
-   বাকি সবাই দিনে একবারই হাজিরা নিতে পারবেন। */
 function saveHajira() {
-  const today = nqTodayISO();
-  if (hajiraLastTakenDate === today && !isSuperAdminUser()) {
-    showErrorPopup(
-      'আজকের হাজিরা ইতিমধ্যে নেওয়া হয়ে গেছে',
-      'কারণ: একই দিনে একাধিকবার হাজিরা নেওয়া যায় না। শুধুমাত্র সুপার এডমিন দিনে একাধিকবার হাজিরা নিতে পারবেন।'
-    );
-    return;
-  }
   updateHajiraSummary();
   nqRecordAttendanceHistory();
-  hajiraLastTakenDate = today;
-  if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
   showToast('হাজিরা সফলভাবে সংরক্ষিত হয়েছে!');
 }
 
@@ -9148,7 +9077,6 @@ function saveAdai() {
   const remainingDue = Math.max(netDue - paid, 0);
 
   renderPayments(); renderRecentPayments();
-  if (typeof refreshFinanceViews === 'function') refreshFinanceViews();
   if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
   showToast('ফি আদায় সফলভাবে সংরক্ষিত হয়েছে!');
   printReceipt({
@@ -12289,11 +12217,10 @@ function deleteFinanceTx(id) {
   showToast('মুছে ফেলা হয়েছে।');
 }
 
-/* সব হিসাব-সম্পর্কিত পেজ একসাথে রিফ্রেশ করে (যেকোনো আয়/ব্যয়/ডোনেশন/পেমেন্ট পরিবর্তনের পর কল হয়) */
+/* সব হিসাব-সম্পর্কিত পেজ একসাথে রিফ্রেশ করে (যেকোনো আয়/ব্যয়/ডোনেশন পরিবর্তনের পর কল হয়) */
 function refreshFinanceViews() {
-  renderStudentFinance(); renderExpenseList(); renderCashbookPage(); renderCompleteLedger();
+  renderStudentFinance(); renderExpenseList(); renderCashbookPage();
   renderAccountsPage(); renderFinance(); renderIncomePage(); renderExpensePage();
-  renderDonationGroupList(); renderDonationCollectList();
 }
 
 /* ─── আয় পেজ ─── */
@@ -12398,34 +12325,25 @@ function renderFinance() {
   const to   = document.getElementById('plTo')?.value || '';
   const inRange = (d) => (!from || d >= from) && (!to || d <= to);
 
-  // শিক্ষার্থীর ফি/ভর্তি বাবদ আদায় (পেমেন্ট রেকর্ড থেকে)
-  const payments_all = (payments || []);
-  const feeTotal = payments_all.reduce((s, p) => s + (p.amount || 0), 0);
-  const feeRange = payments_all.filter(p => inRange(p.date || todayISO())).reduce((s, p) => s + (p.amount || 0), 0);
+  // শিক্ষার্থীর ফি/ভর্তি বাবদ আদায় (পেমেন্ট রেকর্ড থেকে) — সর্বমোট, কারণ পুরনো এন্ট্রিগুলোর তারিখ ফরম্যাট আলাদা
+  const feeTotal = (payments || []).reduce((s, p) => s + (p.amount || 0), 0);
 
-  // ম্যানুয়াল আয়/ব্যয়
   const incomeTx = financeTx.filter(t => t.type === 'income');
   const expenseTx = financeTx.filter(t => t.type === 'expense');
   const incomeTxRange = incomeTx.filter(t => inRange(t.date));
   const expenseTxRange = expenseTx.filter(t => inRange(t.date));
 
-  // ডোনেশন
-  const donationTx_all = (donationTx || []);
-  const donationTotal = donationTx_all.reduce((s, d) => s + (d.amount || 0), 0);
-  const donationRange = donationTx_all.filter(d => inRange(d.date || todayISO())).reduce((s, d) => s + (d.amount || 0), 0);
+  const donationTotal = (donationTx || []).reduce((s, d) => s + (d.amount || 0), 0);
+  const donationRange = (donationTx || []).filter(d => inRange(d.date)).reduce((s, d) => s + (d.amount || 0), 0);
 
-  // মোট হিসাব
   const incomeTxTotal = incomeTx.reduce((s, t) => s + t.amount, 0);
   const incomeTxRangeTotal = incomeTxRange.reduce((s, t) => s + t.amount, 0);
   const expenseTxTotal = expenseTx.reduce((s, t) => s + t.amount, 0);
   const expenseTxRangeTotal = expenseTxRange.reduce((s, t) => s + t.amount, 0);
 
-  // মোট আয় = ফি + ডোনেশন + ম্যানুয়াল আয়
-  const totalIncome = feeTotal + donationTotal + incomeTxTotal;
+  const totalIncome = feeTotal + incomeTxTotal + donationTotal;
   const totalExpense = expenseTxTotal;
-  
-  // নির্বাচিত পিরিয়ডের আয়/ব্যয়
-  const rangeIncome = (from || to) ? (feeRange + donationRange + incomeTxRangeTotal) : totalIncome;
+  const rangeIncome = (from || to) ? (incomeTxRangeTotal + donationRange) : totalIncome;
   const rangeExpense = expenseTxRangeTotal;
 
   const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
@@ -12441,7 +12359,7 @@ function renderFinance() {
   incWrap.innerHTML =
     row('শিক্ষার্থী ফি/ভর্তি (সর্বমোট)', feeTotal) +
     row('ডোনেশন (সর্বমোট)', donationTotal) +
-    row('অন্যান্য আয় (ম্যানুয়াল এন্ট্রি)', incomeTxTotal) +
+    row('অন্যান্য আয় (ম্যানুয়াল এন্ট্রি সর্বমোট)', incomeTxTotal) +
     `<div style="display:flex;justify-content:space-between;padding:10px 14px;font-weight:700;background:#e3f2fd;">সর্বমোট আয় <span>${bnTaka(totalIncome)}</span></div>`;
 
   expWrap.innerHTML = (expenseTx.length
@@ -12521,129 +12439,15 @@ function renderExpenseList() {
   if (el) el.textContent = bnTaka(total);
 }
 
-/* সম্পূর্ণ হিসাব page — সকল আয়/ব্যয়ের সারসংক্ষেপ */
-function renderCompleteLedger() {
-  const from = document.getElementById('clFrom')?.value || '';
-  const to   = document.getElementById('clTo')?.value || '';
-  const inRange = (d) => (!from || d >= from) && (!to || d <= to);
-
-  // সকল আয় উৎস
-  const payments_all = (payments || []);
-  const feeTotal = payments_all
-    .filter(p => inRange(p.dateISO || p.date || todayISO()))
-    .reduce((s, p) => s + (p.amount || 0), 0);
-
-  const donationTx_all = (donationTx || []);
-  const donationTotal = donationTx_all
-    .filter(d => inRange(d.date || todayISO()))
-    .reduce((s, d) => s + (d.amount || 0), 0);
-
-  const incomeTx = (financeTx || []).filter(t => t.type === 'income');
-  const otherIncome = incomeTx
-    .filter(t => inRange(t.date || todayISO()))
-    .reduce((s, t) => s + (t.amount || 0), 0);
-
-  const expenseTx = (financeTx || []).filter(t => t.type === 'expense');
-  const totalExpense = expenseTx
-    .filter(t => inRange(t.date || todayISO()))
-    .reduce((s, t) => s + (t.amount || 0), 0);
-
-  // মোট হিসাব
-  const totalIncome = feeTotal + donationTotal + otherIncome;
-  const netBalance = totalIncome - totalExpense;
-
-  // আপডেট কার্ড
-  const setTxt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
-  setTxt('clFeeTotal', bnTaka(feeTotal));
-  setTxt('clDonationTotal', bnTaka(donationTotal));
-  setTxt('clOtherIncome', bnTaka(otherIncome));
-  setTxt('clTotalIncome', bnTaka(totalIncome));
-  setTxt('clTotalExpense', bnTaka(totalExpense));
-  setTxt('clNetBalance', bnTaka(netBalance));
-
-  // আয়ের উৎস বিস্তারিত
-  const row = (label, val) => `<div style="display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid #eee;">${label} <span style="font-weight:600;">${bnTaka(val)}</span></div>`;
-  const incBreak = document.getElementById('clIncomeBreakdown');
-  if (incBreak) {
-    incBreak.innerHTML = 
-      row('শিক্ষার্থী ফি', feeTotal) +
-      row('ডোনেশন', donationTotal) +
-      row('অন্যান্য আয়', otherIncome) +
-      `<div style="display:flex;justify-content:space-between;padding:10px 14px;font-weight:700;background:#c8e6c9;color:#1b5e20;">মোট আয় <span>${bnTaka(totalIncome)}</span></div>`;
-  }
-
-  // ব্যয় বিস্তারিত
-  const expBreak = document.getElementById('clExpenseBreakdown');
-  if (expBreak) {
-    if (expenseTx.length > 0) {
-      const expRows = expenseTx
-        .filter(t => inRange(t.date || todayISO()))
-        .map(t => row(t.desc + (t.name && t.name !== '-' ? ' (' + t.name + ')' : ''), t.amount));
-      expBreak.innerHTML = expRows.join('') +
-        `<div style="display:flex;justify-content:space-between;padding:10px 14px;font-weight:700;background:#ffcdd2;color:#b71c1c;">মোট ব্যয় <span>${bnTaka(totalExpense)}</span></div>`;
-    } else {
-      expBreak.innerHTML = `<div style="padding:14px;color:#888;font-style:italic;">কোনো ব্যয় পাওয়া যায়নি</div>`;
-    }
-  }
-}
-
-/* ক্যাশ বুক page — running balance over ALL আয়/ব্যয় এন্ট্রি (শিক্ষার্থী পেমেন্ট + ডোনেশন + ম্যানুয়াল আয়/ব্যয়) */
+/* ক্যাশ বুক page — running balance over all আয়/ব্যয় এন্ট্রি */
 function renderCashbookPage() {
   const body = document.getElementById('cbTableBody');
   if (!body) return;
   const from = document.getElementById('cbFrom')?.value || '';
   const to   = document.getElementById('cbTo')?.value || '';
-  
-  // সব লেনদেন একত্রিত করুন (শিক্ষার্থী পেমেন্ট, ডোনেশন, ম্যানুয়াল আয়/ব্যয়)
-  let allTx = [];
-  
-  // শিক্ষার্থীর পেমেন্ট থেকে আয় যোগ করুন
-  (payments || []).forEach(p => {
-    allTx.push({
-      id: 'pmt_' + p.id,
-      date: p.date || todayISO(),
-      desc: 'শিক্ষার্থী ফি - ' + (p.studentName || ''),
-      name: p.studentName || '-',
-      type: 'income',
-      amount: p.amount || 0,
-      by: p.collectorName || 'সিস্টেম',
-      source: 'payment'
-    });
-  });
-  
-  // ডোনেশন থেকে আয় যোগ করুন
-  (donationTx || []).forEach(d => {
-    const group = (donationGroups || []).find(g => g.id === d.groupId);
-    allTx.push({
-      id: 'don_' + d.id,
-      date: d.date || todayISO(),
-      desc: 'ডোনেশন - ' + (group ? group.name : 'অন্যান্য'),
-      name: d.donor || '-',
-      type: 'income',
-      amount: d.amount || 0,
-      by: 'সিস্টেম',
-      source: 'donation'
-    });
-  });
-  
-  // ম্যানুয়াল আয়/ব্যয় যোগ করুন
-  (financeTx || []).forEach(f => {
-    allTx.push({
-      id: 'fin_' + f.id,
-      date: f.date || todayISO(),
-      desc: f.desc || 'লেনদেন',
-      name: f.name || '-',
-      type: f.type,
-      amount: f.amount || 0,
-      by: f.by || 'সিস্টেম',
-      source: 'manual'
-    });
-  });
-  
-  // ফিল্টার করুন
-  const rows = allTx
+  const rows = financeTx
     .filter(t => (!from || t.date >= from) && (!to || t.date <= to))
-    .slice().sort((a, b) => a.date.localeCompare(b.date) || (a.id || '').localeCompare(b.id || ''));
+    .slice().sort((a, b) => a.date.localeCompare(b.date) || a.id - b.id);
 
   let bal = 0, totalIn = 0, totalOut = 0;
   const lines = rows.map(t => {
@@ -12961,7 +12765,7 @@ function nqStateSnapshot() {
     syllabusItems, examResults, resultPublishes, otClasses, otDivisions,
     classGroups, ieFunds, ieCategories, notices, buses, transportAssignments, driverPayments,
     siteRegistrations, financeTx, donationGroups, donationTx, attendance, attendanceHistory, studentDues,
-    feeTypes, mealRoutine, siteInfo, siteSlides, siteRules, siteProgs, hajiraLastTakenDate
+    feeTypes, mealRoutine, siteInfo, siteSlides, siteRules, siteProgs
   };
 }
 
@@ -13013,7 +12817,6 @@ function nqApplyLoadedState(data) {
   if (hasContent(data.donationTx)) donationTx = data.donationTx;
   if (hasContent(data.attendance)) attendance = data.attendance;
   if (hasContent(data.attendanceHistory)) attendanceHistory = data.attendanceHistory;
-  if (data.hajiraLastTakenDate) hajiraLastTakenDate = data.hajiraLastTakenDate;
   if (hasContent(data.studentDues)) studentDues = data.studentDues;
   if (hasContent(data.feeTypes)) feeTypes = data.feeTypes;
   if (hasContent(data.mealRoutine)) mealRoutine = data.mealRoutine;

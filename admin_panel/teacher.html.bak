@@ -411,27 +411,12 @@
   <section id="view-fee" class="view">
     <div class="page-head"><div class="icon-box">💰</div><h1>ফি আদায়</h1></div>
     <div class="card">
-      <!-- শিক্ষার্থী সার্চ বক্স (আইডি দিয়ে) -->
-      <div style="background:#f0f7ff;border:1px solid #b3d4f5;border-radius:10px;padding:14px 16px;margin-bottom:16px;">
-        <label style="font-size:13px;font-weight:700;color:#1a5fa8;display:block;margin-bottom:8px;">🔍 শিক্ষার্থী সার্চ করুন (রেজিঃ নং / নাম)</label>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
-          <div style="flex:1;min-width:160px;">
-            <input id="feeSearchInput" placeholder="রেজিঃ নং বা নাম লিখুন..." oninput="feeSearchStudent()"
-              style="width:100%;padding:10px 12px;border:1px solid #b3d4f5;border-radius:8px;font-family:inherit;font-size:14px;background:#fff;">
-          </div>
-          <button onclick="feeClearSearch()" style="background:#e0e0e0;color:#444;padding:10px 16px;border-radius:8px;font-family:inherit;font-size:13.5px;font-weight:600;border:none;cursor:pointer;">✕ ক্লিয়ার</button>
-        </div>
-        <div id="feeSearchResults" style="margin-top:8px;display:none;">
-          <div style="font-size:12.5px;color:#555;margin-bottom:5px;">ফলাফল:</div>
-          <div id="feeSearchList" style="display:flex;flex-wrap:wrap;gap:7px;"></div>
-        </div>
-      </div>
       <div class="grid3">
         <div class="field"><label>শিক্ষার্থী *</label><select id="feeStudent" onchange="renderFeeDues()"></select></div>
         <div class="field"><label>পরিশোধের পদ্ধতি</label>
           <select id="feeMethod"><option>নগদ</option><option>বিকাশ</option><option>ব্যাংক</option></select>
         </div>
-        <div class="field"><label>আদায়কারীর নাম</label><input id="feeCollector" disabled style="background:#f5f7fa;font-weight:600;"></div>
+        <div class="field"><label>আদায়কারীর নাম</label><input id="feeCollector" data-user-name disabled></div>
       </div>
       <div class="grid2">
         <div>
@@ -538,12 +523,7 @@ function goto(name){
   if(name === 'attnotice'){ fillClassChecks('anClassGrid','anClassChk'); renderAttNotices(); }
   if(name === 'subject'){ fillClassChecks('sbClassGrid','sbClassChk'); renderSubjects(); }
   if(name === 'examsubject'){ fillClassChecks('esClassGrid','esClassChk'); renderExamSubjects(); }
-  if(name === 'fee'){
-    renderFeeStudents();
-    renderFeePayments();
-    var collectorEl = document.getElementById('feeCollector');
-    if(collectorEl) collectorEl.value = userName();
-  }
+  if(name === 'fee'){ renderFeeStudents(); renderFeePayments(); }
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
@@ -1020,63 +1000,9 @@ function renderFeeStudents(){
   var sel = document.getElementById('feeStudent');
   var cur = sel.value;
   sel.innerHTML = '<option value="">-- শিক্ষার্থী নির্বাচন করুন --</option>' + arr(S.students).map(function(st){
-    return '<option value="' + st.id + '">[' + esc(st.regNo || st.id) + '] ' + esc(st.name) + ' (' + esc(st.cls || '') + ')</option>';
+    return '<option value="' + st.id + '">' + esc(st.name) + ' (' + esc(st.cls || '') + ')</option>';
   }).join('');
   if(cur) sel.value = cur;
-  // আদায়কারীর নাম সেট করুন
-  var collectorEl = document.getElementById('feeCollector');
-  if(collectorEl){ collectorEl.value = userName(); }
-  renderFeeDues();
-}
-
-/* শিক্ষার্থী সার্চ (রেজিঃ নং বা নাম দিয়ে) */
-function feeSearchStudent(){
-  var q = document.getElementById('feeSearchInput').value.trim();
-  var resultBox = document.getElementById('feeSearchResults');
-  var listBox = document.getElementById('feeSearchList');
-  if(!q){ resultBox.style.display = 'none'; listBox.innerHTML = ''; return; }
-  // বাংলা সংখ্যাকে ইংরেজিতে রূপান্তর
-  var qNorm = q.replace(/[০-৯]/g, function(d){ return '০১২৩৪৫৬৭৮৯'.indexOf(d); });
-  var results = arr(S.students).filter(function(st){
-    var regStr = String(st.regNo || st.id);
-    var nameStr = String(st.name || '');
-    return regStr.indexOf(qNorm) !== -1 || nameStr.indexOf(q) !== -1;
-  }).slice(0, 8);
-  if(!results.length){
-    listBox.innerHTML = '<span style="font-size:13px;color:#888;">কোনো শিক্ষার্থী পাওয়া যায়নি</span>';
-    resultBox.style.display = 'block';
-    return;
-  }
-  listBox.innerHTML = results.map(function(st){
-    return '<button onclick="feeSelectStudent(' + st.id + ')" style="' +
-      'background:#fff;border:1.5px solid #2f7dd9;color:#1a5fa8;padding:7px 13px;border-radius:8px;' +
-      'font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;">' +
-      '📌 [' + esc(st.regNo || st.id) + '] ' + esc(st.name) + ' — ' + esc(st.cls || '') + '</button>';
-  }).join('');
-  resultBox.style.display = 'block';
-}
-function feeSelectStudent(id){
-  var sel = document.getElementById('feeStudent');
-  sel.value = id;
-  renderFeeDues();
-  document.getElementById('feeSearchInput').value = '';
-  document.getElementById('feeSearchResults').style.display = 'none';
-  document.getElementById('feeSearchList').innerHTML = '';
-  // সিলেক্ট হওয়া শিক্ষার্থী হাইলাইট করুন
-  var st = arr(S.students).find(function(x){ return x.id === id; });
-  if(st){
-    var info = document.getElementById('feeSelectedInfo');
-    if(!info){ info = document.createElement('div'); info.id='feeSelectedInfo'; info.style.cssText='margin-top:8px;padding:8px 12px;background:#e6f7ee;border-radius:8px;font-size:13.5px;font-weight:600;color:#12784a;'; document.getElementById('feeSearchInput').parentNode.parentNode.appendChild(info); }
-    info.textContent = '✓ নির্বাচিত: [' + (st.regNo||st.id) + '] ' + st.name + ' — ' + (st.cls||'');
-  }
-}
-function feeClearSearch(){
-  document.getElementById('feeSearchInput').value = '';
-  document.getElementById('feeSearchResults').style.display = 'none';
-  document.getElementById('feeSearchList').innerHTML = '';
-  var info = document.getElementById('feeSelectedInfo');
-  if(info) info.remove();
-  document.getElementById('feeStudent').value = '';
   renderFeeDues();
 }
 function renderFeeDues(){
