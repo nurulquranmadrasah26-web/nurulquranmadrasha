@@ -8258,7 +8258,7 @@ async function loadSmsLogs() {
       status: log.status || 'failed',
       result: log.status === 'success'
         ? `${bn(log.successCount || 0)}টি gateway-তে গৃহীত • delivery নিশ্চিত নয়`
-        : `${bn(log.successCount || 0)}টি সফল, ${bn(log.failedCount || 0)}টি ব্যর্থ`,
+        : `${bn(log.successCount || 0)}টি সফল, ${bn(log.failedCount || 0)}টি ব্যর্থ${log.gatewayMessage ? ' • ' + log.gatewayMessage : ''}`,
       successCount: log.successCount || 0,
       failedCount: log.failedCount || 0
     }));
@@ -8306,7 +8306,13 @@ async function sendSmsMessage() {
     const data = await res.json().catch(() => ({}));
     if (!res.ok || !data.ok) {
       const invalid = data.invalidNumbers && data.invalidNumbers.length ? ' ভুল নাম্বার: ' + data.invalidNumbers.join(', ') : '';
-      throw new Error((data.message || 'SMS পাঠানো যায়নি') + invalid);
+      const gatewayDetails = [
+        data.gatewayHttpStatus ? 'HTTP ' + data.gatewayHttpStatus : '',
+        data.gatewayMessage && (!data.message || data.message.indexOf(data.gatewayMessage) === -1)
+          ? data.gatewayMessage : ''
+      ].filter(Boolean);
+      const gatewayDetail = gatewayDetails.length ? ' [' + gatewayDetails.join(' • ') + ']' : '';
+      throw new Error((data.message || 'SMS পাঠানো যায়নি') + gatewayDetail + invalid);
     }
 
     const target = mobileVal

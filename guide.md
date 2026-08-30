@@ -79,6 +79,8 @@ Render service-এর Root Directory যদি পরিবর্তন কর�
 - একই request-এর browser retry/double-send আটকাতে `requestId` ও server-side log check যোগ
   করা হয়েছে। SMS POST-এ automatic retry বন্ধ করা হয়েছে, কারণ timeout-এর পরে provider
   request গ্রহণ করে থাকলে retry করলে balance দুবার কাটতে পারে।
+- Gateway response-এ per-recipient status না থাকলে এখন HTTP status, gateway status এবং
+  provider-এর message log/panel-এ দেখাবে; আগে এই অবস্থাকে ভুলভাবে শুধু `3300` বলা হতো।
 - নতুন test না করে আগে balance, sender ID approval, DND/route এবং gateway portal-এর
   delivery report যাচাই করুন। Provider যদি `status: 0` দিয়ে charge করে কিন্তু delivery না
   দেয়, refund/route correction Automass account support-এর মাধ্যমেই করতে হবে; application

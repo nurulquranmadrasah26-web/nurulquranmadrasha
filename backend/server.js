@@ -243,6 +243,9 @@ const smsLogSchema = new mongoose.Schema(
     successCount: { type: Number, default: 0 },
     failedCount: { type: Number, default: 0 },
     results: { type: [mongoose.Schema.Types.Mixed], default: [] },
+    gatewayHttpStatus: { type: Number, default: 0 },
+    gatewayStatus: { type: Number, default: 0 },
+    gatewayMessage: { type: String, default: "" },
     gatewayResponse: { type: mongoose.Schema.Types.Mixed, default: null },
   },
   { timestamps: true }
@@ -292,6 +295,36 @@ async function readSmsGatewayResponse(response) {
   } catch (_) {
     return { raw: text };
   }
+}
+
+function smsGatewayRows(payload) {
+  if (Array.isArray(payload)) return payload;
+  if (payload && Array.isArray(payload.response)) return payload.response;
+  // কিছু gateway single recipient-এ response object পাঠাতে পারে।
+  if (
+    payload &&
+    payload.response &&
+    typeof payload.response === "object" &&
+    payload.response.status != null
+  ) {
+    return [payload.response];
+  }
+  return [];
+}
+
+function smsGatewayMessage(payload) {
+  if (!payload || typeof payload !== "object") return "";
+  const candidates = [payload.message, payload.msg, payload.error, payload.detail];
+  for (const value of candidates) {
+    if (typeof value === "string" && value.trim()) return value.trim().slice(0, 300);
+  }
+  if (typeof payload.response === "string" && payload.response.trim()) {
+    return payload.response.trim().slice(0, 300);
+  }
+  if (typeof payload.raw === "string" && payload.raw.trim()) {
+    return payload.raw.trim().slice(0, 300);
+  }
+  return "";
 }
 
 /* ------------------------------------------------------------------ */
@@ -1295,7 +1328,10 @@ app.post("/api/sms/send", auth, requirePerm("message"), async (req, res) => {
     clearTimeout(timer);
 
     const gateway = await readSmsGatewayResponse(upstream);
-    const rows = Array.isArray(gateway && gateway.response) ? gateway.response : [];
+    const rows = smsGatewayRows(gateway);
+    const topGatewayStatus = Number(gateway && gateway.status);
+    const hasTopGatewayStatus = Number.isFinite(topGatewayStatus);
+    const topGatewayMessage = smsGatewayMessage(gateway);
     // Per-recipient response না এলে success ধরে নেব না—এতে gateway error-এও
     // ভুল success দেখানো এবং balance কাটার পর delivery না হওয়ার সমস্যা লুকায়।
     const results = rows.length
@@ -1307,14 +1343,24 @@ app.post("/api/sms/send", auth, requirePerm("message"), async (req, res) => {
         }))
       : numbers.map((number) => ({
           number,
-          status: 3300,
+          status: hasTopGatewayStatus && topGatewayStatus !== 0 ? topGatewayStatus : 3300,
           id: null,
-          message: "গেটওয়ে কোনো recipient status দেয়নি",
+          message:
+            topGatewayMessage ||
+            (hasTopGatewayStatus && topGatewayStatus !== 0
+              ? smsStatusMeaning(topGatewayStatus)
+              : "গেটওয়ে কোনো recipient status দেয়নি"),
         }));
     const successCount = results.filter((row) => row.status === 0).length;
     const failedCount = Math.max(numbers.length - successCount, 0);
     const deliveryStatus =
       successCount === numbers.length ? "success" : successCount ? "partial" : "failed";
+    const firstFailure = results.find((row) => row.status !== 0);
+    const gatewayMessage =
+      topGatewayMessage ||
+      (firstFailure && firstFailure.message) ||
+      "";
+    const gatewayStatus = firstFailure ? Number(firstFailure.status) : topGatewayStatus;
 
     try {
       await SmsLog.create({
@@ -1328,6 +1374,9 @@ app.post("/api/sms/send", auth, requirePerm("message"), async (req, res) => {
         successCount,
         failedCount,
         results,
+        gatewayHttpStatus: upstream.status,
+        gatewayStatus: Number.isFinite(gatewayStatus) ? gatewayStatus : 0,
+        gatewayMessage,
         gatewayResponse: gateway,
       });
     } catch (logError) {
@@ -1342,6 +1391,9 @@ app.post("/api/sms/send", auth, requirePerm("message"), async (req, res) => {
       failed: failedCount,
       total: numbers.length,
       results,
+      gatewayHttpStatus: upstream.status,
+      gatewayStatus: Number.isFinite(gatewayStatus) ? gatewayStatus : 0,
+      gatewayMessage,
       // Automass status 0 = gateway accepted. PDF-তে handset delivery receipt
       // endpoint নেই, তাই এটিকে delivered বলে দাবি করা যাবে না।
       deliveryConfirmed: false,
@@ -1349,9 +1401,8 @@ app.post("/api/sms/send", auth, requirePerm("message"), async (req, res) => {
         ? "Gateway SMS গ্রহণ করেছে; handset delivery report এই API থেকে নিশ্চিত করা যায় না।"
         : undefined,
     };
-    const firstFailure = results.find((row) => row.status !== 0);
     const failureMessage = firstFailure
-      ? `SMS gateway status ${firstFailure.status}: ${firstFailure.message}`
+      ? `SMS gateway status ${firstFailure.status}: ${gatewayMessage || firstFailure.message}`
       : "SMS গেটওয়ে ম্যাসেজ গ্রহণ করেনি";
     if (!upstream.ok && successCount === 0) {
       return res.status(502).json({ ...responseBody, message: failureMessage });
