@@ -109,6 +109,7 @@ app.use(async (req, res, next) => {
  *  accounts  -> হিসাব
  *  others    -> অন্যান্য (সাইট প্যানেল/সেটিংস)
  *  homework  -> বাড়ির কাজ
+ *  inventory -> ইনভেন্টরি
  *  message   -> ম্যাসেজ
  *  users     -> ব্যবহারকারী ব্যবস্থাপনা
  */
@@ -127,7 +128,7 @@ const ROLE_PERMISSIONS = {
     "message",
     "users",
   ],
-  Teacher: ["dash", "student", "exam", "routine", "homework", "message"],
+  Teacher: ["dash", "student", "staff", "fee", "exam", "routine", "homework", "inventory", "others", "message"],
   Student: ["dash", "student", "exam", "routine", "homework", "fee"],
   Support: ["dash", "others", "message", "users"],
 };
@@ -1020,6 +1021,25 @@ function canWriteStore(req, res, next) {
   // শিক্ষার্থী শুধু তথ্য দেখতে পারে, পরিবর্তন করতে পারে না
   if (req.user.role === "Student")
     return res.status(403).json({ message: "তথ্য পরিবর্তনের অনুমতি নেই" });
+  // শিক্ষক প্যানেলের সরাসরি লেখা কেবল হাজিরা ও ফি-সংক্রান্ত কী-তে সীমিত।
+  // বাড়ির কাজ/সিলেবাস/ছুটি/ফলাফল approval workflow-এর মাধ্যমে যাবে।
+  if (req.user.role === "Teacher") {
+    const allowed = new Set([
+      "attendance",
+      "attendanceHistory",
+      "payments",
+      "paymentDetails",
+      "studentDues",
+      "invProducts",
+    ]);
+    const key = req.params && req.params.key;
+    const keys = req.body && req.body.keys ? Object.keys(req.body.keys) : [];
+    if ((key && !allowed.has(key)) || (keys.length && keys.some((k) => !allowed.has(k)))) {
+      return res.status(403).json({
+        message: "এই তথ্য সরাসরি পরিবর্তন করা যাবে না — সুপার এডমিনের অনুমোদন প্রয়োজন",
+      });
+    }
+  }
   return next();
 }
 
@@ -1414,11 +1434,38 @@ const notificationSchema = new mongoose.Schema(
     body: { type: String, default: "" },
     url: { type: String, default: "" },
     type: { type: String, default: "general" }, // homework | fee | salary | notice | general
+    data: { type: mongoose.Schema.Types.Mixed, default: {} },
     read: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
 const Notification = mongoose.model("Notification", notificationSchema);
+
+/* শিক্ষক → সুপার এডমিন → শিক্ষার্থী approval workflow */
+const approvalRequestSchema = new mongoose.Schema(
+  {
+    submittedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
+    submittedByName: { type: String, default: "" },
+    kind: {
+      type: String,
+      enum: ["homework", "syllabus", "leave", "result", "admission"],
+      required: true,
+    },
+    title: { type: String, required: true },
+    payload: { type: mongoose.Schema.Types.Mixed, default: {} },
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
+      index: true,
+    },
+    decisionNote: { type: String, default: "" },
+    decidedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
+    decidedAt: { type: Date, default: null },
+  },
+  { timestamps: true }
+);
+const ApprovalRequest = mongoose.model("ApprovalRequest", approvalRequestSchema);
 
 // Web Push সাবস্ক্রিপশন (প্রতি ডিভাইস একটি)
 const pushSubSchema = new mongoose.Schema(
@@ -1512,6 +1559,7 @@ app.get("/api/notifications", auth, async (req, res) => {
         body: n.body,
         url: n.url,
         type: n.type,
+        data: n.data || {},
         read: n.read,
         createdAt: n.createdAt,
       })),
@@ -1568,6 +1616,318 @@ app.post("/api/notifications/send", auth, canWriteStore, async (req, res) => {
   } catch (e) {
     console.error(e);
     res.status(500).json({ message: "নোটিফিকেশন পাঠাতে ব্যর্থ" });
+  }
+});
+
+/* ------------------------------------------------------------------ */
+/* Teacher approval workflow                                           */
+/* ------------------------------------------------------------------ */
+const APPROVAL_LABELS = {
+  homework: "বাড়ির কাজ",
+  syllabus: "সিলেবাস",
+  leave: "ছুটির আবেদন",
+  result: "ফলাফলের তালিকা",
+  admission: "ভর্তি আবেদন",
+};
+
+function workflowDateBn(iso) {
+  if (!iso) return "";
+  const p = String(iso).slice(0, 10).split("-");
+  return p.length === 3 ? `${p[2]}/${p[1]}/${p[0]}` : String(iso);
+}
+
+function workflowSummary(kind, payload) {
+  const p = payload || {};
+  if (kind === "homework") return `${p.className || "-"} • ${p.subject || "-"} • ${p.task || ""}`;
+  if (kind === "syllabus") return `${p.className || "-"} • ${p.subjectName || "-"} • ${p.details || p.title || ""}`;
+  if (kind === "leave") return `${p.studentName || "-"} • ${p.reason || "-"} • ${p.from || ""} — ${p.to || ""}`;
+  if (kind === "result") return `${p.studentName || "-"} • ${p.exam || "-"} • প্রাপ্ত নম্বর: ${p.total == null ? "-" : p.total}`;
+  if (kind === "admission") return `${p.name || "-"} • ${p.className || "-"} • ${p.mobileNo || ""}`;
+  return "";
+}
+
+async function workflowStudentUsers(payload) {
+  const doc = await Store.findOne({ key: "students" }).lean();
+  const records = Array.isArray(doc && doc.data) ? doc.data : [];
+  const p = payload || {};
+  const wantedIds = []
+    .concat(Array.isArray(p.studentIds) ? p.studentIds : [])
+    .concat(p.studentId != null ? [p.studentId] : [])
+    .map((x) => String(x));
+  const className = String(p.className || "").trim();
+  const selected = records.filter((st) => {
+    if (!st) return false;
+    if (wantedIds.length) return wantedIds.includes(String(st.id));
+    const cls = st.cls || st.className || st.attCls || "";
+    return className ? String(cls) === className : false;
+  });
+  const users = await User.find({ role: "Student", active: true })
+    .select("_id uid name")
+    .lean();
+  return users.filter((u) =>
+    selected.some((st) =>
+      (st.uid && String(st.uid) === String(u.uid)) ||
+      (st.name && String(st.name) === String(u.name)) ||
+      (st.regNo && String(st.regNo) === String(u.uid))
+    )
+  );
+}
+
+async function appendStoreArray(key, item) {
+  const doc = await Store.findOne({ key }).lean();
+  const list = Array.isArray(doc && doc.data) ? doc.data.slice() : [];
+  const numericIds = list.map((x) => Number(x && x.id)).filter((x) => Number.isFinite(x));
+  const nextId = numericIds.length ? Math.max(...numericIds) + 1 : 1;
+  const value = Object.assign({ id: nextId }, item);
+  list.push(value);
+  await Store.findOneAndUpdate({ key }, { data: list }, { upsert: true });
+  return value;
+}
+
+async function applyApprovedWorkflow(request, approver) {
+  const p = request.payload || {};
+  const common = {
+    teacher: request.submittedByName || p.teacherName || "শিক্ষক",
+    teacherId: request.submittedBy,
+    approvalRequestId: request._id,
+    approvedBy: approver.name || approver.uid || "",
+    approvedAt: new Date(),
+  };
+
+  if (request.kind === "homework") {
+    if (p.homeworkType === "residential") {
+      return appendStoreArray("hwResidentialList", Object.assign({}, common, {
+        branchName: p.branchName || "আবাসিক",
+        category: p.category || p.subject || "আবাসিক",
+        subject: p.subject || "",
+        comment: p.task || p.comment || "",
+        details: p.details || "",
+        students: Array.isArray(p.studentIds) ? p.studentIds : [],
+        progress: [],
+        date: workflowDateBn(p.date),
+        dateISO: p.date || "",
+        ts: Date.now(),
+        status: "অনুমোদিত",
+        branch: "আবাসিক",
+      }));
+    }
+    return appendStoreArray("hwDailyList", Object.assign({}, common, {
+      cls: p.className || p.cls || "",
+      subject: p.subject || "",
+      task: p.task || "",
+      khata: !!p.khata,
+      date: workflowDateBn(p.date),
+      dateISO: p.date || "",
+      ts: Date.now(),
+      status: "অনুমোদিত",
+    }));
+  }
+
+  if (request.kind === "syllabus") {
+    return appendStoreArray("syllabusItems", Object.assign({}, common, {
+      className: p.className || "",
+      subjectName: p.subjectName || p.subject || "",
+      title: p.title || "",
+      details: p.details || p.desc || "",
+      showFrom: p.showFrom || "",
+      showTo: p.showTo || "",
+      status: "প্রকাশিত",
+    }));
+  }
+
+  if (request.kind === "leave") {
+    return appendStoreArray("leaveRequests", Object.assign({}, common, {
+      studentId: p.studentId,
+      name: p.studentName || "",
+      reason: p.reason || "",
+      from: workflowDateBn(p.from),
+      to: workflowDateBn(p.to),
+      fromISO: p.from || "",
+      toISO: p.to || "",
+      days: Math.max(1, Math.round((new Date(p.to) - new Date(p.from)) / 86400000) + 1),
+      detail: p.detail || "",
+      status: "অনুমোদিত",
+      rejectReason: "",
+    }));
+  }
+
+  if (request.kind === "result") {
+    const result = await appendStoreArray("results", Object.assign({}, common, {
+      studentId: p.studentId,
+      student: p.studentName || "",
+      exam: p.exam || "",
+      total: p.total == null ? "" : p.total,
+      grade: p.grade || "",
+      position: p.position == null ? "" : p.position,
+      remark: p.remark || "",
+      published: true,
+    }));
+    return result;
+  }
+
+  if (request.kind === "admission") {
+    return appendStoreArray("students", Object.assign({}, common, {
+      regNo: p.regNo || "",
+      classRoll: p.classRoll || "",
+      name: p.name || "",
+      cls: p.className || "",
+      attCls: p.className || "",
+      attDept: p.branch || "",
+      branch: p.branch || "",
+      dept: p.branch || "",
+      mobile: p.mobileNo || "",
+      fee: Number(p.fee) || 0,
+      parent: p.fatherName || "",
+      guardianName: p.fatherName || "",
+      guardianMobile: p.mobileNo || "",
+      session: p.session || "",
+      type: p.type || "অনাবাসিক",
+      status: "সক্রিয়",
+    }));
+  }
+
+  throw new Error("অজানা approval type");
+}
+
+async function notifyApprovalRequest(request) {
+  const admins = await User.find({ role: "Super Admin", active: true }).select("_id").lean();
+  if (!admins.length) return;
+  const label = APPROVAL_LABELS[request.kind] || "তথ্য";
+  const body = `${request.submittedByName || "শিক্ষক"} • ${workflowSummary(request.kind, request.payload)}`;
+  await Notification.insertMany(admins.map((u) => ({
+    userId: u._id,
+    title: `অনুমোদনের জন্য ${label}`,
+    body,
+    url: `#approval-${request._id}`,
+    type: "approval",
+    data: { approvalRequestId: String(request._id), kind: request.kind },
+    read: false,
+  })));
+}
+
+async function notifyWorkflowStudents(request, users) {
+  if (!users.length) return;
+  const label = APPROVAL_LABELS[request.kind] || "তথ্য";
+  const p = request.payload || {};
+  const detail = workflowSummary(request.kind, p);
+  await Notification.insertMany(users.map((u) => ({
+    userId: u._id,
+    title: `${label} প্রকাশিত হয়েছে`,
+    body: detail,
+    url: "#home",
+    type: request.kind,
+    data: { approvalRequestId: String(request._id), kind: request.kind },
+    read: false,
+  })));
+}
+
+app.post("/api/approval-requests", auth, async (req, res) => {
+  try {
+    if (req.user.role !== "Teacher")
+      return res.status(403).json({ message: "শুধু শিক্ষক approval request পাঠাতে পারবেন" });
+    const kind = String(req.body && req.body.kind || "").trim();
+    const payload = req.body && req.body.payload;
+    if (!APPROVAL_LABELS[kind] || !payload || typeof payload !== "object" || Array.isArray(payload))
+      return res.status(400).json({ message: "সঠিক তথ্য দিন" });
+
+    const request = await ApprovalRequest.create({
+      submittedBy: req.user.id,
+      submittedByName: req.user.name || req.user.uid || "শিক্ষক",
+      kind,
+      title: String(req.body.title || APPROVAL_LABELS[kind]).slice(0, 160),
+      payload,
+    });
+    await notifyApprovalRequest(request);
+    res.status(201).json({ ok: true, request });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "অনুমোদনের আবেদন পাঠানো যায়নি" });
+  }
+});
+
+app.get("/api/approval-requests/mine", auth, async (req, res) => {
+  if (req.user.role !== "Teacher")
+    return res.status(403).json({ message: "অনুমতি নেই" });
+  const items = await ApprovalRequest.find({ submittedBy: req.user.id }).sort({ createdAt: -1 }).limit(100).lean();
+  res.json({ ok: true, items });
+});
+
+app.get("/api/approval-requests", auth, async (req, res) => {
+  if (req.user.role !== "Super Admin")
+    return res.status(403).json({ message: "শুধু সুপার এডমিন approval requests দেখতে পারবেন" });
+  const items = await ApprovalRequest.find().sort({ createdAt: -1 }).limit(100).lean();
+  res.json({ ok: true, items });
+});
+
+app.put("/api/approval-requests/:id", auth, async (req, res) => {
+  try {
+    if (req.user.role !== "Teacher")
+      return res.status(403).json({ message: "অনুমতি নেই" });
+    const request = await ApprovalRequest.findOne({ _id: req.params.id, submittedBy: req.user.id });
+    if (!request) return res.status(404).json({ message: "আবেদন পাওয়া যায়নি" });
+    if (request.status !== "pending")
+      return res.status(400).json({ message: "অনুমোদিত/প্রত্যাখ্যাত আবেদন এডিট করা যাবে না" });
+    const payload = req.body && req.body.payload;
+    if (!payload || typeof payload !== "object" || Array.isArray(payload))
+      return res.status(400).json({ message: "সঠিক তথ্য দিন" });
+    request.payload = payload;
+    if (req.body.title) request.title = String(req.body.title).slice(0, 160);
+    await request.save();
+    res.json({ ok: true, request });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "আবেদন আপডেট করা যায়নি" });
+  }
+});
+
+app.post("/api/approval-requests/:id/approve", auth, async (req, res) => {
+  try {
+    if (req.user.role !== "Super Admin")
+      return res.status(403).json({ message: "শুধু সুপার এডমিন অনুমোদন করতে পারবেন" });
+    const request = await ApprovalRequest.findById(req.params.id);
+    if (!request) return res.status(404).json({ message: "আবেদন পাওয়া যায়নি" });
+    if (request.status !== "pending")
+      return res.status(400).json({ message: "আবেদনটি ইতিমধ্যে নিষ্পত্তি হয়েছে" });
+    await applyApprovedWorkflow(request, req.user);
+    request.status = "approved";
+    request.decisionNote = String(req.body && req.body.note || "").slice(0, 500);
+    request.decidedBy = req.user.id;
+    request.decidedAt = new Date();
+    await request.save();
+    const users = request.kind === "admission" ? [] : await workflowStudentUsers(request.payload);
+    await notifyWorkflowStudents(request, users);
+    res.json({ ok: true, sent: users.length });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "অনুমোদন সম্পন্ন করা যায়নি" });
+  }
+});
+
+app.post("/api/approval-requests/:id/reject", auth, async (req, res) => {
+  try {
+    if (req.user.role !== "Super Admin")
+      return res.status(403).json({ message: "শুধু সুপার এডমিন প্রত্যাখ্যান করতে পারবেন" });
+    const request = await ApprovalRequest.findById(req.params.id);
+    if (!request) return res.status(404).json({ message: "আবেদন পাওয়া যায়নি" });
+    if (request.status !== "pending")
+      return res.status(400).json({ message: "আবেদনটি ইতিমধ্যে নিষ্পত্তি হয়েছে" });
+    request.status = "rejected";
+    request.decisionNote = String(req.body && req.body.note || "").slice(0, 500);
+    request.decidedBy = req.user.id;
+    request.decidedAt = new Date();
+    await request.save();
+    await Notification.create({
+      userId: request.submittedBy,
+      title: `${APPROVAL_LABELS[request.kind] || "আবেদন"} প্রত্যাখ্যাত`,
+      body: request.decisionNote || "সুপার এডমিন আবেদনটি প্রত্যাখ্যান করেছেন",
+      type: "approval",
+      data: { approvalRequestId: String(request._id), kind: request.kind },
+      read: false,
+    });
+    res.json({ ok: true });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "আবেদন প্রত্যাখ্যান করা যায়নি" });
   }
 });
 

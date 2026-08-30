@@ -69,11 +69,11 @@
   /* ---------- মডিউল অনুযায়ী রোল অনুমতি ---------- *
      মডিউল কী গুলো admin.html এর nav-drop data-mod এর সাথে মেলে:
      dash, student, staff, fee, exam, routine, accounts,
-     others, homework, message, users
+     others, homework, inventory, message, users
   ------------------------------------------------------------- */
   var ROLE_MODULES = {
     // সুপার এডমিন — সম্পূর্ণ নিয়ন্ত্রণ (ব্যবহারকারী ব্যবস্থাপনাসহ)
-    superadmin: ['dash', 'student', 'staff', 'fee', 'exam', 'routine', 'accounts', 'others', 'homework', 'message', 'users'],
+    superadmin: ['dash', 'student', 'staff', 'fee', 'exam', 'routine', 'accounts', 'others', 'homework', 'inventory', 'message', 'users'],
 
     // এডমিন — ব্যবহারকারী ব্যবস্থাপনা ছাড়া প্রায় সবকিছু
     admin: ['dash', 'student', 'staff', 'fee', 'exam', 'routine', 'accounts', 'others', 'homework', 'message'],
@@ -82,7 +82,7 @@
     support: ['dash', 'message', 'others', 'users'],
 
     // শিক্ষক — শিক্ষার্থী, পরীক্ষা, রুটিন, বাড়ির কাজ, ম্যাসেজ
-    teacher: ['dash', 'student', 'exam', 'routine', 'homework', 'message'],
+    teacher: ['dash', 'student', 'staff', 'fee', 'exam', 'routine', 'homework', 'inventory', 'others', 'message'],
 
     // শিক্ষার্থী — নিজের রুটিন, বাড়ির কাজ, ফলাফল, ফি, ম্যাসেজ
     student: ['dash', 'routine', 'homework', 'exam', 'fee', 'message']
@@ -159,46 +159,8 @@
       return list.indexOf(mod) !== -1;
     },
 
-
-    /* ---------- ইম্পারসোনেশন (এডমিন → অন্য ব্যবহারকারীর প্যানেল) ---------- */
-    // সুপার এডমিন "ব্যবহারকারী" তালিকা থেকে কারো প্যানেলে ঢুকলে নিজের সেশন
-    // localStorage['nq_impersonator'] এ রাখা হয়। নিচের সুবিধাগুলো দিয়ে
-    // যেকোনো প্যানেল (teacher/student/admin) থেকে মূল এডমিন প্যানেলে ফেরা যায়।
-    isImpersonating: function () {
-      try { return !!localStorage.getItem('nq_impersonator'); } catch (e) { return false; }
-    },
-
-    impersonatorInfo: function () {
-      try {
-        var raw = localStorage.getItem('nq_impersonator');
-        if (!raw) return null;
-        var saved = JSON.parse(raw);
-        if (!saved || !saved.token || !saved.user) return null;
-        var u = null;
-        try { u = JSON.parse(saved.user); } catch (e) { u = null; }
-        return { token: saved.token, user: u || {} };
-      } catch (e) { return null; }
-    },
-
-    // মূল (নিজের) এডমিন সেশনে ফিরে যাওয়া
-    returnToAdminPanel: function () {
-      var saved = NQAuth.impersonatorInfo();
-      if (!saved) { window.location.href = './admin.html'; return; }
-      try {
-        localStorage.setItem('nq_token', saved.token);
-        localStorage.setItem('nq_user', JSON.stringify(saved.user));
-        sessionStorage.removeItem('nq_token');
-        sessionStorage.removeItem('nq_user');
-        localStorage.removeItem('nq_impersonator');
-        localStorage.removeItem('nq_last_page');
-        localStorage.removeItem('nq_last_subpage');
-      } catch (e) {}
-      window.location.replace('./admin.html');
-    },
-
     logout: function () {
       clearSession();
-      try { localStorage.removeItem('nq_impersonator'); } catch (e) {}
       try {
         localStorage.removeItem('nq_last_page');
         localStorage.removeItem('nq_last_subpage');
@@ -314,50 +276,6 @@
     }
   }
 
-
-  /* ---------- "মূল এডমিন প্যানেলে ফিরে যান" বার ---------- */
-  // অন্য ব্যবহারকারীর প্যানেলে থাকলে সব পেজের উপরে এই বার দেখা যাবে।
-  function mountImpersonationBar() {
-    if (!NQAuth.isImpersonating()) return;
-    if (document.getElementById('nqImpBar')) return;
-    var saved = NQAuth.impersonatorInfo() || {};
-    var admName = (saved.user && (saved.user.name || saved.user.uid)) || 'এডমিন';
-    var cur = NQAuth.user || {};
-
-    var bar = document.createElement('div');
-    bar.id = 'nqImpBar';
-    bar.setAttribute('style', [
-      'position:sticky', 'top:0', 'z-index:9999',
-      'display:flex', 'align-items:center', 'justify-content:space-between',
-      'gap:10px', 'flex-wrap:wrap',
-      'background:linear-gradient(90deg,#7a0f2f,#a4123f)', 'color:#fff',
-      'padding:9px 16px', 'font-size:13.5px', 'font-weight:600',
-      'font-family:inherit', 'box-shadow:0 2px 8px rgba(0,0,0,.18)'
-    ].join(';'));
-
-    var info = document.createElement('span');
-    info.textContent = '👁️ আপনি "' + (cur.name || cur.uid || 'ব্যবহারকারী') +
-      '" এর প্যানেল দেখছেন — মূল এডমিন : ' + admName;
-
-    var btn = document.createElement('button');
-    btn.type = 'button';
-    btn.textContent = '⬅ মূল এডমিন প্যানেলে ফিরে যান';
-    btn.setAttribute('style', [
-      'background:#fff', 'color:#a4123f', 'border:none', 'cursor:pointer',
-      'padding:7px 14px', 'border-radius:8px', 'font-weight:700',
-      'font-size:13px', 'font-family:inherit', 'white-space:nowrap'
-    ].join(';'));
-    btn.addEventListener('click', function (e) {
-      e.preventDefault();
-      NQAuth.returnToAdminPanel();
-    });
-
-    bar.appendChild(info);
-    bar.appendChild(btn);
-    document.body.insertBefore(bar, document.body.firstChild);
-  }
-  NQAuth.mountImpersonationBar = mountImpersonationBar;
-
   /* ---------- বুট: গার্ড ---------- */
   document.addEventListener('DOMContentLoaded', function () {
     if (!NQAuth.isLoggedIn()) {
@@ -369,6 +287,5 @@
     handleRoleBasedRedirect();
     
     applyRoleUI();
-    mountImpersonationBar();
   });
 })();

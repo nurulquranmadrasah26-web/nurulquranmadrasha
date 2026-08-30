@@ -331,52 +331,6 @@
     return 0;
   }
 
-  /* ─── বেতনের ছাড় (Discount) সহায়ক ─── */
-  function baseFeeOf(s) {
-    if (s.baseMonthlyFee != null && s.baseMonthlyFee !== '') return Number(s.baseMonthlyFee) || 0;
-    return monthlyFeeOf(s);
-  }
-  function discountOf(s) { return Number(s.feeDiscount || 0) || 0; }
-  function currentFeeOf(s) { return Math.max(0, baseFeeOf(s) - discountOf(s)); }
-  window.nqBaseFeeOf = baseFeeOf;
-  window.nqDiscountOf = discountOf;
-  window.nqCurrentFeeOf = currentFeeOf;
-
-  /* ছাড় সম্পাদনার ইনলাইন ফর্ম */
-  window.nqEditFeeDiscount = function (id) {
-    var box = document.getElementById('nqFdDiscountBox');
-    if (!box) return;
-    var s = students.filter(function (x) { return String(x.id) === String(id); })[0];
-    if (!s) return;
-    box.innerHTML =
-      '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">' +
-      '  <input type="number" min="0" id="nqFdDiscountInput" class="nq-field" style="max-width:130px;" value="' + discountOf(s) + '" placeholder="ছাড়ের পরিমাণ" />' +
-      '  <button class="nq-btn sm green" onclick="nqSaveFeeDiscount(' + id + ')">সংরক্ষণ</button>' +
-      '  <button class="nq-btn sm grey" onclick="nqOpenFeeDetail(' + id + ')">বাতিল</button>' +
-      '</div>';
-    var inp = document.getElementById('nqFdDiscountInput');
-    if (inp) { inp.focus(); inp.select(); }
-  };
-
-  window.nqSaveFeeDiscount = function (id) {
-    var s = students.filter(function (x) { return String(x.id) === String(id); })[0];
-    if (!s) return;
-    var raw = (document.getElementById('nqFdDiscountInput') || {}).value;
-    var val = Number(toEn(raw || 0));
-    if (isNaN(val) || val < 0) { toast('সঠিক পরিমাণ লিখুন'); return; }
-    var base = baseFeeOf(s);
-    if (val > base) { toast('ছাড় মাসিক বেতনের চেয়ে বেশি হতে পারবে না'); return; }
-    if (s.baseMonthlyFee == null || s.baseMonthlyFee === '') s.baseMonthlyFee = base;
-    s.feeDiscount = val;
-    s.monthlyFee = Math.max(0, base - val);
-    s.fee = s.monthlyFee;
-    if (typeof nqScheduleSave === 'function') nqScheduleSave();
-    if (typeof window.renderFeeList === 'function') try { window.renderFeeList(); } catch (e) {}
-    if (typeof window.renderMonthlyFeePage === 'function') try { window.renderMonthlyFeePage(); } catch (e) {}
-    toast('ছাড় সংরক্ষণ করা হয়েছে');
-    window.nqOpenFeeDetail(id);
-  };
-
   window.renderMonthlyFeePage = function () {
     var body = document.getElementById('nqMonthlyFeeBody');
     if (!body || typeof students === 'undefined') return;
@@ -543,15 +497,10 @@
       ['বিভাগ', s.attDept || s.dept || '—'],
       ['শাখা', s.branch || '—'],
       ['সেশন', s.session || '—'],
-      ['পূর্বের বেতন', tk(baseFeeOf(s))]
+      ['মাসিক বেতন', tk(monthlyFeeOf(s))]
     ].map(function (r) {
       return '<div class="nq-info"><span class="k">' + r[0] + '</span><span class="v">' + esc(r[1]) + '</span></div>';
-    }).join('') +
-      '<div class="nq-info"><span class="k">বেতনের ছাড়</span><span class="v" id="nqFdDiscountBox">' +
-      '<button class="nq-btn sm orange" onclick="nqEditFeeDiscount(' + s.id + ')">' + tk(discountOf(s)) + ' — ছাড় দিন</button>' +
-      '</span></div>' +
-      '<div class="nq-info"><span class="k">বর্তমান বেতন</span><span class="v" style="color:#2e7d32;font-weight:700;">' +
-      tk(currentFeeOf(s)) + '</span></div>';
+    }).join('');
 
     var dueRows = dues.map(function (d, i) {
       return '<tr><td data-label="ক্রম">' + BN(i + 1) + '</td>' +

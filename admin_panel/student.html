@@ -618,6 +618,10 @@ function bn(n){ return String(n == null ? '' : n).replace(/[০-৯]/g, function
 function esc(t){ return String(t == null ? '' : t).replace(/[&<>"]/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]; }); }
 function arr(v){ return Array.isArray(v) ? v : []; }
 function obj(v){ return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {}; }
+function isPublished(item){
+  var s = item && String(item.status || '').toLowerCase();
+  return s !== 'pending' && s !== 'অপেক্ষমান' && s !== 'rejected' && s !== 'প্রত্যাখ্যাত' && s !== 'draft';
+}
 function todayISO(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function bnDate(iso){ var p=String(iso).split('-'); return p.length===3 ? bn(p[2]+'/'+p[1]+'/'+p[0]) : String(iso); }
 function empty(icon, text){ return '<div class="empty-state"><div class="icon">' + icon + '</div><p>' + text + '</p></div>'; }
@@ -745,10 +749,17 @@ function renderHome(){
   document.getElementById('stuHwDateText').textContent = '📅 ' + (HW_DATE ? bnDate(HW_DATE) : 'সব তারিখ');
 
   var cls = ME ? ME.cls : '';
-  var sameDay = function(h){ return !HW_DATE || String(h.date || '').slice(0, 10) === HW_DATE; };
-  var hw = arr(S.hwDailyList).filter(function(h){ return h.cls === cls && sameDay(h); }).slice(-8).reverse();
+  var sameDay = function(h){
+    if(!HW_DATE) return true;
+    var raw = String(h.dateISO || h.date || '').slice(0, 10);
+    if(/^\d{2}\/\d{2}\/\d{4}$/.test(raw)){
+      var p = raw.split('/'); raw = p[2] + '-' + p[1] + '-' + p[0];
+    }
+    return raw === HW_DATE;
+  };
+  var hw = arr(S.hwDailyList).filter(function(h){ return isPublished(h) && h.cls === cls && sameDay(h); }).slice(-8).reverse();
   var resHw = arr(S.hwResidentialList).filter(function(h){
-    return ME && arr(h.students).indexOf(ME.id) !== -1 && sameDay(h);
+    return isPublished(h) && ME && arr(h.students).indexOf(ME.id) !== -1 && sameDay(h);
   }).slice(-5).reverse();
   var box = document.getElementById('stuHomework');
   var html = hw.map(function(h){
@@ -769,7 +780,7 @@ function renderHome(){
     if (itemCls && cls && itemCls !== cls) return false;
     if (x.showFrom && today < x.showFrom) return false;
     if (x.showTo && today > x.showTo) return false;
-    return true;
+    return isPublished(x);
   });
   document.getElementById('stuSyllabus').innerHTML = syll.length ? syll.map(function(x){
     var head = (x.examTypeName ? x.examTypeName + ' • ' : '') + (x.subjectName || x.subject || x.title || '-');
@@ -790,7 +801,7 @@ function renderHome(){
       ' বিস্তারিত সময়সূচী "রুটিন" ট্যাবে দেখুন।</div></div>';
   }).join('');
 
-  var notices = arr(S.notices).slice(-6).reverse();
+  var notices = arr(S.notices).filter(isPublished).slice(-6).reverse();
   document.getElementById('stuNotices').innerHTML = (examNotices + (notices.map(function(n){
     return '<div class="hw-item"><div class="hw-title">' + esc(n.title) + '</div><div class="hw-body">' + esc(n.desc || '') + '</div></div>';
   }).join(''))) || '<div class="notice-empty"><div class="bell">🔕</div><div>কোন নোটিশ নেই</div></div>';
@@ -960,7 +971,7 @@ function renderAttendance(){
 
 /* ---------- ফলাফল ---------- */
 function renderResult(){
-  var res = arr(S.results).filter(function(r){ return ME && (r.studentId === ME.id || r.student === ME.name); });
+  var res = arr(S.results).filter(function(r){ return isPublished(r) && ME && (r.studentId === ME.id || r.student === ME.name); });
   document.getElementById('stuResult').innerHTML = res.length
     ? res.map(function(r){
         return '<div class="hw-item"><div class="hw-title">' + esc(r.exam || 'পরীক্ষা') + '</div>' +
