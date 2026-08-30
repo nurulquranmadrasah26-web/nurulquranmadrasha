@@ -599,7 +599,7 @@
     </div>
     <div class="adm-panel" id="teacherAdmissionStep1">
       <div class="adm-grid">
-        <div class="adm-field"><label>বিভাগ নির্বাচন করুন <span class="req">*</span></label><select id="admDept"><option value="">বিভাগ নির্বাচন করুন</option><option>নূরানী বিভাগ</option><option>নাজেরা বিভাগ</option><option>হিফজ বিভাগ</option><option>কিতাব বিভাগ</option></select></div>
+        <div class="adm-field"><label>বিভাগ নির্বাচন করুন <span class="req">*</span></label><select id="admDept" onchange="fillTeacherAdmissionClasses()"><option value="">বিভাগ নির্বাচন করুন</option><option>নূরানী বিভাগ</option><option>নাজেরা বিভাগ</option><option>হিফজ বিভাগ</option><option>কিতাব বিভাগ</option></select></div>
         <div class="adm-field"><label>শ্রেণী নির্বাচন করুন <span class="req">*</span></label><select id="admClass"><option value="">শ্রেণী নির্বাচন করুন</option></select></div>
         <div class="adm-field"><label>ক্লাশ শুরুর মাস <span class="req">*</span></label><select id="admStartMonth"><option value="">-----ক্লাশ শুরুর মাস-----</option><option>জানুয়ারি ২০২৬</option><option>ফেব্রুয়ারি ২০২৬</option><option>মার্চ ২০২৬</option><option>এপ্রিল ২০২৬</option><option>মে ২০২৬</option><option>জুন ২০২৬</option><option selected>জুলাই ২০২৬</option><option>আগস্ট ২০২৬</option></select></div>
         <div class="adm-field"><label>শিক্ষাবর্ষ</label><div class="adm-radio-group"><label><input type="radio" name="admYear" value="২০২৬ ইং" checked> ২০২৬ ইং</label><label><input type="radio" name="admYear" value="২০২৭ ইং"> ২০২৭ ইং</label></div></div>
@@ -920,6 +920,7 @@ function classList(){
   var out = Object.keys(set);
   return out.length ? out : ['নার্সারী'];
 }
+var teacherAdmissionClassOptions=['প্লে','নার্সারী','প্রথম','দ্বিতীয়','তৃতীয়','চতুর্থ','নাজেরা বালিকা','হেফজ বালিকা','পঞ্চম','স্কুল নাজেরা বালিকা'];
 
 /* ---------- নেভিগেশন ---------- */
 function goto(name){
@@ -1234,8 +1235,13 @@ function saveFeeCollection(){
 function fillTeacherClassSelect(id){
   var sel = document.getElementById(id); if(!sel) return;
   var cur = sel.value;
-  sel.innerHTML = classList().map(function(c){ return '<option value="' + esc(c) + '">' + esc(c) + '</option>'; }).join('');
-  if(cur && classList().indexOf(cur) !== -1) sel.value = cur;
+  var options=(id==='admClass'||id==='admPrevClass') ? teacherAdmissionClassOptions : classList();
+  sel.innerHTML = (id==='admClass'||id==='admPrevClass' ? '<option value="">শ্রেণী নির্বাচন করুন</option>' : '') +
+    options.map(function(c){ return '<option value="' + esc(c) + '">' + esc(c) + '</option>'; }).join('');
+  if(cur && options.indexOf(cur) !== -1) sel.value = cur;
+}
+function fillTeacherAdmissionClasses(){
+  fillTeacherClassSelect('admClass');
 }
 function fillTeacherWorkflowOptions(){
   ['tsClass','trClass','taClass'].forEach(fillTeacherClassSelect);
@@ -1302,14 +1308,6 @@ function previewTeacherAdmPhoto(ev){
   reader.onload=function(){ box.innerHTML='<img src="'+reader.result+'" alt="শিক্ষার্থীর ছবি">'; };
   reader.readAsDataURL(file);
 }
-function fillTeacherAdmission(){
-  fillTeacherClassSelect('admClass');
-  fillTeacherClassSelect('admPrevClass');
-  teacherCalcAdmAge();
-  var one=document.getElementById('teacherAdmissionStep1'), two=document.getElementById('teacherAdmissionStep2');
-  if(one) one.style.display='block';
-  if(two) two.style.display='none';
-}
 function teacherAdmissionNext(){
   var required=[['admDept','বিভাগ'],['admClass','শ্রেণী'],['admStartMonth','ক্লাশ শুরুর মাস'],['admName','শিক্ষার্থীর নাম'],['admDob','জন্ম তারিখ'],['admGender','লিঙ্গ'],['admFatherName','পিতার নাম'],['admGuardianName','অভিভাবকের নাম'],['admGuardianRel','সম্পর্ক'],['admGuardianMobile','অভিভাবকের মোবাইল']];
   var missing=required.filter(function(x){ var el=document.getElementById(x[0]); return !el || !el.value.trim(); }).map(function(x){ return x[1]; });
@@ -1360,7 +1358,15 @@ function submitTeacherAdmission(){
     teacherAdmissionBack();
   });
 }
-function fillTeacherAdmission(){ fillTeacherWorkflowOptions(); }
+function fillTeacherAdmission(){
+  fillTeacherWorkflowOptions();
+  fillTeacherClassSelect('admClass');
+  fillTeacherClassSelect('admPrevClass');
+  teacherCalcAdmAge();
+  var one=document.getElementById('teacherAdmissionStep1'), two=document.getElementById('teacherAdmissionStep2');
+  if(one) one.style.display='block';
+  if(two) two.style.display='none';
+}
 function renderTeacherInventory(){
   var box=document.getElementById('teacherInventory'); if(!box) return;
   var list=arr(S.invProducts);
