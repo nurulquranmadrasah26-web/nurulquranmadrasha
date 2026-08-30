@@ -1861,7 +1861,7 @@
       <div class="hazlist-field"><span class="lbl">রেকর্ড</span><input type="text" id="tchFLimit" value="25" oninput="renderTeachers()" /></div>
     </div>
     <div class="action-bar">
-      <button class="add-btn" onclick="openTeacherModal()">+ নতুন স্টাফ</button>
+      <button class="add-btn" onclick="showPage('staffAdmission'); resetStaffAdmission();">+ নতুন স্টাফ</button>
     </div>
     <div class="tbl-wrap">
       <table>
@@ -3259,15 +3259,15 @@
       <div class="hazlist-field"><span class="lbl">পরীক্ষা</span>
         <select id="ecExam"><option value="">-- পরীক্ষা --</option></select>
       </div>
-      <div class="hazlist-field"><span class="lbl">শুরুর তারিখ</span><input type="date" id="ecStart" /></div>
-      <div class="hazlist-field"><span class="lbl">শেষ তারিখ</span><input type="date" id="ecEnd" /></div>
-      <div class="hazlist-field"><span class="lbl">শুরুর সময়</span><input type="time" id="ecStartTime" /></div>
-      <div class="hazlist-field"><span class="lbl">শেষের সময়</span><input type="time" id="ecEndTime" /></div>
+      <div class="hazlist-field"><span class="lbl">শুরুর তারিখ</span><input type="date" id="ecStart" onchange="ecApplyScheduleDefaults('date')" /></div>
+      <div class="hazlist-field"><span class="lbl">শেষ তারিখ</span><input type="date" id="ecEnd" onchange="ecApplyScheduleDefaults('date')" /></div>
+      <div class="hazlist-field"><span class="lbl">শুরুর সময়</span><input type="time" id="ecStartTime" onchange="ecApplyScheduleDefaults('time')" /></div>
+      <div class="hazlist-field"><span class="lbl">শেষের সময়</span><input type="time" id="ecEndTime" onchange="ecApplyScheduleDefaults('time')" /></div>
       <div class="hazlist-field"><span class="lbl">মোট বিষয়</span><input type="text" id="ecTotalSubjects" value="০" disabled /></div>
       <div class="hazlist-field"><span class="lbl">পূর্ণমান</span><input type="text" id="ecTotalMarks" value="০" disabled /></div>
     </div>
     <div class="exam-note">
-      দ্রষ্টব্য : বিষয় অনুযায়ী তারিখ নির্ধারণ করুন (শুক্রবার বাদ দেওয়া হয়েছে)। একই তারিখে একাধিক পরীক্ষা নেওয়া যাবে, তবে একই তারিখে দুইটি বিষয়ের সময় একই বা পরস্পর overlapping হতে পারবে না। মোট বিষয় সংখ্যা এবং মোট পূর্ণমান স্বয়ংক্রিয়ভাবে গণনা হবে। বিষয় অনুযায়ী তারিখ নির্ধারণের পর সেভ বাটনে ক্লিক করুন।
+      দ্রষ্টব্য : শুরু ও শেষ তারিখ এবং শুরু ও শেষ সময় নির্বাচন করলে সকল বিষয়ে স্বয়ংক্রিয়ভাবে তারিখ/সময় বসবে (শুক্রবার বাদ দিয়ে বিষয়গুলো ধারাবাহিকভাবে বসানো হবে)। পরে প্রতিটি বিষয়ের তারিখ বা সময় আলাদাভাবে পরিবর্তন করা যাবে। একই তারিখে একাধিক পরীক্ষা নেওয়া যাবে, তবে সময় overlapping হতে পারবে না। মোট বিষয় সংখ্যা এবং মোট পূর্ণমান স্বয়ংক্রিয়ভাবে গণনা হবে।
     </div>
     <div class="tbl-wrap">
       <table>
@@ -10349,20 +10349,58 @@ function renderExamCreateSubjects() {
     return;
   }
   const dStart = document.getElementById('ecStart').value;
+  const dEnd = document.getElementById('ecEnd').value;
   const tStart = document.getElementById('ecStartTime').value;
   const tEnd = document.getElementById('ecEndTime').value;
   body.innerHTML = subs.map((s, i) => {
     const ex = ecEditingSubjectsData.find(x => x.subjectId === s.id);
+    const defaultDate = ecDefaultSubjectDate(i, dStart, dEnd);
     return `<tr>
       <td>${bn(i + 1)}</td>
       <td>${s.name}</td>
-      <td><input type="date" class="ecSubjDate" data-subject="${s.id}" value="${ex ? ex.date : (dStart || '')}" /></td>
+      <td><input type="date" class="ecSubjDate" data-subject="${s.id}" value="${ex ? ex.date : defaultDate}" /></td>
       <td><input type="time" class="ecSubjStart" data-subject="${s.id}" value="${ex ? ex.startTime : (tStart || '')}" /></td>
       <td><input type="time" class="ecSubjEnd" data-subject="${s.id}" value="${ex ? ex.endTime : (tEnd || '')}" /></td>
       <td><input type="number" min="0" class="ecSubjMarks" data-subject="${s.id}" value="${ex ? ex.fullMarks : 100}" style="width:75px;" onchange="ecUpdateTotals()" /></td>
     </tr>`;
   }).join('');
   ecUpdateTotals();
+}
+
+/* পরীক্ষার সময়সীমার ভেতর শুক্রবার বাদ দিয়ে বিষয়গুলোর জন্য ধারাবাহিক
+   ডিফল্ট তারিখ তৈরি করা হয়। প্রতিটি row-এর input ইচ্ছেমতো বদলানো যাবে। */
+function ecWorkingDates(start, end) {
+  if (!start) return [];
+  const last = end || start;
+  if (start > last) return [];
+  const out = [];
+  const cursor = new Date(start + 'T00:00:00');
+  const finish = new Date(last + 'T00:00:00');
+  while (cursor <= finish && out.length < 366) {
+    if (cursor.getDay() !== 5) out.push(cursor.toISOString().slice(0, 10));
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return out;
+}
+function ecDefaultSubjectDate(index, start, end) {
+  const dates = ecWorkingDates(start, end);
+  return dates.length ? dates[Math.min(index, dates.length - 1)] : (start || '');
+}
+function ecApplyScheduleDefaults(kind) {
+  const start = document.getElementById('ecStart')?.value || '';
+  const end = document.getElementById('ecEnd')?.value || '';
+  if (kind === 'date' && start && end && start <= end) {
+    const dates = ecWorkingDates(start, end);
+    document.querySelectorAll('.ecSubjDate').forEach((el, i) => {
+      el.value = dates.length ? dates[Math.min(i, dates.length - 1)] : start;
+    });
+  }
+  if (kind === 'time') {
+    const startTime = document.getElementById('ecStartTime')?.value || '';
+    const endTime = document.getElementById('ecEndTime')?.value || '';
+    document.querySelectorAll('.ecSubjStart').forEach(el => { el.value = startTime; });
+    document.querySelectorAll('.ecSubjEnd').forEach(el => { el.value = endTime; });
+  }
 }
 
 function ecUpdateTotals() {
@@ -10442,8 +10480,10 @@ function saveExamCreate() {
   if (!cls) { showErrorPopup('শ্রেণী নির্বাচন করুন'); return; }
   if (!examTypeId) { showErrorPopup('পরীক্ষা নির্বাচন করুন'); return; }
   if (!startDate || !endDate) { showErrorPopup('শুরু ও শেষ তারিখ দিন'); return; }
+  if (startDate > endDate) { showErrorPopup('শেষ তারিখ শুরুর তারিখের পরে হতে হবে'); return; }
 
   const subjRows = [];
+  let invalidSubjectDate = '';
   document.querySelectorAll('.ecSubjDate').forEach(inp => {
     const date = inp.value;
     if (!date) return;
@@ -10452,12 +10492,17 @@ function saveExamCreate() {
     const enEl = document.querySelector(`.ecSubjEnd[data-subject="${subjectId}"]`);
     const mkEl = document.querySelector(`.ecSubjMarks[data-subject="${subjectId}"]`);
     const subject = examSubjects.find(s => s.id === subjectId);
+    if (date < startDate || date > endDate) {
+      invalidSubjectDate = (subject ? subject.name : 'বিষয়') + ' এর তারিখ পরীক্ষার শুরু ও শেষ তারিখের মধ্যে হতে হবে';
+      return;
+    }
     subjRows.push({
       subjectId, subjectName: subject ? subject.name : '',
       date, startTime: stEl ? stEl.value : '', endTime: enEl ? enEl.value : '',
       fullMarks: mkEl ? (parseInt(mkEl.value) || 0) : 0
     });
   });
+  if (invalidSubjectDate) { showErrorPopup(invalidSubjectDate); return; }
   if (!subjRows.length) { showErrorPopup('অন্তত একটি বিষয়ের তারিখ নির্ধারণ করুন'); return; }
   const timeClash = ecFindTimeClash(subjRows);
   if (timeClash) { showErrorPopup(timeClash); return; }
@@ -12889,7 +12934,14 @@ async function loadInboxMessages() {
 // পেজ লোড হলে মেসেজ লোড করুন
 document.addEventListener('DOMContentLoaded', function() {
   // বেল আইকনে pending approval-এর সংখ্যা দেখাতে শুরুতেই একবার লোড করুন।
-  if (window.NQAuth && window.NQAuth.isLoggedIn()) loadAdminMessages();
+  if (window.NQAuth && window.NQAuth.isLoggedIn()) {
+    loadAdminMessages();
+    /* শিক্ষক নতুন submission করলে রিফ্রেশ না করেও Super Admin-এর
+       notification badge-এ সর্বোচ্চ ৩০ সেকেন্ডের মধ্যে দেখা যাবে। */
+    setInterval(function () {
+      if (window.NQAuth && window.NQAuth.isLoggedIn()) loadAdminMessages();
+    }, 30000);
+  }
 });
 
 /* ═══════════ 📩 বার্তা নোটিফিকেশন (bell-btn) ═══════════ */

@@ -850,6 +850,7 @@ function editTeacherApproval(id){
   if(!r || r.status !== 'pending') return;
   teacherEditingRequestId = id;
   var p = obj(r.payload);
+  teacherEditingHomeworkId = r.kind === 'homework' && p.editId != null ? p.editId : null;
   if(r.kind === 'homework' && obj(p).homeworkType !== 'residential'){
     goto('hw-subject');
     document.getElementById('hwdClass').value = p.className || '';
@@ -860,6 +861,8 @@ function editTeacherApproval(id){
     document.getElementById('hwdDate').value = p.date || todayISO();
   } else if(r.kind === 'homework' && obj(p).homeworkType === 'residential'){
     goto('hw-residential');
+    var catRadio = document.querySelector('input[name="hwrCat"][value="' + (p.category || '') + '"]');
+    if(catRadio) catRadio.checked = true;
     document.getElementById('hwrComment').value = p.task || p.comment || '';
     renderHwrStudents();
     arr(p.studentIds).forEach(function(sid){
@@ -1308,7 +1311,18 @@ function renderHwList(){
     var names = arr(h.students).map(function(sid){ var st = arr(S.students).find(function(x){ return x.id === sid; }); return st ? st.name : sid; });
     return { type:'res', id:h.id, title:h.category || 'আবাসিক', cls:'আবাসিক', desc:h.comment + ' — ' + names.join(', '), date:h.date, teacher:h.teacher, status:h.status };
   });
-  var all = daily.concat(res).filter(function(x){ return !filter || x.type === filter; }).reverse();
+  var pending = teacherApprovalRequests.filter(function(r){
+    return r.kind === 'homework' && r.status === 'pending';
+  }).map(function(r){
+    var p = obj(r.payload);
+    var type = p.homeworkType === 'residential' ? 'res' : 'daily';
+    return { type:type, id:p.editId || null, requestId:r._id, pending:true,
+      title:type === 'res' ? (p.category || 'আবাসিক') : (p.subject || '-'),
+      cls:type === 'res' ? 'আবাসিক' : (p.className || '-'),
+      desc:type === 'res' ? (p.task || p.comment || '') : (p.task || ''),
+      date:requestDate(p.date), teacher:p.teacherName || me().name, status:'অপেক্ষমান' };
+  });
+  var all = daily.concat(res, pending).filter(function(x){ return !filter || x.type === filter; }).reverse();
 
   document.getElementById('hwListCards').innerHTML = all.length ? all.slice(0, 10).map(function(h, i){
     return '<div class="hw-item"><div class="top"><span class="subj">' + bn(i+1) + '. ' + esc(h.title) + '</span>' +
@@ -1319,7 +1333,7 @@ function renderHwList(){
   document.getElementById('hwListBody').innerHTML = all.length ? all.map(function(h){
     return '<tr><td>' + esc(h.teacher || '-') + '</td><td style="text-align:right;">' + esc(h.cls) + ' / ' + esc(h.title) + '</td>' +
       '<td style="text-align:right;">' + esc(h.date) + '</td>' +
-      '<td style="text-align:right;"><span class="icon-btn icon-edit" onclick="editPublishedHomework(\'' + h.type + '\',' + h.id + ')">✎ এডিট</span> ' +
+      '<td style="text-align:right;"><span class="icon-btn icon-edit" onclick="' + (h.pending ? 'editTeacherApproval(\'' + h.requestId + '\')' : 'editPublishedHomework(\'' + h.type + '\',' + h.id + ')') + '">✎ এডিট</span> ' +
       (canTeacherDeleteHomework() ? '<span class="icon-btn icon-del" onclick="deleteHw(\'' + h.type + '\',' + h.id + ')">🗑</span>' : '') + '</td></tr>';
   }).join('') : '<tr><td colspan="4" class="empty-row">কোন তথ্য পাওয়া যায়নি</td></tr>';
 }
