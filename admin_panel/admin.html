@@ -3803,6 +3803,13 @@
   <!-- ═══════════════ ম্যাসেজ পাঠান ═══════════════ -->
   <div class="page" id="page-msgSend">
     <div class="section-title">ম্যাসেজ</div>
+    <div id="smsGatewayStatus" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:#e3f2fd;border-left:4px solid #1565c0;padding:10px 14px;margin-bottom:14px;color:#0d47a1;font-size:13px;">
+      <span>SMS গেটওয়ে প্রস্তুত হলে এখান থেকে সরাসরি SMS পাঠানো যাবে।</span>
+      <span style="display:flex;align-items:center;gap:8px;">
+        <span>ব্যালেন্স: <strong id="smsBalance">—</strong></span>
+        <button class="add-btn" style="background:#1565c0;padding:6px 10px;" onclick="loadSmsBalance()">রিফ্রেশ</button>
+      </span>
+    </div>
     <div class="two-col">
       <div>
         <div class="list-title-bar">
@@ -3811,7 +3818,7 @@
         </div>
         <div class="tbl-wrap">
           <table>
-            <thead><tr><th>#</th><th>নাম/মোবাইল নাম্বার</th><th>ম্যাসেজ</th><th>তারিখ</th></tr></thead>
+            <thead><tr><th>#</th><th>নাম/মোবাইল নাম্বার</th><th>ম্যাসেজ</th><th>তারিখ</th><th>ফলাফল</th></tr></thead>
             <tbody id="msgSendTableBody"></tbody>
           </table>
         </div>
@@ -3821,22 +3828,22 @@
         <div class="desig-card">
           <div class="form-row">
             <label>বিভাগ নির্বাচন</label>
-            <select id="msgDept">
+            <select id="msgDept" onchange="populateMsgGroups()">
               <option value="">-</option>
               <option>শিক্ষার্থী</option><option>অভিভাবক</option><option>স্টাফ</option>
             </select>
           </div>
           <div class="form-row">
             <label>গ্রুপ নির্বাচন</label>
-            <select id="msgGroup">
-              <option value="">-</option>
+            <select id="msgGroup" onchange="selectMsgGroup()">
+              <option value="">বিভাগ নির্বাচন করার পর গ্রুপ দেখা যাবে</option>
             </select>
           </div>
           <div class="form-row">
             <label>মোবাইল নাম্বার</label>
-            <textarea id="msgMobile" rows="2" placeholder="০১XXXXXXXXX" oninput="updateMsgMobileCount()"></textarea>
+            <textarea id="msgMobile" rows="3" placeholder="০১XXXXXXXXX (একাধিক হলে কমা/নতুন লাইনে)" oninput="updateMsgMobileCount()"></textarea>
           </div>
-          <div class="fee-total-bar" style="background:linear-gradient(135deg,#ffa000,#fb8c00); justify-content:center; margin-bottom:14px;" id="msgMobileCountBar">০</div>
+          <div class="fee-total-bar" style="background:linear-gradient(135deg,#ffa000,#fb8c00); justify-content:center; margin-bottom:14px;" id="msgMobileCountBar">০টি নাম্বার</div>
 
           <div class="form-row">
             <label>সংরক্ষিত ম্যাসেজ</label>
@@ -3850,11 +3857,16 @@
 
           <div class="form-row">
             <label>ম্যাসেজ</label>
-            <textarea id="msgText2" rows="5" placeholder="এখানে ম্যাসেজ লিখুন......" oninput="updateMsgTextCount()"></textarea>
+            <textarea id="msgText2" rows="5" maxlength="1000" placeholder="এখানে ম্যাসেজ লিখুন......" oninput="updateMsgTextCount()"></textarea>
           </div>
-          <div class="fee-total-bar" style="background:linear-gradient(135deg,#ef5350,#ef9a9a); justify-content:center; margin-bottom:14px;" id="msgTextCountBar">০</div>
+          <div class="fee-total-bar" style="background:linear-gradient(135deg,#ef5350,#ef9a9a); justify-content:center; margin-bottom:14px;" id="msgTextCountBar">০ অক্ষর</div>
 
-          <button class="add-btn" style="width:100%;background:#1565c0;" onclick="sendSmsMessage()">➤ পাঠান</button>
+          <div class="form-row">
+            <label>নির্ধারিত সময় (ঐচ্ছিক)</label>
+            <input id="msgSchedule" type="datetime-local" />
+          </div>
+
+          <button id="smsSendBtn" class="add-btn" style="width:100%;background:#1565c0;" onclick="sendSmsMessage()">➤ SMS পাঠান</button>
         </div>
       </div>
     </div>
@@ -3868,7 +3880,7 @@
     </div>
     <div class="tbl-wrap">
       <table>
-        <thead><tr><th>#</th><th>নাম/মোবাইল নাম্বার</th><th>ম্যাসেজ</th><th>তারিখ</th></tr></thead>
+        <thead><tr><th>#</th><th>নাম/মোবাইল নাম্বার</th><th>ম্যাসেজ</th><th>তারিখ</th><th>ফলাফল</th></tr></thead>
         <tbody id="msgListTableBody"></tbody>
       </table>
     </div>
@@ -8049,11 +8061,11 @@ function renderMsgSendTable() {
   const body = document.getElementById('msgSendTableBody');
   if (!body) return;
   if (!sentMessages.length) {
-    body.innerHTML = `<tr><td colspan="4" style="text-align:center;background:#f8bbd0;color:#c2185b;font-weight:600;padding:14px;">কোন রেকর্ড পাওয়া যায়নি !</td></tr>`;
+    body.innerHTML = `<tr><td colspan="5" style="text-align:center;background:#f8bbd0;color:#c2185b;font-weight:600;padding:14px;">কোন রেকর্ড পাওয়া যায়নি !</td></tr>`;
     return;
   }
   body.innerHTML = [...sentMessages].reverse().map((m, i) => `
-    <tr><td>${bn(i + 1)}</td><td>${m.target}</td><td>${m.message}</td><td>${m.date}</td></tr>`).join('');
+    <tr><td>${bn(i + 1)}</td><td>${nqMsgEsc(m.target)}</td><td>${nqMsgEsc(m.message)}</td><td>${m.date}</td><td style="color:${m.status === 'failed' ? '#c62828' : m.status === 'partial' ? '#ef6c00' : '#2e7d32'};">${nqMsgEsc(m.result || 'পাঠানো হয়েছে')}</td></tr>`).join('');
 }
 
 function fillMsgTemplateSelect() {
@@ -8070,48 +8082,265 @@ function applyMsgTemplate() {
   updateMsgTextCount();
 }
 
+function msgToEnglishDigits(value) {
+  return String(value == null ? '' : value).replace(/[০-৯]/g, d => String('০১২৩৪৫৬৭৮৯'.indexOf(d)));
+}
+
+function msgNormalizePhone(value) {
+  const digits = msgToEnglishDigits(value).replace(/[^\d]/g, '');
+  if (/^01\d{9}$/.test(digits)) return '880' + digits.slice(1);
+  if (/^8801\d{9}$/.test(digits)) return digits;
+  return '';
+}
+
+function msgPhoneList(value) {
+  const raw = String(value || '').split(/[\n,;]+/).map(v => v.trim()).filter(Boolean);
+  const valid = [];
+  const invalid = [];
+  raw.forEach(v => {
+    const normalized = msgNormalizePhone(v);
+    if (normalized) valid.push(normalized); else invalid.push(v);
+  });
+  return { valid: [...new Set(valid)], invalid: [...new Set(invalid)] };
+}
+
+function msgGroupLabel(value) {
+  if (!value) return '';
+  if (value === 'all') return 'সবাই';
+  const parts = value.split('|');
+  return parts.length > 1 ? parts[1] : value;
+}
+
+function msgFieldValues(person, dept) {
+  if (dept === 'স্টাফ') return [person.title, person.subject, person.branch, person.dept].filter(Boolean);
+  return [person.cls, person.attCls, person.className, person.branch, person.dept, person.attDept].filter(Boolean);
+}
+
+function msgPeopleForSelection() {
+  const dept = document.getElementById('msgDept')?.value || '';
+  const group = document.getElementById('msgGroup')?.value || '';
+  if (!dept) return [];
+  const people = dept === 'স্টাফ' ? (teachers || []) : (students || []);
+  if (!group || group === 'all') return people;
+  const parts = group.split('|');
+  const field = parts[0];
+  const wanted = parts.slice(1).join('|');
+  return people.filter(person => {
+    if (field === 'class') return [person.cls, person.attCls, person.className].includes(wanted);
+    if (field === 'branch') return [person.branch, person.dept, person.attDept].includes(wanted);
+    if (field === 'title') return [person.title, person.subject, person.branch, person.dept].includes(wanted);
+    return msgFieldValues(person, dept).includes(wanted);
+  });
+}
+
+function msgPhoneForPerson(person, dept) {
+  if (dept === 'অভিভাবক') {
+    return person.guardianMobile || person.fatherMobile || person.motherMobile || person.mobile || person.mobileNo || '';
+  }
+  return person.mobile || person.mobileNo || person.guardianMobile || '';
+}
+
+function populateMsgGroups() {
+  const sel = document.getElementById('msgGroup');
+  const dept = document.getElementById('msgDept')?.value || '';
+  if (!sel) return;
+  sel.innerHTML = '';
+  if (!dept) {
+    const empty = document.createElement('option');
+    empty.value = '';
+    empty.textContent = 'বিভাগ নির্বাচন করার পর গ্রুপ দেখা যাবে';
+    sel.appendChild(empty);
+    updateMsgMobileCount();
+    return;
+  }
+
+  const all = document.createElement('option');
+  all.value = 'all';
+  all.textContent = dept === 'স্টাফ' ? 'সব স্টাফ' : `সব ${dept}`;
+  sel.appendChild(all);
+
+  const people = dept === 'স্টাফ' ? (teachers || []) : (students || []);
+  const groups = new Map();
+  people.forEach(person => {
+    if (dept === 'স্টাফ') {
+      [['title', person.title], ['branch', person.branch || person.dept]].forEach(([field, value]) => {
+        if (value && !groups.has(field + '|' + value)) groups.set(field + '|' + value, value);
+      });
+    } else {
+      if (person.cls || person.attCls) {
+        const value = person.cls || person.attCls;
+        if (!groups.has('class|' + value)) groups.set('class|' + value, 'শ্রেণী: ' + value);
+      }
+      if (person.branch || person.dept) {
+        const value = person.branch || person.dept;
+        if (!groups.has('branch|' + value)) groups.set('branch|' + value, 'শাখা: ' + value);
+      }
+    }
+  });
+  [...groups.entries()].sort((a, b) => a[1].localeCompare(b[1], 'bn')).forEach(([value, label]) => {
+    const option = document.createElement('option');
+    option.value = value;
+    option.textContent = label;
+    sel.appendChild(option);
+  });
+  selectMsgGroup(true);
+}
+
+function selectMsgGroup(force) {
+  const mobile = document.getElementById('msgMobile');
+  if (!mobile || (!force && mobile.value.trim())) {
+    updateMsgMobileCount();
+    return;
+  }
+  const dept = document.getElementById('msgDept')?.value || '';
+  if (!dept) return;
+  const phones = msgPeopleForSelection()
+    .map(person => msgNormalizePhone(msgPhoneForPerson(person, dept)))
+    .filter(Boolean);
+  mobile.value = [...new Set(phones)].join('\n');
+  updateMsgMobileCount();
+}
+
 function updateMsgMobileCount() {
   const val = document.getElementById('msgMobile').value.trim();
-  const nums = val ? val.split(/[\n,]+/).map(v => v.trim()).filter(Boolean) : [];
+  const nums = msgPhoneList(val).valid;
   const bar = document.getElementById('msgMobileCountBar');
-  if (bar) bar.textContent = bn(nums.length);
+  if (bar) bar.textContent = `${bn(nums.length)}টি নাম্বার`;
 }
 
 function updateMsgTextCount() {
   const val = document.getElementById('msgText2').value;
   const bar = document.getElementById('msgTextCountBar');
-  if (bar) bar.textContent = bn(val.length);
+  const unicode = /[^\x00-\x7F]/.test(val);
+  const limit = unicode ? 70 : 160;
+  const segments = val.length ? Math.ceil(val.length / limit) : 0;
+  if (bar) bar.textContent = `${bn(val.length)} অক্ষর • ${unicode ? 'Unicode' : 'ASCII'} • আনুমানিক ${bn(segments)} SMS`;
 }
 
-function sendSmsMessage() {
+async function loadSmsBalance() {
+  const balanceEl = document.getElementById('smsBalance');
+  const statusEl = document.getElementById('smsGatewayStatus');
+  if (!balanceEl || !window.NQAuth || !window.NQAuth.isLoggedIn()) return;
+  balanceEl.textContent = 'লোড হচ্ছে...';
+  try {
+    const res = await NQAuth.authFetch('/api/sms/balance');
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.message || 'ব্যালেন্স আনা যায়নি');
+    balanceEl.textContent = data.balance ? `৳ ${data.balance}` : 'পাওয়া যায়নি';
+    if (statusEl) {
+      statusEl.style.background = '#e8f5e9';
+      statusEl.style.borderLeftColor = '#2e7d32';
+      statusEl.style.color = '#1b5e20';
+      statusEl.firstElementChild.textContent = 'SMS গেটওয়ে সংযুক্ত আছে।';
+    }
+  } catch (e) {
+    balanceEl.textContent = '—';
+    if (statusEl) {
+      statusEl.style.background = '#fff3e0';
+      statusEl.style.borderLeftColor = '#ef6c00';
+      statusEl.style.color = '#e65100';
+      statusEl.firstElementChild.textContent = e.message || 'SMS গেটওয়ে যাচাই করা যায়নি।';
+    }
+  }
+}
+
+async function loadSmsLogs() {
+  if (!window.NQAuth || !window.NQAuth.isLoggedIn()) return;
+  try {
+    const res = await NQAuth.authFetch('/api/sms/logs');
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !Array.isArray(data.logs) || !data.logs.length) return;
+    sentMessages = data.logs.map(log => ({
+      id: 'sms-' + log._id,
+      target: (log.recipients || []).join(', '),
+      message: log.message || '',
+      date: log.createdAt ? bnDate(new Date(log.createdAt).toISOString().slice(0, 10)) : '',
+      status: log.status || 'failed',
+      result: `${bn(log.successCount || 0)}টি সফল, ${bn(log.failedCount || 0)}টি ব্যর্থ`,
+      successCount: log.successCount || 0,
+      failedCount: log.failedCount || 0
+    }));
+    renderMsgSendTable();
+    renderMsgListPage();
+    renderMsgDashboard();
+  } catch (e) {
+    console.warn('SMS তালিকা লোড করা যায়নি:', e.message);
+  }
+}
+
+async function sendSmsMessage() {
   const dept = document.getElementById('msgDept').value;
   const group = document.getElementById('msgGroup').value;
   const mobileVal = document.getElementById('msgMobile').value.trim();
   const msgVal = document.getElementById('msgText2').value.trim();
   if (!msgVal) { showErrorPopup('ম্যাসেজ লিখুন'); return; }
   if (!mobileVal && !dept && !group) { showErrorPopup('বিভাগ/গ্রুপ অথবা মোবাইল নাম্বার দিন'); return; }
-  const target = mobileVal || [dept, group].filter(Boolean).join(' / ') || 'সকল';
-  const id = sentMessages.length ? sentMessages[sentMessages.length - 1].id + 1 : 1;
-  const today = new Date().toISOString().slice(0, 10);
-  sentMessages.push({ id, target, message: msgVal, date: bnDate(today) });
-  document.getElementById('msgMobile').value = '';
-  document.getElementById('msgText2').value = '';
-  document.getElementById('msgDept').value = '';
-  document.getElementById('msgTemplateSelect').value = '';
-  updateMsgMobileCount(); updateMsgTextCount();
-  renderMsgSendTable();
-  showToast('ম্যাসেজ পাঠানো হয়েছে!');
+  const parsed = msgPhoneList(mobileVal);
+  if (!parsed.valid.length) { showErrorPopup('সঠিক মোবাইল নাম্বার দিন'); return; }
+  if (parsed.invalid.length) {
+    showErrorPopup('ম্যাসেজ পাঠানো যায়নি', 'ভুল নাম্বার: ' + parsed.invalid.join(', '));
+    return;
+  }
+
+  const schedule = document.getElementById('msgSchedule')?.value || '';
+  const scheduledDateTime = schedule ? schedule.replace('T', ' ') + ':00' : '';
+  const button = document.getElementById('smsSendBtn');
+  if (button) { button.disabled = true; button.textContent = '⏳ পাঠানো হচ্ছে...'; }
+  try {
+    const res = await NQAuth.authFetch('/api/sms/send', {
+      method: 'POST',
+      body: JSON.stringify({ numbers: parsed.valid, message: msgVal, scheduledDateTime })
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.ok) {
+      const invalid = data.invalidNumbers && data.invalidNumbers.length ? ' ভুল নাম্বার: ' + data.invalidNumbers.join(', ') : '';
+      throw new Error((data.message || 'SMS পাঠানো যায়নি') + invalid);
+    }
+
+    const target = mobileVal
+      ? (dept ? `${dept} / ${msgGroupLabel(group)}` : parsed.valid.join(', '))
+      : [dept, msgGroupLabel(group)].filter(Boolean).join(' / ');
+    const status = data.status || (data.failed ? 'partial' : 'success');
+    const result = status === 'success'
+      ? `${bn(data.sent || parsed.valid.length)}টি সফল`
+      : `${bn(data.sent || 0)}টি সফল, ${bn(data.failed || 0)}টি ব্যর্থ`;
+    sentMessages.push({
+      id: 'sms-' + Date.now() + '-' + sentMessages.length,
+      target: target || parsed.valid.join(', '),
+      message: msgVal,
+      date: bnDate(new Date().toISOString().slice(0, 10)),
+      status,
+      result,
+      successCount: data.sent || 0,
+      failedCount: data.failed || 0,
+    });
+    document.getElementById('msgMobile').value = '';
+    document.getElementById('msgText2').value = '';
+    document.getElementById('msgDept').value = '';
+    document.getElementById('msgSchedule').value = '';
+    document.getElementById('msgTemplateSelect').value = '';
+    populateMsgGroups();
+    updateMsgMobileCount(); updateMsgTextCount();
+    renderMsgSendTable(); renderMsgDashboard();
+    if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
+    showToast(status === 'success' ? 'SMS সফলভাবে পাঠানো হয়েছে!' : 'কিছু SMS পাঠানো হয়েছে, কিছু ব্যর্থ হয়েছে');
+    loadSmsBalance();
+  } catch (e) {
+    showErrorPopup('SMS পাঠানো যায়নি', e.message || 'সার্ভারের সাথে সংযোগ করা যায়নি');
+  } finally {
+    if (button) { button.disabled = false; button.textContent = '➤ SMS পাঠান'; }
+  }
 }
 
 function renderMsgListPage() {
   const body = document.getElementById('msgListTableBody');
   if (!body) return;
   if (!sentMessages.length) {
-    body.innerHTML = `<tr><td colspan="4" style="text-align:center;background:#f8bbd0;color:#c2185b;font-weight:600;padding:14px;">কোন রেকর্ড পাওয়া যায়নি !</td></tr>`;
+    body.innerHTML = `<tr><td colspan="5" style="text-align:center;background:#f8bbd0;color:#c2185b;font-weight:600;padding:14px;">কোন রেকর্ড পাওয়া যায়নি !</td></tr>`;
     return;
   }
   body.innerHTML = [...sentMessages].reverse().map((m, i) => `
-    <tr><td>${bn(i + 1)}</td><td>${m.target}</td><td>${m.message}</td><td>${m.date}</td></tr>`).join('');
+    <tr><td>${bn(i + 1)}</td><td>${nqMsgEsc(m.target)}</td><td>${nqMsgEsc(m.message)}</td><td>${m.date}</td><td style="color:${m.status === 'failed' ? '#c62828' : m.status === 'partial' ? '#ef6c00' : '#2e7d32'};">${nqMsgEsc(m.result || 'পাঠানো হয়েছে')}</td></tr>`).join('');
 }
 
 function renderMsgTemplatePage() {
@@ -8137,6 +8366,7 @@ function saveMessageTemplate() {
   document.getElementById('msgTplTitle').value = '';
   document.getElementById('msgTplText').value = '';
   renderMsgTemplatePage();
+  if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
   showToast('ম্যাসেজ টেমপ্লেট সংরক্ষণ করা হয়েছে!');
 }
 
@@ -11830,9 +12060,9 @@ function showMsgListDetail() {
   if (!sentMessages.length) { showDetailModal('ম্যাসেজ তালিকা — বিস্তারিত', '<div style="text-align:center;color:#888;padding:20px;">কোনো ম্যাসেজ পাঠানো হয়নি</div>'); return; }
   const html = [...sentMessages].reverse().map(m => `
     <div style="border:1px solid #eee;border-radius:8px;padding:10px 14px;margin-bottom:8px;">
-      <div style="font-weight:600;font-size:13.5px;color:#1a237e;">${m.target}</div>
-      <div style="font-size:13px;color:#333;margin-top:4px;white-space:pre-wrap;">${m.message}</div>
-      <div style="font-size:12px;color:#888;margin-top:6px;">তারিখ: ${m.date} • ${bn(m.message.length)} অক্ষর • <span style="color:#2e7d32;">ডেলিভার্ড</span></div>
+      <div style="font-weight:600;font-size:13.5px;color:#1a237e;">${nqMsgEsc(m.target)}</div>
+      <div style="font-size:13px;color:#333;margin-top:4px;white-space:pre-wrap;">${nqMsgEsc(m.message)}</div>
+      <div style="font-size:12px;color:#888;margin-top:6px;">তারিখ: ${m.date} • ${bn(m.message.length)} অক্ষর • <span style="color:${m.status === 'partial' ? '#ef6c00' : m.status === 'failed' ? '#c62828' : '#2e7d32'};">${nqMsgEsc(m.result || 'পাঠানো হয়েছে')}</span></div>
     </div>`).join('');
   showDetailModal('ম্যাসেজ তালিকা — বিস্তারিত (মোট ' + bn(sentMessages.length) + 'টি)', html);
 }
@@ -12987,6 +13217,9 @@ function nqInitCollectorSelect() {
     nqInitCollectorSelect();
     nqCleanupDemoDues();
     populateAdmissionClasses(); // পেজ রিফ্রেশের পর সরাসরি ভর্তি পেজে ফিরলেও শ্রেণী তালিকা যেন খালি না থাকে
+    populateMsgGroups();
+    loadSmsBalance();
+    loadSmsLogs();
     restoreLastPage();
     renderHajira();
   } catch (e) {

@@ -25,6 +25,10 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || "MySuperSecretKey_2026_X9A7Bt8LmN5YQr";
 const MONGODB_URI = process.env.MONGODB_URI;
+const SMS_API_KEY = process.env.SMS_API_KEY || "";
+const SMS_SENDER_ID = process.env.SMS_SENDER_ID || "";
+const SMS_SEND_URL = process.env.SMS_SEND_URL || "https://api.automas.com.bd/smsapiv4";
+const SMS_BALANCE_URL = process.env.SMS_BALANCE_URL || "https://api.automas.com.bd/getbalancev3";
 
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "")
   .split(",")
@@ -224,6 +228,63 @@ const contactSchema = new mongoose.Schema(
   { timestamps: true }
 );
 const ContactMessage = mongoose.model("ContactMessage", contactSchema);
+
+// Automass SMS gateway-এর পাঠানো রেকর্ড
+const smsLogSchema = new mongoose.Schema(
+  {
+    sentBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    sentByName: { type: String, default: "" },
+    recipients: { type: [String], default: [] },
+    message: { type: String, required: true },
+    scheduledDateTime: { type: String, default: "" },
+    status: { type: String, enum: ["success", "partial", "failed"], default: "failed" },
+    successCount: { type: Number, default: 0 },
+    failedCount: { type: Number, default: 0 },
+    gatewayResponse: { type: mongoose.Schema.Types.Mixed, default: null },
+  },
+  { timestamps: true }
+);
+const SmsLog = mongoose.model("SmsLog", smsLogSchema);
+
+function normalizeSmsNumber(value) {
+  const digits = String(value == null ? "" : value)
+    .trim()
+    .replace(/[০-৯]/g, (d) => String("০১২৩৪৫৬৭৮৯".indexOf(d)))
+    .replace(/[^\d]/g, "");
+  if (/^01\d{9}$/.test(digits)) return "880" + digits.slice(1);
+  if (/^8801\d{9}$/.test(digits)) return digits;
+  return "";
+}
+
+function smsStatusMeaning(code) {
+  const meanings = {
+    0: "সফল",
+    101: "ম্যাসেজের দৈর্ঘ্য সঠিক নয়",
+    102: "Sender ID সঠিক নয়",
+    103: "Authentication ব্যর্থ",
+    105: "মোবাইল নাম্বার সঠিক নয়",
+    106: "API Key সঠিক নয়",
+    107: "অ্যাকাউন্ট স্থগিত",
+    108: "IP Address অনুমোদিত নয়",
+    109: "API Access অনুমোদিত নয়",
+    110: "Do Not Disturb (DND)",
+    111: "ম্যাসেজে Spam শব্দ শনাক্ত হয়েছে",
+    1000: "পর্যাপ্ত ব্যালেন্স নেই",
+    2300: "Destination route সমস্যা",
+    2400: "Destination route অনুমোদিত নয়",
+    3300: "সিস্টেম সমস্যা",
+  };
+  return meanings[Number(code)] || "গেটওয়ে ত্রুটি";
+}
+
+async function readSmsGatewayResponse(response) {
+  const text = await response.text();
+  try {
+    return text ? JSON.parse(text) : {};
+  } catch (_) {
+    return { raw: text };
+  }
+}
 
 /* ------------------------------------------------------------------ */
 /*  Auth helpers                                                       */
@@ -1121,6 +1182,141 @@ app.delete("/api/contact-messages/:id", auth, async (req, res) => {
     res.json({ ok: true });
   } catch (e) {
     res.status(500).json({ message: "মুছতে ব্যর্থ" });
+  }
+});
+
+/* ------------------------------------------------------------------ */
+/*  SMS gateway API (Automass)                                       */
+/* ------------------------------------------------------------------ */
+app.get("/api/sms/balance", auth, requirePerm("message"), async (_req, res) => {
+  if (!SMS_API_KEY) return res.status(503).json({ message: "SMS API Key সেট করা নেই" });
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15000);
+    const upstream = await fetch(
+      `${SMS_BALANCE_URL}?apikey=${encodeURIComponent(SMS_API_KEY)}`,
+      { method: "GET", signal: controller.signal }
+    );
+    clearTimeout(timer);
+    const payload = await readSmsGatewayResponse(upstream);
+    if (!upstream.ok) {
+      return res.status(502).json({ message: "SMS ব্যালেন্স আনা যায়নি", gateway: payload });
+    }
+    res.json({ ok: true, balance: payload && payload.response != null ? String(payload.response) : "" });
+  } catch (e) {
+    console.error("SMS balance error:", e.message);
+    res.status(502).json({ message: "SMS গেটওয়ের সাথে সংযোগ করা যায়নি" });
+  }
+});
+
+app.post("/api/sms/send", auth, requirePerm("message"), async (req, res) => {
+  if (!SMS_API_KEY || !SMS_SENDER_ID) {
+    return res.status(503).json({ message: "SMS API Key বা Sender ID সেট করা নেই" });
+  }
+
+  const body = req.body || {};
+  const rawNumbers = Array.isArray(body.numbers)
+    ? body.numbers
+    : String(body.numbers || "").split(/[\n,;]+/);
+  const inputNumbers = rawNumbers.map((n) => String(n).trim()).filter(Boolean);
+  const numbers = [...new Set(inputNumbers.map(normalizeSmsNumber).filter(Boolean))];
+  const invalidNumbers = [...new Set(inputNumbers.filter((n) => !normalizeSmsNumber(n)))];
+  const message = String(body.message || "").trim().slice(0, 1000);
+  const scheduledDateTime = String(body.scheduledDateTime || "").trim().slice(0, 60);
+
+  if (!numbers.length) return res.status(400).json({ message: "সঠিক মোবাইল নাম্বার দিন" });
+  if (invalidNumbers.length) {
+    return res.status(400).json({
+      message: "কিছু মোবাইল নাম্বার সঠিক নয়",
+      invalidNumbers,
+    });
+  }
+  if (!message) return res.status(400).json({ message: "ম্যাসেজ লিখুন" });
+  if (numbers.length > 2000) {
+    return res.status(400).json({ message: "একবারে সর্বোচ্চ ২০০০টি নাম্বারে পাঠানো যাবে" });
+  }
+
+  const requestBody = {
+    api_key: SMS_API_KEY,
+    senderid: SMS_SENDER_ID,
+    type: "text",
+    scheduledDateTime,
+    msg: message,
+    contacts: numbers.join("+"),
+  };
+  // বাংলা/Unicode SMS-এর জন্য ডকুমেন্টে দেওয়া smsformat=8 ব্যবহার করা হয়।
+  if (/[^\x00-\x7F]/.test(message)) requestBody.smsformat = 8;
+
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 30000);
+    const upstream = await fetch(SMS_SEND_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      body: JSON.stringify(requestBody),
+      signal: controller.signal,
+    });
+    clearTimeout(timer);
+
+    const gateway = await readSmsGatewayResponse(upstream);
+    const rows = Array.isArray(gateway && gateway.response) ? gateway.response : [];
+    const results = rows.map((row, index) => ({
+      number: row && row.msisdn ? String(row.msisdn) : numbers[index] || "",
+      status: Number(row && row.status),
+      id: row && (row.id != null ? row.id : row.sid != null ? row.sid : null),
+      message: smsStatusMeaning(row && row.status),
+    }));
+    const successCount = results.filter((row) => row.status === 0).length;
+    const failedCount = Math.max(numbers.length - successCount, 0);
+    const deliveryStatus =
+      successCount === numbers.length ? "success" : successCount ? "partial" : "failed";
+
+    try {
+      await SmsLog.create({
+        sentBy: req.user.id,
+        sentByName: req.user.name || "",
+        recipients: numbers,
+        message,
+        scheduledDateTime,
+        status: deliveryStatus,
+        successCount,
+        failedCount,
+        gatewayResponse: gateway,
+      });
+    } catch (logError) {
+      // SMS পাঠানো হয়ে গেলে log সংরক্ষণ ব্যর্থতার জন্য আবার SMS পাঠাতে বলা যাবে না।
+      console.error("SMS log save error:", logError.message);
+    }
+
+    const responseBody = {
+      ok: successCount > 0,
+      status: deliveryStatus,
+      sent: successCount,
+      failed: failedCount,
+      total: numbers.length,
+      results,
+    };
+    if (!upstream.ok && successCount === 0) {
+      return res.status(502).json({ ...responseBody, message: "SMS গেটওয়ে ম্যাসেজ গ্রহণ করেনি" });
+    }
+    res.status(successCount > 0 ? 200 : 502).json(responseBody);
+  } catch (e) {
+    console.error("SMS send error:", e.message);
+    res.status(502).json({ message: "SMS গেটওয়ের সাথে সংযোগ করা যায়নি" });
+  }
+});
+
+app.get("/api/sms/logs", auth, requirePerm("message"), async (req, res) => {
+  try {
+    const logs = await SmsLog.find({ sentBy: req.user.id })
+      .select("-gatewayResponse")
+      .sort({ createdAt: -1 })
+      .limit(500)
+      .lean();
+    res.json({ ok: true, logs });
+  } catch (e) {
+    console.error("SMS logs error:", e.message);
+    res.status(500).json({ message: "SMS তালিকা আনা যায়নি" });
   }
 });
 
