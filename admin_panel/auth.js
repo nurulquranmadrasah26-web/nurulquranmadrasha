@@ -53,6 +53,32 @@
     });
   }
 
+  /* সুপার এডমিন কোনো ব্যবহারকারীর প্যানেলে গেলে আগের সেশনটি
+     nq_impersonator-এ রাখা হয়। এখান থেকেই নিরাপদে মূল প্যানেলে ফেরা যায়। */
+  function getImpersonator() {
+    try {
+      var raw = localStorage.getItem('nq_impersonator');
+      var value = raw ? JSON.parse(raw) : null;
+      return value && value.token && value.user ? value : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function returnToAdmin() {
+    var original = getImpersonator();
+    if (!original) {
+      window.location.replace(LOGIN_URL);
+      return;
+    }
+    localStorage.setItem('nq_token', original.token);
+    localStorage.setItem('nq_user', JSON.stringify(original.user));
+    sessionStorage.removeItem('nq_token');
+    sessionStorage.removeItem('nq_user');
+    localStorage.removeItem('nq_impersonator');
+    window.location.replace('./admin.html');
+  }
+
   /* ---------- রোল সাধারণীকরণ ---------- */
   // ব্যাকএন্ড role ভ্যালু: superadmin / admin / support / teacher / student
   function normalizeRole(r) {
@@ -143,6 +169,10 @@
 
     isLoggedIn: function () { return !!getToken() && !!currentUser; },
 
+    isImpersonating: function () { return !!getImpersonator(); },
+
+    returnToAdmin: returnToAdmin,
+
     canAccessModule: function (mod) {
       if (!mod) return true;
       return allowedModules.indexOf(mod) !== -1;
@@ -164,6 +194,7 @@
       try {
         localStorage.removeItem('nq_last_page');
         localStorage.removeItem('nq_last_subpage');
+        localStorage.removeItem('nq_impersonator');
       } catch (e) {}
       window.location.href = LOGIN_URL;
     },
@@ -245,6 +276,26 @@
     });
   }
 
+  /* শিক্ষার্থী/শিক্ষক/অন্য ব্যবহারকারীর প্যানেলে সবসময় দৃশ্যমান রিটার্ন
+     অ্যাকশন — ব্রাউজারের back-এর উপর নির্ভর করতে হয় না। */
+  function mountImpersonationReturn() {
+    if (!getImpersonator() || document.getElementById('nqReturnAdminBtn')) return;
+    var btn = document.createElement('button');
+    btn.id = 'nqReturnAdminBtn';
+    btn.type = 'button';
+    btn.textContent = '↩ মূল এডমিন প্যানেলে ফিরুন';
+    btn.title = 'সুপার এডমিন প্যানেলে ফিরে যান';
+    btn.style.cssText = [
+      'position:fixed', 'top:12px', 'right:12px', 'z-index:9999',
+      'border:1px solid rgba(255,255,255,.45)', 'border-radius:999px',
+      'padding:9px 14px', 'background:#1a237e', 'color:#fff',
+      'font:600 13px Kalpurush,Hind Siliguri,Noto Sans Bengali,sans-serif',
+      'box-shadow:0 4px 14px rgba(0,0,0,.22)', 'cursor:pointer'
+    ].join(';');
+    btn.addEventListener('click', returnToAdmin);
+    document.body.appendChild(btn);
+  }
+
   /* ---------- রোল-ভিত্তিক রিডাইরেক্ট ---------- */
   function handleRoleBasedRedirect() {
     if (!NQAuth.isLoggedIn()) return; // পরে চেক হবে
@@ -287,5 +338,6 @@
     handleRoleBasedRedirect();
     
     applyRoleUI();
+    mountImpersonationReturn();
   });
 })();

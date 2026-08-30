@@ -767,6 +767,7 @@ var attActiveClass = '';
 var feeSelected = {};       // নির্বাচিত বকেয়া আইডি
 var teacherApprovalRequests = [];
 var teacherEditingRequestId = null;
+var teacherEditingHomeworkId = null;
 
 /* সংখ্যা সব জায়গায় ইংরেজিতে দেখানো হবে */
 function bn(n){ return String(n == null ? '' : n).replace(/[০-৯]/g, function(d){ return String('০১২৩৪৫৬৭৮৯'.indexOf(d)); }); }
@@ -784,6 +785,10 @@ function toast(msg){
 function arr(v){ return Array.isArray(v) ? v : []; }
 function obj(v){ return (v && typeof v === 'object' && !Array.isArray(v)) ? v : {}; }
 function me(){ return (window.NQAuth && window.NQAuth.user) || {}; }
+function canTeacherDeleteHomework(){
+  var role = String(window.NQAuth && window.NQAuth.role || '').toLowerCase().replace(/[\s_-]+/g, '');
+  return role === 'superadmin' || role === 'admin';
+}
 function requestLabel(kind){
   return ({homework:'বাড়ির কাজ',syllabus:'সিলেবাস',leave:'ছুটির আবেদন',result:'ফলাফলের তালিকা',admission:'ভর্তি আবেদন'})[kind] || 'আবেদন';
 }
@@ -808,6 +813,7 @@ function submitApproval(kind, title, payload){
   var method = editing ? 'PUT' : 'POST';
   return window.NQAuth.postJSON(path, {kind:kind, title:title, payload:payload}, method).then(function(){
     teacherEditingRequestId = null;
+    teacherEditingHomeworkId = null;
     loadTeacherApprovals();
     toast(editing ? 'আবেদনটি আপডেট হয়েছে' : 'সুপার এডমিনের অনুমোদনের জন্য পাঠানো হয়েছে');
   }).catch(function(e){ toast(e.message || 'আবেদন পাঠানো যায়নি'); throw e; });
@@ -1239,10 +1245,12 @@ function saveHwDaily(){
   var date = document.getElementById('hwdDate').value || todayISO();
   if(!cls || !subject){ toast('শ্রেণী ও বিষয় নির্বাচন করুন'); return; }
   if(!task){ toast('বাড়ির কাজ লিখুন'); return; }
-  submitApproval('homework', 'বাড়ির কাজ অনুমোদনের আবেদন', {
+  var payload = {
     homeworkType:'daily', className:cls, subject:subject, task:task,
     khata:document.getElementById('hwdKhata').checked, date:date
-  }).then(function(){
+  };
+  if(teacherEditingHomeworkId !== null) payload.editId = teacherEditingHomeworkId;
+  submitApproval('homework', 'বাড়ির কাজ অনুমোদনের আবেদন', payload).then(function(){
     document.getElementById('hwdTask').value = '';
     document.getElementById('hwdKhata').checked = false;
     renderHwDailyTable(); renderHwList();
@@ -1257,7 +1265,9 @@ function renderHwDailyTable(){
     var x = h.item, p = h.kind === 'pending' ? obj(x.payload) : x;
     return '<tr><td>' + bn(i+1) + '</td><td>' + esc(p.cls || p.className) + '</td><td style="color:var(--blue-dark)">' + esc(p.subject) + '</td><td>' + esc(h.kind === 'pending' ? requestDate(p.date) : p.date) + '</td>' +
       '<td class="status-run">' + esc(h.kind === 'pending' ? 'অপেক্ষমান' : (p.status || 'অনুমোদিত')) + '</td><td>' + esc(p.teacher || p.teacherName || '-') + '</td>' +
-      '<td>' + (h.kind === 'pending' ? '<span class="icon-btn icon-edit" onclick="editTeacherApproval(\'' + x._id + '\')">✎</span>' : '<span style="color:#159947;font-size:12px;">প্রকাশিত</span>') + '</td></tr>';
+      '<td>' + (h.kind === 'pending'
+        ? '<span class="icon-btn icon-edit" onclick="editTeacherApproval(\'' + x._id + '\')">✎ এডিট</span>'
+        : '<span class="icon-btn icon-edit" onclick="editPublishedHomework(\'daily\',' + x.id + ')">✎ এডিট</span>') + '</td></tr>';
   }).join('') : '<tr><td colspan="7" class="empty-row">কোন তথ্য পাওয়া যায়নি</td></tr>';
 }
 function deleteHwDaily(id){
@@ -1278,9 +1288,11 @@ function saveHwResidential(){
   var ids = Array.prototype.map.call(document.querySelectorAll('.hwr-stu-check:checked'), function(c){ return parseInt(c.value); });
   if(!comment){ toast('মন্তব্য লিখুন'); return; }
   if(!ids.length){ toast('অন্তত একজন শিক্ষার্থী নির্বাচন করুন'); return; }
-  submitApproval('homework','আবাসিক বাড়ির কাজ অনুমোদনের আবেদন', {
+  var payload = {
     homeworkType:'residential', category:category, task:comment, studentIds:ids, date:todayISO()
-  }).then(function(){
+  };
+  if(teacherEditingHomeworkId !== null) payload.editId = teacherEditingHomeworkId;
+  submitApproval('homework','আবাসিক বাড়ির কাজ অনুমোদনের আবেদন', payload).then(function(){
     document.getElementById('hwrComment').value = '';
     document.querySelectorAll('.hwr-stu-check').forEach(function(c){ c.checked = false; });
     renderHwList();
@@ -1307,8 +1319,36 @@ function renderHwList(){
   document.getElementById('hwListBody').innerHTML = all.length ? all.map(function(h){
     return '<tr><td>' + esc(h.teacher || '-') + '</td><td style="text-align:right;">' + esc(h.cls) + ' / ' + esc(h.title) + '</td>' +
       '<td style="text-align:right;">' + esc(h.date) + '</td>' +
-      '<td style="text-align:right;"><span class="icon-btn icon-del" onclick="deleteHw(\'' + h.type + '\',' + h.id + ')">🗑</span></td></tr>';
+      '<td style="text-align:right;"><span class="icon-btn icon-edit" onclick="editPublishedHomework(\'' + h.type + '\',' + h.id + ')">✎ এডিট</span> ' +
+      (canTeacherDeleteHomework() ? '<span class="icon-btn icon-del" onclick="deleteHw(\'' + h.type + '\',' + h.id + ')">🗑</span>' : '') + '</td></tr>';
   }).join('') : '<tr><td colspan="4" class="empty-row">কোন তথ্য পাওয়া যায়নি</td></tr>';
+}
+function editPublishedHomework(type, id){
+  var item = type === 'daily'
+    ? arr(S.hwDailyList).find(function(h){ return String(h.id) === String(id); })
+    : arr(S.hwResidentialList).find(function(h){ return String(h.id) === String(id); });
+  if(!item){ toast('বাড়ির কাজ পাওয়া যায়নি'); return; }
+  teacherEditingHomeworkId = item.id;
+  if(type === 'daily'){
+    goto('hw-subject');
+    document.getElementById('hwdClass').value = item.cls || '';
+    fillHwSubjects();
+    document.getElementById('hwdSubject').value = item.subject || '';
+    document.getElementById('hwdTask').value = item.task || '';
+    document.getElementById('hwdKhata').checked = !!item.khata;
+    document.getElementById('hwdDate').value = item.dateISO || todayISO();
+  } else {
+    goto('hw-residential');
+    var radio = document.querySelector('input[name="hwrCat"][value="' + (item.subject || item.category || '') + '"]');
+    if(radio) radio.checked = true;
+    document.getElementById('hwrComment').value = item.comment || '';
+    renderHwrStudents();
+    arr(item.students).forEach(function(sid){
+      var c = document.querySelector('.hwr-stu-check[value="' + sid + '"]');
+      if(c) c.checked = true;
+    });
+  }
+  toast('তথ্য পরিবর্তন করে সংরক্ষণ করুন; সুপার এডমিন অনুমোদনের পর প্রকাশ হবে');
 }
 function deleteHw(type, id){
   if(!confirm('মুছে ফেলতে চান?')) return;

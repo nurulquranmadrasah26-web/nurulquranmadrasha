@@ -3601,7 +3601,7 @@
             <label>তারিখ</label>
             <input type="date" id="hwdDate" />
           </div>
-          <button class="add-btn" style="width:100%;" onclick="saveHwDaily()">✓ সংরক্ষণ করুন</button>
+          <button id="hwDailySaveBtn" class="add-btn" style="width:100%;" onclick="saveHwDaily()">✓ সংরক্ষণ করুন</button>
         </div>
       </div>
     </div>
@@ -3746,7 +3746,7 @@
         <input type="date" id="hwrDate" />
       </div>
     </div>
-    <button class="haz-save-bar" style="margin-top:14px;" onclick="saveHwResidential()">✓ সংরক্ষণ করুন</button>
+    <button id="hwResidentialSaveBtn" class="haz-save-bar" style="margin-top:14px;" onclick="saveHwResidential()">✓ সংরক্ষণ করুন</button>
   </div>
 
   <!-- ═══════════════ বাড়ির কাজ - তালিকা ═══════════════ -->
@@ -7845,7 +7845,14 @@ function invOpenPickedReport() {
 /* ═══════════ বাড়ির কাজ (Homework) ═══════════ */
 let hwDailyList = [];       // {id, cls, subject, task, khata, date, teacher, status}
 let hwResidentialList = []; // {id, category, comment, students:[], date, teacher, status, branch}
+let editingHwDailyId = null;
+let editingHwResidentialId = null;
 const hwSubjectOptions = ['কুরআন','বাংলা','ইংরেজি','গণিত','আরবি','ইসলামিক স্টাডিজ'];
+
+function canEditHomework() {
+  const role = String(window.NQAuth?.role || '').toLowerCase().replace(/[\s_-]+/g, '');
+  return role === 'superadmin' || role === 'admin' || role === 'teacher';
+}
 
 function fillHwClassSelect() {
   const sel = document.getElementById('hwdClass');
@@ -7885,6 +7892,7 @@ function renderHwDailyList() {
       <td><span class="badge badge-green">${h.status}</span></td><td>${h.teacher}</td>
       <td>
         <button class="ci-btn ci-view" title="দেখুন" onclick="showHwDailyDetail(${h.id})">${icoEye}</button>
+        ${canEditHomework() ? `<button class="ci-btn ci-edit" title="সম্পাদনা" onclick="editHwDaily(${h.id})">${icoEdit}</button>` : ''}
         <button class="ci-btn ci-del-a" title="মুছুন" onclick="deleteHwDaily(${h.id})">${icoDelete}</button>
       </td>
     </tr>`).join('');
@@ -7899,17 +7907,44 @@ function saveHwDaily() {
     showErrorPopup('বাড়ির কাজ সংরক্ষণ করা যায়নি', nqReason(nqMissing([[cls, 'ক্লাস'], [subject, 'বিষয়'], [task, 'কাজের বিবরণ'], [date, 'তারিখ']])));
     return;
   }
-  const id = hwDailyList.length ? hwDailyList[hwDailyList.length - 1].id + 1 : 1;
-  hwDailyList.push({
-    id, cls, subject, task, khata: document.getElementById('hwdKhata').checked,
-    date: bnDate(date), ts: Date.now(), teacher: currentUserName(), status: 'সম্পন্ন'
-  });
+  const value = {
+    cls, subject, task, khata: document.getElementById('hwdKhata').checked,
+    date: bnDate(date), dateISO: date, ts: Date.now(), status: 'সম্পন্ন'
+  };
+  if (editingHwDailyId !== null) {
+    const existing = hwDailyList.find(h => String(h.id) === String(editingHwDailyId));
+    if (existing) Object.assign(existing, value, { editedBy: currentUserName(), editedAt: Date.now() });
+    editingHwDailyId = null;
+    showToast('বাড়ির কাজ হালনাগাদ করা হয়েছে!');
+  } else {
+    const id = hwDailyList.length ? hwDailyList[hwDailyList.length - 1].id + 1 : 1;
+    hwDailyList.push(Object.assign({ id, teacher: currentUserName() }, value));
+    showToast('বাড়ির কাজ সংরক্ষণ করা হয়েছে!');
+  }
   document.getElementById('hwdTask').value = '';
   document.getElementById('hwdDate').value = nqTodayISO();
   document.getElementById('hwdKhata').checked = false;
+  const saveBtn = document.getElementById('hwDailySaveBtn');
+  if (saveBtn) saveBtn.textContent = '✓ সংরক্ষণ করুন';
   renderHwDailyList();
   renderHwList();
-  showToast('বাড়ির কাজ সংরক্ষণ করা হয়েছে!');
+  if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
+}
+
+function editHwDaily(id) {
+  if (!canEditHomework()) { showErrorPopup('শুধু এডমিন, সুপার এডমিন ও শিক্ষক সম্পাদনা করতে পারবেন'); return; }
+  const h = hwDailyList.find(x => String(x.id) === String(id));
+  if (!h) return;
+  editingHwDailyId = h.id;
+  document.getElementById('hwdClass').value = h.cls || '';
+  fillHwSubjectSelect();
+  document.getElementById('hwdSubject').value = h.subject || '';
+  document.getElementById('hwdTask').value = h.task || '';
+  document.getElementById('hwdKhata').checked = !!h.khata;
+  document.getElementById('hwdDate').value = h.dateISO || nqTodayISO();
+  const saveBtn = document.getElementById('hwDailySaveBtn');
+  if (saveBtn) saveBtn.textContent = '✓ পরিবর্তন সংরক্ষণ করুন';
+  showToast('বাড়ির কাজের তথ্য পরিবর্তন করে সংরক্ষণ করুন');
 }
 
 function deleteHwDaily(id) {
@@ -7917,6 +7952,7 @@ function deleteHwDaily(id) {
   hwDailyList = hwDailyList.filter(h => h.id !== id);
   renderHwDailyList();
   renderHwList();
+  if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
   showToast('মুছে ফেলা হয়েছে।');
 }
 
@@ -7939,6 +7975,7 @@ function renderHwList() {
       <td><span class="badge badge-green">${h.status}</span></td>
       <td>
         <button class="ci-btn ci-view" title="দেখুন" onclick="viewHwListItem('${h.hwType}', ${h.id})">${icoEye}</button>
+        ${canEditHomework() ? `<button class="ci-btn ci-edit" title="সম্পাদনা" onclick="editHwListItem('${h.hwType}', ${h.id})">${icoEdit}</button>` : ''}
         <button class="ci-btn ci-del-a" title="মুছুন" onclick="deleteHwListItem('${h.hwType}', ${h.id})">${icoDelete}</button>
       </td>
     </tr>`).join('');
@@ -7946,6 +7983,9 @@ function renderHwList() {
 
 function viewHwListItem(hwType, id) {
   if (hwType === 'daily') showHwDailyDetail(id); else showHwResidentialDetail(id);
+}
+function editHwListItem(hwType, id) {
+  if (hwType === 'daily') editHwDaily(id); else editHwResidential(id);
 }
 function deleteHwListItem(hwType, id) {
   if (hwType === 'daily') deleteHwDaily(id); else deleteHwResidential(id);
@@ -7955,6 +7995,7 @@ function deleteHwResidential(id) {
   if (!confirm('এই তথ্যটি মুছে ফেলবেন?')) return;
   hwResidentialList = hwResidentialList.filter(h => h.id !== id);
   renderHwList();
+  if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
   showToast('মুছে ফেলা হয়েছে।');
 }
 
@@ -9047,14 +9088,102 @@ function renderFeeList() {
   body.innerHTML = rows.map((s, i) => {
     const paidRows = payments.filter(p => p.student === s.name).sort((a, b) => (a.date < b.date ? 1 : -1));
     const lastPay = paidRows[0];
-    const feeAmt = s.fee || (feeItems.find(f => f.id === 'monthly')?.amount || 500);
+    const feeAmt = getStudentCurrentFee(s);
     return `<tr>
       <td>${bn(i + 1)}</td><td>${bn(s.regNo)}</td><td>${s.name}</td><td>${s.attDept || ''}</td>
       <td>${s.attCls || s.cls || ''}</td><td>${branchTagHtml(s.branch)}</td>
       <td>${fmtTk(feeAmt)}/-</td><td>${lastPay ? lastPay.month : 'ফ্রি'}</td>
-      <td><button class="ci-btn ci-view" title="বিস্তারিত" onclick="showPage('adai'); selectAdaiStudent(${s.id});">${icoEye}</button></td>
+      <td><button class="ci-btn ci-view" title="বিস্তারিত" onclick="openFeeStudentDetail(${s.id})">${icoEye}</button></td>
     </tr>`;
   }).join('') || '<tr><td colspan="9" style="text-align:center;color:#888;">কোনো শিক্ষার্থী পাওয়া যায়নি</td></tr>';
+}
+
+/* শিক্ষার্থীর মাসিক বেতন, এক বছরের ছাড় এবং কার্যকর বর্তমান বেতন */
+function feeBaseAmount(s) {
+  if (!s) return 0;
+  if (s.previousFee !== undefined && s.previousFee !== null && s.previousFee !== '') return Number(s.previousFee) || 0;
+  if (s.monthlyFeeBeforeDiscount !== undefined && s.monthlyFeeBeforeDiscount !== null) return Number(s.monthlyFeeBeforeDiscount) || 0;
+  return Number(s.fee || (feeItems.find(f => f.id === 'monthly')?.amount || 500)) || 0;
+}
+function feeDiscountActive(discount) {
+  if (!discount || Number(discount.amount) <= 0) return false;
+  const today = nqTodayISO();
+  return (!discount.from || today >= discount.from) && (!discount.to || today <= discount.to);
+}
+function getStudentDiscount(s) {
+  const d = s && s.feeDiscount;
+  return feeDiscountActive(d) ? Math.max(0, Number(d.amount) || 0) : 0;
+}
+function getStudentCurrentFee(s) {
+  return Math.max(0, feeBaseAmount(s) - getStudentDiscount(s));
+}
+function addOneYearMinusOneDay(iso) {
+  const d = new Date((iso || nqTodayISO()) + 'T00:00:00');
+  d.setFullYear(d.getFullYear() + 1);
+  d.setDate(d.getDate() - 1);
+  return d.toISOString().slice(0, 10);
+}
+function openFeeStudentDetail(id) {
+  const s = students.find(x => String(x.id) === String(id));
+  if (!s) return;
+  const d = s.feeDiscount || {};
+  const base = feeBaseAmount(s);
+  const discount = feeDiscountActive(d) ? Number(d.amount) || 0 : 0;
+  const from = d.from || nqTodayISO();
+  const to = d.to || addOneYearMinusOneDay(from);
+  showDetailModal('শিক্ষার্থীর ফি — বিস্তারিত', `
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:16px;">
+      <div style="background:#f5f7ff;border:1px solid #dfe5ff;border-radius:8px;padding:12px;"><div style="font-size:12px;color:#666;">শিক্ষার্থী</div><strong>${cmEsc(s.name)}</strong><div style="font-size:12px;color:#777;">রেজি. ${cmEsc(s.regNo)}</div></div>
+      <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:12px;"><div style="font-size:12px;color:#666;">শিক্ষার্থীর পূর্বের বেতন</div><strong>${fmtTk(base)} টাকা</strong></div>
+      <div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:12px;"><div style="font-size:12px;color:#666;">বর্তমান বেতন</div><strong id="feeStudentCurrentPreview">${fmtTk(Math.max(0, base - discount))} টাকা</strong></div>
+    </div>
+    <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;">
+      <div style="font-weight:700;color:#1a237e;margin-bottom:10px;">শিক্ষার্থীর ছাড়</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;">
+        <label style="font-size:12px;color:#666;">ছাড়ের পরিমাণ (টাকা)
+          <input id="feeStudentDiscount" type="number" min="0" step="1" value="${discount}" oninput="updateStudentFeePreview(${s.id})" style="width:100%;margin-top:4px;padding:8px;border:1px solid #ddd;border-radius:6px;">
+        </label>
+        <label style="font-size:12px;color:#666;">ছাড় শুরুর তারিখ
+          <input id="feeStudentDiscountFrom" type="date" value="${from}" oninput="updateStudentFeePreview(${s.id})" style="width:100%;margin-top:4px;padding:8px;border:1px solid #ddd;border-radius:6px;">
+        </label>
+        <label style="font-size:12px;color:#666;">ছাড় শেষ হবে
+          <input id="feeStudentDiscountTo" type="date" value="${to}" readonly style="width:100%;margin-top:4px;padding:8px;border:1px solid #ddd;border-radius:6px;background:#f5f5f5;">
+        </label>
+      </div>
+      <div style="font-size:12px;color:#777;margin-top:10px;">ছাড়ের মেয়াদ স্বয়ংক্রিয়ভাবে এক বছর রাখা হবে।</div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">
+      <button class="btn-cancel" onclick="closeModal('detailModal')">বাতিল</button>
+      <button class="btn-save" onclick="saveStudentFeeSettings(${s.id})">ছাড় সংরক্ষণ করুন</button>
+    </div>`);
+}
+function updateStudentFeePreview(id) {
+  const s = students.find(x => String(x.id) === String(id));
+  if (!s) return;
+  const amount = Math.max(0, Number(document.getElementById('feeStudentDiscount')?.value) || 0);
+  const current = Math.max(0, feeBaseAmount(s) - amount);
+  const currentEl = document.getElementById('feeStudentCurrentPreview');
+  if (currentEl) currentEl.textContent = fmtTk(current) + ' টাকা';
+  const from = document.getElementById('feeStudentDiscountFrom')?.value || nqTodayISO();
+  const toEl = document.getElementById('feeStudentDiscountTo');
+  if (toEl) toEl.value = addOneYearMinusOneDay(from);
+}
+function saveStudentFeeSettings(id) {
+  const s = students.find(x => String(x.id) === String(id));
+  if (!s) return;
+  const amount = Math.max(0, Number(document.getElementById('feeStudentDiscount')?.value) || 0);
+  const from = document.getElementById('feeStudentDiscountFrom')?.value || nqTodayISO();
+  const to = addOneYearMinusOneDay(from);
+  const base = feeBaseAmount(s);
+  s.previousFee = base;
+  s.monthlyFeeBeforeDiscount = base;
+  s.feeDiscount = amount > 0 ? { amount, from, to, years: 1, updatedAt: new Date().toISOString(), updatedBy: nqCurrentUserName() } : null;
+  s.fee = Math.max(0, base - (feeDiscountActive(s.feeDiscount) ? amount : 0));
+  renderFeeList();
+  if (typeof renderStudents === 'function') renderStudents();
+  if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
+  closeModal('detailModal');
+  showToast(amount > 0 ? 'শিক্ষার্থীর এক বছরের ছাড় সংরক্ষণ করা হয়েছে' : 'শিক্ষার্থীর ছাড় বাতিল করা হয়েছে');
 }
 
 /* ═══════════ ফি বকেয়ার তালিকা ═══════════ */
@@ -11429,6 +11558,7 @@ function showHwDailyListDetail() {
       <div style="display:flex;justify-content:space-between;font-weight:600;font-size:14px;color:#1a237e;"><span>${h.cls} — ${h.subject}</span><span class="badge badge-green">${h.status}</span></div>
       <div style="font-size:13.5px;color:#333;margin-top:6px;white-space:pre-wrap;">${h.task}</div>
       <div style="font-size:12px;color:#888;margin-top:8px;">তারিখ: ${h.date} &nbsp;•&nbsp; শিক্ষক: ${h.teacher} &nbsp;•&nbsp; খাতা লেখা: ${h.khata ? 'হ্যাঁ' : 'না'}</div>
+      ${canEditHomework() ? `<button class="ci-btn ci-edit" style="margin-top:8px;" title="সম্পাদনা" onclick="closeModal('detailModal'); editHwDaily(${h.id})">${icoEdit} সম্পাদনা</button>` : ''}
     </div>`).join('');
   showDetailModal('বিষয়ভিত্তিক বাড়ির কাজ — বিস্তারিত (' + bn(hwDailyList.length) + 'টি)', html);
 }
@@ -11450,6 +11580,7 @@ function showHwResidentialListDetail() {
       ${h.details ? `<div style="font-size:12.5px;color:#1a237e;margin-top:4px;">${h.details}</div>` : ''}
       <div style="font-size:12px;color:#888;margin-top:8px;">শিক্ষার্থী (${bn((h.students || []).length)}): ${names || '-'}</div>
       <div style="font-size:12px;color:#888;margin-top:4px;">তারিখ: ${h.date} • শিক্ষক: ${h.teacher}</div>
+      ${canEditHomework() ? `<button class="ci-btn ci-edit" style="margin-top:8px;" title="সম্পাদনা" onclick="closeModal('detailModal'); editHwResidential(${h.id})">${icoEdit} সম্পাদনা</button>` : ''}
     </div>`;
   }).join('');
   showDetailModal('বাড়ির কাজ (আবাসিক) — বিস্তারিত (' + bn(hwResidentialList.length) + 'টি)', html);
@@ -13013,6 +13144,9 @@ function initializeHwResidentialForm() {
 
 /* তালিকা পেজ থেকে "+" চাপলে যে ফাংশনটি ডাকা হয় */
 function renderHwResidentialStudents() {
+  editingHwResidentialId = null;
+  const saveBtn = document.getElementById('hwResidentialSaveBtn');
+  if (saveBtn) saveBtn.textContent = '✓ সংরক্ষণ করুন';
   initializeHwResidentialForm();
 }
 
@@ -13062,6 +13196,32 @@ function renderHwChecklist2() {
   )).join('');
 }
 
+function editHwResidential(id) {
+  if (!canEditHomework()) { showErrorPopup('শুধু এডমিন, সুপার এডমিন ও শিক্ষক সম্পাদনা করতে পারবেন'); return; }
+  const h = hwResidentialList.find(x => String(x.id) === String(id));
+  if (!h) return;
+  editingHwResidentialId = h.id;
+  showPage('hwResidentialNew');
+  const branch = h.branchName || 'নুরানি';
+  const subject = h.subject || '';
+  document.querySelectorAll('input[name="hwrBranch"]').forEach(r => { r.checked = r.value === branch; });
+  document.querySelectorAll('input[name="hwrSubject"]').forEach(r => { r.checked = r.value === subject; });
+  updateHwResidentialLayout();
+  const commentId = subject === 'কায়দা' ? 'hwrComment2' : subject === 'আমপারা' ? 'hwrComment3' : subject === 'কুরআন' ? 'hwrComment4' : 'hwrComment1';
+  const comment = document.getElementById(commentId);
+  if (comment) comment.value = h.comment || '';
+  const date = document.getElementById('hwrDate');
+  if (date) date.value = h.dateISO || nqTodayISO();
+  const checkCls = subject === 'কায়দা' ? 'hwr-stu-2' : subject === 'আমপারা' ? 'hwr-stu-3' : subject === 'কুরআন' ? 'hwr-stu-4' : 'hwr-stu-1';
+  document.querySelectorAll('.' + checkCls).forEach(c => { c.checked = (h.students || []).map(Number).includes(Number(c.value)); });
+  if (subject === 'কায়দা') {
+    document.querySelectorAll('.hwr-progress-2').forEach(c => { c.checked = (h.progress || []).map(Number).includes(Number(c.value)); });
+  }
+  const saveBtn = document.getElementById('hwResidentialSaveBtn');
+  if (saveBtn) saveBtn.textContent = '✓ পরিবর্তন সংরক্ষণ করুন';
+  showToast('আবাসিক বাড়ির কাজের তথ্য পরিবর্তন করে সংরক্ষণ করুন');
+}
+
 /* ═══ সংরক্ষণ ═══ */
 function saveHwResidential() {
   const branch = hwrBranchValue();
@@ -13105,9 +13265,7 @@ function saveHwResidential() {
     ? Array.from(document.querySelectorAll('.hwr-progress-2:checked')).map(c => Number(c.value))
     : [];
 
-  const id = hwResidentialList.length ? hwResidentialList[hwResidentialList.length - 1].id + 1 : 1;
-  hwResidentialList.push({
-    id,
+  const value = {
     branchName: branch,
     subject: subject || '',
     category: branch + (subject ? ' — ' + subject : ''),
@@ -13118,10 +13276,19 @@ function saveHwResidential() {
     date: bnDate(date),
     dateISO: date,
     ts: Date.now(),
-    teacher: currentUserName(),
     status: 'সম্পন্ন',
     branch: 'আবাসিক'
-  });
+  };
+  if (editingHwResidentialId !== null) {
+    const existing = hwResidentialList.find(h => String(h.id) === String(editingHwResidentialId));
+    if (existing) Object.assign(existing, value, { editedBy: currentUserName(), editedAt: Date.now() });
+    editingHwResidentialId = null;
+    showToast('আবাসিক বাড়ির কাজ হালনাগাদ করা হয়েছে!');
+  } else {
+    const id = hwResidentialList.length ? hwResidentialList[hwResidentialList.length - 1].id + 1 : 1;
+    hwResidentialList.push(Object.assign({ id, teacher: currentUserName() }, value));
+    showToast('আবাসিক বাড়ির কাজ সংরক্ষণ করা হয়েছে!');
+  }
 
   /* ফর্ম রিসেট */
   ['hwrComment1', 'hwrComment2', 'hwrComment3', 'hwrComment4', 'hwrSabaqPara4', 'hwrSabaqPage4',
@@ -13131,9 +13298,11 @@ function saveHwResidential() {
   const surahSel = document.getElementById('hwrSearch3'); if (surahSel) surahSel.value = '';
   document.querySelectorAll('#page-hwResidentialNew input[type="checkbox"]').forEach(c => { c.checked = false; });
   const dEl = document.getElementById('hwrDate'); if (dEl) dEl.value = nqTodayISO();
+  const saveBtn = document.getElementById('hwResidentialSaveBtn');
+  if (saveBtn) saveBtn.textContent = '✓ সংরক্ষণ করুন';
   updateHwResidentialLayout();
 
-  showToast('আবাসিক বাড়ির কাজ সংরক্ষণ করা হয়েছে!');
+  if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
   renderHwList();
   showPage('hwList');
   renderHwList();

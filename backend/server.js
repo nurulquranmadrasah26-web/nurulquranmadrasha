@@ -1684,6 +1684,16 @@ async function appendStoreArray(key, item) {
   return value;
 }
 
+async function updateStoreArrayItem(key, id, item) {
+  const doc = await Store.findOne({ key }).lean();
+  const list = Array.isArray(doc && doc.data) ? doc.data.slice() : [];
+  const index = list.findIndex((x) => String(x && x.id) === String(id));
+  if (index < 0) return null;
+  list[index] = Object.assign({}, list[index], item, { id: list[index].id });
+  await Store.findOneAndUpdate({ key }, { data: list }, { upsert: true });
+  return list[index];
+}
+
 async function applyApprovedWorkflow(request, approver) {
   const p = request.payload || {};
   const common = {
@@ -1696,7 +1706,7 @@ async function applyApprovedWorkflow(request, approver) {
 
   if (request.kind === "homework") {
     if (p.homeworkType === "residential") {
-      return appendStoreArray("hwResidentialList", Object.assign({}, common, {
+      const item = Object.assign({}, common, {
         branchName: p.branchName || "আবাসিক",
         category: p.category || p.subject || "আবাসিক",
         subject: p.subject || "",
@@ -1709,9 +1719,15 @@ async function applyApprovedWorkflow(request, approver) {
         ts: Date.now(),
         status: "অনুমোদিত",
         branch: "আবাসিক",
-      }));
+      });
+      if (p.editId != null) {
+        const updated = await updateStoreArrayItem("hwResidentialList", p.editId, item);
+        if (!updated) throw new Error("বাড়ির কাজের রেকর্ড পাওয়া যায়নি");
+        return updated;
+      }
+      return appendStoreArray("hwResidentialList", item);
     }
-    return appendStoreArray("hwDailyList", Object.assign({}, common, {
+    const item = Object.assign({}, common, {
       cls: p.className || p.cls || "",
       subject: p.subject || "",
       task: p.task || "",
@@ -1720,7 +1736,13 @@ async function applyApprovedWorkflow(request, approver) {
       dateISO: p.date || "",
       ts: Date.now(),
       status: "অনুমোদিত",
-    }));
+    });
+    if (p.editId != null) {
+      const updated = await updateStoreArrayItem("hwDailyList", p.editId, item);
+      if (!updated) throw new Error("বাড়ির কাজের রেকর্ড পাওয়া যায়নি");
+      return updated;
+    }
+    return appendStoreArray("hwDailyList", item);
   }
 
   if (request.kind === "syllabus") {
