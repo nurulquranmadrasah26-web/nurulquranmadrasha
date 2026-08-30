@@ -2294,15 +2294,21 @@ app.post("/api/approval-requests/:id/reject", auth, async (req, res) => {
 /*  Start                                                              */
 /* ------------------------------------------------------------------ */
 async function start() {
-  if (!MONGODB_URI) {
-    console.error("FATAL: MONGODB_URI is not set");
-    process.exit(1);
-  }
-
   // ── ১) আগে পোর্ট খুলি (Render-এ cold start দ্রুত হয়) ──
   const server = app.listen(PORT, () => console.log(`[api] listening on :${PORT}`));
   server.keepAliveTimeout = 65000;
   server.headersTimeout = 70000;
+  server.on("error", (e) => {
+    console.error(`[api] failed to bind port ${PORT}:`, e.message);
+    process.exit(1);
+  });
+
+  if (!MONGODB_URI) {
+    // Render যেন port detect করতে পারে এবং লগে আসল configuration সমস্যা দেখা যায়।
+    // DB URL না থাকলে health কাজ করবে, কিন্তু data/auth API 503 দেবে।
+    console.error("FATAL: MONGODB_URI is not set — Render environment-এ এটি যোগ করুন");
+    return;
+  }
 
   // ── ২) এরপর ব্যাকগ্রাউন্ডে ডাটাবেস সংযোগ ও সিডিং ──
   dbReady = (async () => {

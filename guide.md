@@ -49,6 +49,21 @@ The teacher panel sends admission, fee collection, inventory changes, homework, 
 - Render ফ্রি প্লানে ১৫ মিনিট নিষ্ক্রিয় থাকলে সার্ভার ঘুমায়। সম্পূর্ণ সমাধান
   পেইড প্লান, অথবা cron-job.org থেকে প্রতি ১০ মিনিটে `/api/health` পিং করান।
 
+## Render Backend সেটআপ
+
+এই ZIP-এর ভেতরে backend আলাদা ফোল্ডারে আছে। Render Web Service-এ নিচের মানগুলো ব্যবহার করুন:
+
+- **Root Directory:** `backend`
+- **Build Command:** `npm install`
+- **Start Command:** `npm start`
+- **Required environment variables:** `MONGODB_URI`, `JWT_SECRET`, `SEED_SUPERADMIN_NAME`,
+  `SEED_SUPERADMIN_UID`, `SEED_SUPERADMIN_PASSWORD`, `ALLOWED_ORIGINS`
+- SMS-এর জন্য: `SMS_API_KEY`, `SMS_SENDER_ID`
+
+Root Directory `backend` না দিলে Render `server.js` খুঁজে পাবে না এবং কোনো port open হবে না।
+`MONGODB_URI` না থাকলেও server এখন Render-এর `PORT`-এ bind করবে, তবে database/auth API
+চালাতে অবশ্যই Render Environment-এ সেটি যোগ করতে হবে।
+
 ## ৪) সর্বশেষ আপডেট (১৯ আগস্ট ২০২৬)
 - **বাড়ির কাজ (আবাসিক)** — "বালিকা শাখা" নির্বাচন করলে আগে কোনো শিক্ষার্থী আসত না
   (ডাটাতে শাখার নাম "বালিকা", রেডিওতে "বালিকা শাখা")। এখন শাখার নাম নরমালাইজ করে
