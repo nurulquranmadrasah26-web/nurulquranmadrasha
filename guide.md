@@ -59,6 +59,8 @@ The teacher panel sends admission, fee collection, inventory changes, homework, 
 - **Required environment variables:** `MONGODB_URI`, `JWT_SECRET`, `SEED_SUPERADMIN_NAME`,
   `SEED_SUPERADMIN_UID`, `SEED_SUPERADMIN_PASSWORD`, `ALLOWED_ORIGINS`
 - SMS-এর জন্য: `SMS_API_KEY`, `SMS_SENDER_ID`
+- `ALLOWED_ORIGINS`-এ কমা দিয়ে `https://admin.nurulqurane.online`,
+  `https://www.nurulqurane.online` এবং `https://nurulqurane.online` রাখুন।
 
 Root Directory `backend` না দিলে Render `server.js` খুঁজে পাবে না এবং কোনো port open হবে না।
 এই কারণেই একই ZIP-এর project root-এ `package.json` ও `render.yaml`-ও রাখা হয়েছে। Existing
@@ -74,8 +76,8 @@ Render service-এর Root Directory যদি পরিবর্তন কর�
   success দেখায় না।
 - বাংলা ৭০ অক্ষর বা ASCII ১৬০ অক্ষরের বেশি হলে request-এ `type: "long"` পাঠানো হয় এবং
   বাংলা হলে `smsformat: 8` যোগ হয়।
-- মোবাইল নাম্বার `017XXXXXXXX` standard ফরম্যাটে পাঠানো হয়; বাংলা অঙ্ক ও `8801...`
-  ইনপুটও normalize হয়।
+- মোবাইল নাম্বারের বাংলা অঙ্ক, `017XXXXXXXX` এবং `8801...` ইনপুট normalize হয়;
+  gateway-তে সব নম্বর একক `8801...` international format-এ পাঠানো হয়।
 - একই request-এর browser retry/double-send আটকাতে `requestId` ও server-side log check যোগ
   করা হয়েছে। SMS POST-এ automatic retry বন্ধ করা হয়েছে, কারণ timeout-এর পরে provider
   request গ্রহণ করে থাকলে retry করলে balance দুবার কাটতে পারে।

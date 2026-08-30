@@ -22,8 +22,7 @@
 <style>
     @font-face {
       font-family: 'Kalpurush';
-      src: url('kalpurush.ttf') format('truetype'),
-           url('fonts/kalpurush.ttf') format('truetype');
+      src: url('fonts/Kalpurush.woff2') format('woff2');
       font-weight: normal; font-style: normal; font-display: swap;
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1708,6 +1707,7 @@
             <option value="all">সবাইকে</option>
             <option value="parents">অভিভাবকদের</option>
             <option value="students">শিক্ষার্থীদের</option>
+            <option value="staff">স্টাফদের</option>
           </select>
           <button class="add-btn" onclick="sendMessage()">পাঠান</button>
         </div>
@@ -8107,6 +8107,11 @@ function msgPhoneList(value) {
 function msgGroupLabel(value) {
   if (!value) return '';
   if (value === 'all') return 'সবাই';
+  if (value.indexOf('person|') === 0) {
+    const option = [...(document.getElementById('msgGroup')?.options || [])]
+      .find(item => item.value === value);
+    if (option) return option.textContent;
+  }
   const parts = value.split('|');
   return parts.length > 1 ? parts[1] : value;
 }
@@ -8125,6 +8130,9 @@ function msgPeopleForSelection() {
   const parts = group.split('|');
   const field = parts[0];
   const wanted = parts.slice(1).join('|');
+  if (field === 'person') {
+    return people.filter(person => String(person.id || person.uid || person._id || person.name) === wanted);
+  }
   return people.filter(person => {
     if (field === 'class') return [person.cls, person.attCls, person.className].includes(wanted);
     if (field === 'branch') return [person.branch, person.dept, person.attDept].includes(wanted);
@@ -8135,9 +8143,11 @@ function msgPeopleForSelection() {
 
 function msgPhoneForPerson(person, dept) {
   if (dept === 'অভিভাবক') {
-    return person.guardianMobile || person.fatherMobile || person.motherMobile || person.mobile || person.mobileNo || '';
+    return person.guardianMobile || person.fatherMobile || person.motherMobile ||
+      person.mobile || person.mobileNo || person.phone || person.contact || '';
   }
-  return person.mobile || person.mobileNo || person.guardianMobile || '';
+  return person.mobile || person.mobileNo || person.phone || person.contact ||
+    person.guardianMobile || '';
 }
 
 function populateMsgGroups() {
@@ -8163,6 +8173,11 @@ function populateMsgGroups() {
   const groups = new Map();
   people.forEach(person => {
     if (dept === 'স্টাফ') {
+      const personId = person.id || person.uid || person._id || person.name;
+      const personLabel = [person.name, person.title || person.subject].filter(Boolean).join(' — ');
+      if (personId && personLabel) {
+        groups.set('person|' + personId, 'স্টাফ: ' + personLabel);
+      }
       [['title', person.title], ['branch', person.branch || person.dept]].forEach(([field, value]) => {
         if (value && !groups.has(field + '|' + value)) groups.set(field + '|' + value, value);
       });
@@ -8270,6 +8285,30 @@ async function loadSmsLogs() {
   }
 }
 
+async function nqSendSmsRequest(numbers, message, scheduledDateTime = '') {
+  const requestId = (window.crypto && window.crypto.randomUUID)
+    ? window.crypto.randomUUID()
+    : 'sms-' + Date.now() + '-' + Math.random().toString(36).slice(2);
+  const res = await NQAuth.authFetch('/api/sms/send', {
+    method: 'POST',
+    body: JSON.stringify({ numbers, message, scheduledDateTime, requestId })
+  }, { retries: 0, timeout: 90000 });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.ok) {
+    const invalid = data.invalidNumbers && data.invalidNumbers.length
+      ? ' ভুল নাম্বার: ' + data.invalidNumbers.join(', ')
+      : '';
+    const gatewayDetails = [
+      data.gatewayHttpStatus ? 'HTTP ' + data.gatewayHttpStatus : '',
+      data.gatewayMessage && (!data.message || data.message.indexOf(data.gatewayMessage) === -1)
+        ? data.gatewayMessage : ''
+    ].filter(Boolean);
+    const gatewayDetail = gatewayDetails.length ? ' [' + gatewayDetails.join(' • ') + ']' : '';
+    throw new Error((data.message || 'SMS পাঠানো যায়নি') + gatewayDetail + invalid);
+  }
+  return data;
+}
+
 async function sendSmsMessage() {
   const dept = document.getElementById('msgDept').value;
   const group = document.getElementById('msgGroup').value;
@@ -8278,9 +8317,18 @@ async function sendSmsMessage() {
   if (!msgVal) { showErrorPopup('ম্যাসেজ লিখুন'); return; }
   if (!mobileVal && !dept && !group) { showErrorPopup('বিভাগ/গ্রুপ অথবা মোবাইল নাম্বার দিন'); return; }
   const parsed = msgPhoneList(mobileVal);
-  if (!parsed.valid.length) { showErrorPopup('সঠিক মোবাইল নাম্বার দিন'); return; }
   if (parsed.invalid.length) {
     showErrorPopup('ম্যাসেজ পাঠানো যায়নি', 'ভুল নাম্বার: ' + parsed.invalid.join(', '));
+    return;
+  }
+  const selectedPhones = msgPeopleForSelection()
+    .map(person => msgNormalizePhone(msgPhoneForPerson(person, dept)))
+    .filter(Boolean);
+  const numbers = [...new Set([...parsed.valid, ...selectedPhones])];
+  if (!numbers.length) {
+    showErrorPopup('সঠিক মোবাইল নাম্বার দিন', dept
+      ? 'নির্বাচিত তালিকায় কোনো সঠিক মোবাইল নাম্বার পাওয়া যায়নি।'
+      : '');
     return;
   }
 
@@ -8289,34 +8337,12 @@ async function sendSmsMessage() {
   const button = document.getElementById('smsSendBtn');
   if (button) { button.disabled = true; button.textContent = '⏳ পাঠানো হচ্ছে...'; }
   try {
-    const requestId = (window.crypto && window.crypto.randomUUID)
-      ? window.crypto.randomUUID()
-      : 'sms-' + Date.now() + '-' + Math.random().toString(36).slice(2);
     // SMS POST-এ retry বন্ধ: timeout হলেও provider request গ্রহণ করে থাকতে পারে,
     // তাই automatic retry করলে একই SMS ও balance দুবার যেতে পারে।
-    const res = await NQAuth.authFetch('/api/sms/send', {
-      method: 'POST',
-      body: JSON.stringify({
-        numbers: parsed.valid,
-        message: msgVal,
-        scheduledDateTime,
-        requestId
-      })
-    }, { retries: 0, timeout: 90000 });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok || !data.ok) {
-      const invalid = data.invalidNumbers && data.invalidNumbers.length ? ' ভুল নাম্বার: ' + data.invalidNumbers.join(', ') : '';
-      const gatewayDetails = [
-        data.gatewayHttpStatus ? 'HTTP ' + data.gatewayHttpStatus : '',
-        data.gatewayMessage && (!data.message || data.message.indexOf(data.gatewayMessage) === -1)
-          ? data.gatewayMessage : ''
-      ].filter(Boolean);
-      const gatewayDetail = gatewayDetails.length ? ' [' + gatewayDetails.join(' • ') + ']' : '';
-      throw new Error((data.message || 'SMS পাঠানো যায়নি') + gatewayDetail + invalid);
-    }
+    const data = await nqSendSmsRequest(numbers, msgVal, scheduledDateTime);
 
     const target = mobileVal
-      ? (dept ? `${dept} / ${msgGroupLabel(group)}` : parsed.valid.join(', '))
+      ? (dept ? `${dept} / ${msgGroupLabel(group)}` : numbers.join(', '))
       : [dept, msgGroupLabel(group)].filter(Boolean).join(' / ');
     const status = data.status || (data.failed ? 'partial' : 'success');
     const result = status === 'success'
@@ -8478,16 +8504,69 @@ function addPayment() {
   showToast('ফি গ্রহণ সংরক্ষিত হয়েছে!');
 }
 
-function sendMessage() {
+async function sendMessage() {
   const text = document.getElementById('msgText').value.trim();
   const to   = document.getElementById('msgTo');
   const toLabel = to.options[to.selectedIndex].text;
   if (!text) { showErrorPopup('প্রয়োজনীয় তথ্য দিন'); return; }
-  const id = messages.length ? messages[messages.length-1].id+1 : 1;
-  messages.push({id, text, to:toLabel, date:'২০২৬-০৭-১৪', status:'পাঠানো হয়েছে'});
-  document.getElementById('msgText').value = '';
-  renderMessages();
-  showToast('বার্তা পাঠানো হয়েছে!');
+  const selected = to.value;
+  let people;
+  if (selected === 'parents') {
+    people = students || [];
+  } else if (selected === 'students') {
+    people = students || [];
+  } else if (selected === 'staff') {
+    people = teachers || [];
+  } else {
+    people = [...(students || []), ...(teachers || [])];
+  }
+  const numbers = [...new Set(
+    people.map(person => msgNormalizePhone(
+      selected === 'parents'
+        ? (person.guardianMobile || person.fatherMobile || person.motherMobile || person.mobile || '')
+        : msgPhoneForPerson(person, selected === 'staff' ? 'স্টাফ' : '')
+    )).filter(Boolean)
+  )];
+  if (!numbers.length) {
+    showErrorPopup('বার্তা পাঠানো যায়নি', 'নির্বাচিত তালিকায় কোনো সঠিক মোবাইল নাম্বার পাওয়া যায়নি।');
+    return;
+  }
+  const button = document.querySelector('#subpage-messages .add-btn');
+  if (button) { button.disabled = true; button.textContent = '⏳ পাঠানো হচ্ছে...'; }
+  try {
+    const data = await nqSendSmsRequest(numbers, text);
+    const status = data.status || (data.failed ? 'partial' : 'success');
+    const result = status === 'success'
+      ? `${bn(data.sent || numbers.length)}টি gateway-তে গৃহীত • delivery নিশ্চিত নয়`
+      : `${bn(data.sent || 0)}টি সফল, ${bn(data.failed || 0)}টি ব্যর্থ`;
+    const id = messages.length ? messages[messages.length - 1].id + 1 : 1;
+    messages.push({
+      id, text, to: toLabel,
+      date: bnDate(new Date().toISOString().slice(0, 10)),
+      status: status === 'success' ? 'পাঠানো হয়েছে' : 'আংশিক পাঠানো হয়েছে'
+    });
+    sentMessages.push({
+      id: 'sms-' + Date.now() + '-' + sentMessages.length,
+      target: toLabel,
+      message: text,
+      date: bnDate(new Date().toISOString().slice(0, 10)),
+      status,
+      result,
+      successCount: data.sent || 0,
+      failedCount: data.failed || 0
+    });
+    document.getElementById('msgText').value = '';
+    renderMessages(); renderMsgSendTable(); renderMsgListPage(); renderMsgDashboard();
+    if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
+    showToast(status === 'success'
+      ? 'SMS gateway-তে গৃহীত হয়েছে; মোবাইলে পৌঁছানোর রিপোর্ট নিশ্চিত নয়'
+      : 'কিছু SMS পাঠানো হয়েছে, কিছু ব্যর্থ হয়েছে');
+    loadSmsBalance();
+  } catch (e) {
+    showErrorPopup('বার্তা পাঠানো যায়নি', e.message || 'সার্ভারের সাথে সংযোগ করা যায়নি');
+  } finally {
+    if (button) { button.disabled = false; button.textContent = 'পাঠান'; }
+  }
 }
 
 function saveAttendance() {

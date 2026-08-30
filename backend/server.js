@@ -34,6 +34,14 @@ const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || "")
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);
+// Production-এ admin ও public site আলাদা domain-এ থাকে। Render-এর
+// ALLOWED_ORIGINS ভুল/অসম্পূর্ণ হলেও এই trusted origin-গুলো যেন CORS-এ
+// আটকে না যায়, তাই এগুলো code-level fallback হিসেবে রাখা হয়েছে।
+const DEFAULT_ALLOWED_ORIGINS = new Set([
+  "https://admin.nurulqurane.online",
+  "https://www.nurulqurane.online",
+  "https://nurulqurane.online",
+]);
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -51,12 +59,23 @@ app.use(
     origin(origin, cb) {
       // allow requests with no origin (curl / mobile / same-origin)
       if (!origin) return cb(null, true);
-      if (ALLOWED_ORIGINS.length === 0) return cb(null, true);
-      if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
-      // Allow any *.vercel.app preview/production deployment
-      if (/\.vercel\.app$/.test(new URL(origin).hostname)) return cb(null, true);
-      // Allow localhost and 127.0.0.1
-      if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return cb(null, true);
+      let hostname = "";
+      try {
+        hostname = new URL(origin).hostname.toLowerCase();
+      } catch (_) {
+        return cb(new Error("Invalid CORS origin"));
+      }
+      if (
+        ALLOWED_ORIGINS.length === 0 ||
+        ALLOWED_ORIGINS.includes(origin) ||
+        DEFAULT_ALLOWED_ORIGINS.has(origin) ||
+        // Allow any *.vercel.app preview/production deployment
+        /\.vercel\.app$/.test(hostname) ||
+        // Allow localhost and 127.0.0.1
+        /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)
+      ) {
+        return cb(null, true);
+      }
       return cb(new Error("Not allowed by CORS: " + origin));
     },
     credentials: true,
@@ -257,10 +276,11 @@ function normalizeSmsNumber(value) {
     .trim()
     .replace(/[০-৯]/g, (d) => String("০১২৩৪৫৬৭৮৯".indexOf(d)))
     .replace(/[^\d]/g, "");
-  // Automass-এর ডকুমেন্টে 017XXXXXXXX ফরম্যাটই canonical example।
-  // 8801XXXXXXXXX ইনপুট এলেও gateway-তে local 01 ফরম্যাট পাঠাই।
-  if (/^01\d{9}$/.test(digits)) return digits;
-  if (/^8801\d{9}$/.test(digits)) return "0" + digits.slice(2);
+  // Automass local 01 এবং international 8801—দুই format-ই নেয়।
+  // Gateway-তে সব নম্বর একই international format-এ পাঠালে bulk request-এ
+  // mixed-format থেকে হওয়া status 105 (Invalid MSISDN) এড়ানো যায়।
+  if (/^01\d{9}$/.test(digits)) return "880" + digits.slice(1);
+  if (/^8801\d{9}$/.test(digits)) return digits;
   return "";
 }
 

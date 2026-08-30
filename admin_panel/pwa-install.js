@@ -166,7 +166,9 @@
   }
 
   window.addEventListener('beforeinstallprompt', function (e) {
-    e.preventDefault();
+    // Native prompt-টি preventDefault না করে ব্যবহারকারীর browser banner-ও
+    // চালু থাকতে দেওয়া হয়। Custom popup-এর Install button থাকলে সেটি
+    // deferred event-এ prompt() চালাবে।
     deferredPrompt = e;
     if (!recentlyDismissed()) setTimeout(show, 1200);
     else showFloat();
