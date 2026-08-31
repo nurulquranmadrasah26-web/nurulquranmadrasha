@@ -110,6 +110,7 @@
     display:inline-flex;align-items:center;justify-content:center;gap:8px;
     padding:12px 24px;border-radius:9px;font-weight:600;font-size:.95rem;
     cursor:pointer;border:1.5px solid transparent;transition:all .25s ease;white-space:nowrap;
+    font-family:'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;
   }
   .btn-grad{background:var(--grad-warm);color:#1a0509;box-shadow:var(--glow-sm);}
   .btn-grad:hover{transform:translateY(-2px);box-shadow:var(--glow-md);}
@@ -147,6 +148,7 @@
   .nav-btn{
     padding:9px 20px;border-radius:7px;font-weight:700;font-size:.92rem;white-space:nowrap;
     transition:transform .2s ease, box-shadow .2s ease;
+    font-family:'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;
   }
   .nav-btn:hover{transform:translateY(-1px);}
   .nav-btn-admit{background:linear-gradient(90deg,#ffb020,#ff2d78);color:#1a0509;box-shadow:var(--glow-sm);}
@@ -156,8 +158,9 @@
     border-radius:8px;width:40px;height:40px;align-items:center;justify-content:center;cursor:pointer;
   }
   .nav-burger span{width:20px;height:2px;background:#ffd21a;border-radius:2px;}
-  .nav-links-mobile-actions{display:none;gap:10px;margin-top:6px;}
+  .nav-links-mobile-actions{display:none;gap:10px;align-items:center;}
   @media (max-width:980px){
+    .nav-wrap{flex-wrap:wrap;}
     .nav-links{
       position:absolute;top:100%;left:0;right:0;background:#000;
       flex-direction:column;align-items:flex-start;gap:16px;padding:20px 24px;
@@ -165,9 +168,9 @@
       display:none;
     }
     .nav-links.open{display:flex;}
-    .nav-burger{display:flex;}
+    .nav-burger{display:flex;order:3;}
     .nav-buttons{display:none;}
-    .nav-links-mobile-actions{display:flex;}
+    .nav-links-mobile-actions{display:flex;order:2;margin-left:auto;}
   }
 
   /* ---- Hero banner (image slider) ---- */
@@ -319,51 +322,53 @@
     padding:34px 30px;box-shadow:var(--glow-strong);
     transform:translateY(14px);transition:transform .25s ease;
     position:relative;
+    font-family:'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;
   }
   .modal-overlay.open .modal-box{transform:translateY(0);}
   .modal-close{
     position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:8px;
     background:transparent;border:1px solid var(--card-border);color:var(--muted);
     display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;
-    transition:all .2s;
+    transition:all .2s;font-family:'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;
   }
   .modal-close:hover{color:var(--pink);border-color:var(--card-border-strong);}
-  .modal-title{text-align:center;margin-bottom:6px;}
+  .modal-title{text-align:center;margin-bottom:6px;font-family:'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;}
   .modal-title .brand-mark{
     width:52px;height:52px;border-radius:14px;margin:0 auto 14px;
     background:var(--grad-warm-v);display:flex;align-items:center;justify-content:center;
     font-family:'Baloo Da 2',sans-serif;font-weight:800;color:#1a0509;font-size:1.5rem;
     box-shadow:var(--glow-md);
   }
-  .modal-title h3{color:#fff;font-size:1.3rem;margin-bottom:4px;}
-  .modal-title p{color:var(--muted-2);font-size:.88rem;margin-bottom:24px;}
-  .m-field-group{margin-bottom:16px;}
-  .m-field-group label{display:block;color:var(--muted);font-size:.86rem;margin-bottom:7px;font-weight:500;}
+  .modal-title h3{color:#fff;font-size:1.3rem;margin-bottom:4px;font-family:'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;}
+  .modal-title p{color:var(--muted-2);font-size:.88rem;margin-bottom:24px;font-family:'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;}
+  .m-field-group{margin-bottom:16px;font-family:'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;}
+  .m-field-group label{display:block;color:var(--muted);font-size:.86rem;margin-bottom:7px;font-weight:500;font-family:'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;}
   .m-field{
     width:100%;padding:12px 14px;border-radius:9px;
     border:1.5px solid var(--card-border);background:#0a0a0d;color:var(--ink);
-    font-family:inherit;font-size:.96rem;transition:border-color .2s, box-shadow .2s;
+    font-family:'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;font-size:.96rem;transition:border-color .2s, box-shadow .2s;
   }
   .m-field::placeholder{color:var(--muted-2);}
   .m-field:focus{outline:none;border-color:var(--pink);box-shadow:0 0 10px rgba(236,18,99,.3);}
-  .m-pass-wrap{position:relative;}
+  .m-pass-wrap{position:relative;font-family:'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;}
   .m-eye-btn{
     position:absolute;right:12px;top:50%;transform:translateY(-50%);
     background:none;border:none;color:var(--muted-2);cursor:pointer;padding:4px;
-    display:flex;align-items:center;
+    display:flex;align-items:center;font-family:'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;
   }
   .m-eye-btn:hover{color:var(--pink);}
-  .m-row-between{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;font-size:.86rem;}
-  .m-remember{display:flex;align-items:center;gap:7px;color:var(--muted);}
+  .m-row-between{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;font-size:.86rem;font-family:'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;}
+  .m-remember{display:flex;align-items:center;gap:7px;color:var(--muted);font-family:'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;}
   .m-remember input{accent-color:var(--pink);}
-  .m-forgot{color:var(--pink);font-weight:500;}
+  .m-forgot{color:var(--pink);font-weight:500;font-family:'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;}
   .m-forgot:hover{text-decoration:underline;}
   .m-error{
     display:none;background:rgba(255,45,85,.12);border:1px solid rgba(255,45,85,.4);
     color:#ff8fa8;font-size:.85rem;padding:9px 12px;border-radius:8px;margin-bottom:16px;
+    font-family:'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;
   }
-  .m-submit{width:100%;justify-content:center;padding:13px;}
-  .m-footer-text{text-align:center;color:var(--muted-2);font-size:.85rem;margin-top:20px;}
+  .m-submit{width:100%;justify-content:center;padding:13px;font-family:'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;}
+  .m-footer-text{text-align:center;color:var(--muted-2);font-size:.85rem;margin-top:20px;font-family:'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;}
 
   /* ---- reveal ---- */
   .reveal{opacity:0;transform:translateY(16px);transition:opacity .6s ease, transform .6s ease;}
@@ -382,6 +387,7 @@
     .table-wrap{overflow-x:auto;}
     table{min-width:640px;}
   }
+  form, #loginForm{font-family:'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;}
 </style>
 </head>
 <body>
@@ -390,7 +396,7 @@
 <header class="topnav">
   <div class="nav-wrap">
     <a href="#home" class="nav-logo">
-      <img class="nav-logo-img" src="assets/app-logo.png" alt="নূরুল কোরআন মাদরাসা লোগো">
+      <img class="nav-logo-img" src="assets/receipt-header.png" alt="নূরুল কোরআন মাদরাসা লোগো">
       <span class="nav-logo-text" style="font-size:1.28rem;color:#fff;">নূরুল কোরআন মাদরাসা</span>
     </a>
     <nav class="nav-links" id="navLinks">
@@ -399,14 +405,13 @@
       <a href="#schedule">সময়সূচি</a>
       <a href="#testimonials">মতামত</a>
       <a href="#contact">যোগাযোগ</a>
-      <div class="nav-links-mobile-actions">
-        <a href="#contact" class="nav-btn nav-btn-admit">এখনই ভর্তি হোন</a>
-        <button type="button" class="nav-btn nav-btn-login" id="loginTriggerMobile">লগইন</button>
-      </div>
     </nav>
     <div class="nav-buttons">
       <a href="#contact" class="nav-btn nav-btn-admit">এখনই ভর্তি হোন</a>
       <button type="button" class="nav-btn nav-btn-login" id="loginTrigger">লগইন</button>
+    </div>
+    <div class="nav-links-mobile-actions">
+      <button type="button" class="nav-btn nav-btn-login" id="loginTriggerMobile">লগইন</button>
     </div>
     <button class="nav-burger" id="navBurger" aria-label="Menu"><span></span><span></span><span></span></button>
   </div>
