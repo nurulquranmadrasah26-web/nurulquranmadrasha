@@ -32,11 +32,13 @@
     .header {
       background: #fff;
       display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 20px;
+      padding: 0 20px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.12);
       position: sticky; top: 0; z-index: 100;
+      min-height: 90px;
     }
-    .logo-area { display: flex; align-items: center; gap: 12px; }
+    .logo-area { display: flex; align-items: center; justify-content: flex-start; flex: 1; min-height: 70px; }
+    .receipt-header-img { height: auto; width: auto; max-height: 70px; max-width: 90%; object-fit: contain; }
     .logo-circle {
       width: 46px; height: 46px; border-radius: 50%;
       background: #fff;
@@ -48,6 +50,7 @@
     .logo-text h1 { font-size: 20px; font-weight: 700; color: #1a237e; }
     .logo-text p  { font-size: 12px; color: #888; }
     .header-right { display: flex; align-items: center; gap: 12px; }
+    .user-box-actions { display: flex; flex-direction: row; align-items: center; gap: 6px; flex-wrap: nowrap; }
     .bell-btn {
       background: #f5f5f5; border: 1.5px solid #e0e0e0;
       width: 38px; height: 38px; cursor: pointer;
@@ -182,11 +185,15 @@
       padding: 8px 12px 4px; letter-spacing: .3px;
     }
     .nav-drop-item {
-      display: block; width: 100%; text-align: left; background: none; border: none;
+      display: flex; align-items: center; gap: 9px; width: 100%; text-align: left; background: none; border: none;
       font-family: 'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif; font-size: 14px; color: #333;
       padding: 8px 12px; border-radius: 6px; cursor: pointer; white-space: nowrap;
     }
     .nav-drop-item:hover { background: #eef3fb; color: #1565c0; }
+    .ndi-icon { width: 15px; height: 15px; flex-shrink: 0; display: flex; opacity: .7; }
+    .ndi-icon svg { width: 15px; height: 15px; stroke: currentColor; }
+    .nav-drop-item:hover .ndi-icon { opacity: 1; }
+    .ndi-text { overflow: hidden; text-overflow: ellipsis; }
     @media (max-width: 900px) {
       .nav-drop-menu.wide { grid-template-columns: 1fr; min-width: 240px; }
     }
@@ -221,14 +228,7 @@
       display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
     }
     @media (max-width: 1000px) { .cards-grid-4 { grid-template-columns: repeat(2, 1fr); } }
-    @media (max-width: 480px)  { .cards-grid-4 { grid-template-columns: 1fr; } }
-
-    .dash-status-row {
-      display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 8px; margin-bottom: 12px; font-size: 13.5px;
-    }
-    .dash-status-row .msg-left { color: #555; font-weight: 600; }
-    .dash-status-row .term-right { color: #2e7d32; font-weight: 600; }
+    @media (max-width: 480px)  { .cards-grid-4 { grid-template-columns: repeat(2, 1fr); gap: 8px; } }
 
     /* ───── Student Dashboard gradient cards (শিক্ষার্থী ড্যাশবোর্ড) ───── */
     .sdash-grid {
@@ -1331,13 +1331,12 @@
         align-items: center; gap: 8px; padding: 8px 12px; row-gap: 6px;
       }
       .logo-area { min-width: 0; gap: 8px; }
-      .logo-circle { width: 38px; height: 38px; flex-shrink: 0; }
-      .logo-text { min-width: 0; }
-      .logo-text h1 {
-        font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      }
+      .receipt-header-img { max-height: 60px; }
       .header-right { gap: 8px; flex-shrink: 0; }
       .bell-btn, .avatar-circle { width: 34px; height: 34px; }
+      [data-user-name] { display: none; }
+      .user-box { gap: 4px; }
+      .user-box button { padding: 5px 8px; font-size: .7rem; }
       .header-tools {
         grid-column: 1 / -1; order: 3; width: 100%; flex: none;
         display: flex; flex-wrap: nowrap; overflow-x: auto;
@@ -1347,50 +1346,102 @@
       }
       .header-tools::-webkit-scrollbar { display: none; }
       .tool-btn { font-size: 12.5px; padding: 4px 2px; }
+    }
 
-      /* main-nav : ১১টি পিল ঠিক ৩ লাইনে (৪ কলাম গ্রিড) */
+    /* ═══════════════════════════════════════════════════
+       মোবাইল: main-nav + user-box → লুকানো অফ-ক্যানভাস সাইডবার
+       (হ্যামবার্গার বাটনে ট্যাপ করলে খুলবে)
+    ═══════════════════════════════════════════════════ */
+    .mnav-toggle-btn { display: none; }
+    .mnav-close-btn { display: none; }
+    .nav-backdrop { display: none; }
+
+    @media (max-width: 700px) {
+      /* হেডারের ভিতরের হ্যামবার্গার বাটন */
+      .mnav-toggle-btn {
+        display: flex; align-items: center; justify-content: center;
+        width: 34px; height: 34px; flex-shrink: 0;
+        border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; cursor: pointer;
+      }
+      .mnav-toggle-btn svg { width: 18px; height: 18px; stroke: #444; }
+
+      /* ডেস্কটপ হেডারের user-box মোবাইলে সরিয়ে সাইডবারে বসানো হয় (JS দ্বারা) */
+      .header-right .user-box { display: none !important; }
+
+      /* সাইডবারের পেছনের কালো ওভারলে */
+      .nav-backdrop {
+        display: block; position: fixed; inset: 0; background: rgba(0,0,0,.42);
+        z-index: 399; opacity: 0; pointer-events: none; transition: opacity .2s ease;
+      }
+      body.sidebar-open .nav-backdrop { opacity: 1; pointer-events: auto; }
+
+      /* main-nav নিজেই এখন অফ-ক্যানভাস সাইডবার */
       .main-nav {
-        display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
-        gap: 6px; padding: 8px 10px;
+        position: fixed; top: 0; left: 0; z-index: 400;
+        width: 82vw; max-width: 300px; height: 100vh; height: 100dvh;
+        background: #fff; display: flex; flex-direction: column; flex-wrap: nowrap;
+        align-items: stretch;
+        gap: 0; padding: 0; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch;
+        transform: translateX(-100%); transition: transform .25s ease;
+        box-shadow: 2px 0 20px rgba(0,0,0,.18);
       }
-      .main-nav .nav-drop { min-width: 0; }
-      .main-nav .nav-pill, .main-nav .nav-btn {
-        width: 100%; min-width: 0; justify-content: center;
-        padding: 7px 4px; font-size: 11.5px; gap: 3px; line-height: 1.25;
-        border-radius: 14px; text-align: center;
-        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-      }
-      .main-nav .nav-pill-icon, .main-nav .nav-pill-icon svg { width: 13px; height: 13px; }
-      .main-nav .nav-caret { display: none; }
+      body.sidebar-open .main-nav { transform: translateX(0); }
 
-      /* ড্রপডাউন মেনু : মোবাইলে পূর্ণ প্রস্থে শীট */
+      .mnav-close-btn {
+        display: flex; align-items: center; justify-content: center;
+        align-self: flex-end; margin: 10px 12px 0 0;
+        width: 30px; height: 30px; border-radius: 50%;
+        border: none; background: #f3f4f6; color: #555; font-size: 16px; cursor: pointer;
+      }
+
+      /* সাইডবারে বসানো প্রোফাইল কার্ড (user-box) */
+      .main-nav .mnav-user-slot:empty { display: none; }
+      .main-nav .user-box {
+        display: flex !important; flex-direction: column; align-items: center; text-align: center;
+        gap: 4px; padding: 4px 20px 18px; margin-bottom: 8px; border-bottom: 1px solid #eee;
+      }
+      .main-nav .user-box > div:first-child { text-align: center; order: 1; }
+      .main-nav .user-box [data-user-name] { font-size: 15px; }
+      .main-nav .user-box .avatar-circle { width: 62px; height: 62px; font-size: 22px; order: 0; }
+      .main-nav .user-box .user-box-actions {
+        order: 2; width: 100%;
+        display: flex; flex-direction: row; flex-wrap: nowrap;
+        align-items: center; justify-content: center;
+        gap: 6px; margin-top: 8px;
+      }
+      .main-nav .user-box .user-box-actions button { flex: 1 1 0; margin-top: 0; padding: 7px 6px; }
+
+      /* নেভ পিলগুলো ফুল-উইথ, উলম্ব তালিকা */
+      .main-nav .nav-drop { min-width: 0; width: 100%; }
+      .main-nav .nav-pill, .main-nav .nav-btn {
+        width: 100%; min-width: 0; justify-content: flex-start;
+        padding: 11px 20px; font-size: 14.5px; gap: 10px; line-height: 1.3;
+        border-radius: 0; text-align: start;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        background: transparent !important; color: #333 !important; box-shadow: none !important;
+      }
+      .main-nav .nav-drop.open .nav-pill, .main-nav .nav-pill.active {
+        background: #e3f2fd !important; color: #1565c0 !important;
+      }
+      .main-nav .nav-pill-icon, .main-nav .nav-pill-icon svg { width: 17px; height: 17px; }
+      .main-nav .nav-caret { display: flex; margin-inline-start: auto; }
+
+      /* ড্রপডাউন মেনু : সাইডবারের একেবারে লেফটসাইটে থাকবে */
       .main-nav .nav-drop-menu,
       .main-nav .nav-drop-menu.wide {
-        position: fixed; left: 8px; right: 8px; top: auto; width: auto;
-        min-width: 0; max-width: none; max-height: 60vh; overflow-y: auto;
-        margin-top: 6px; padding: 8px; z-index: 300;
+        position: static; left: auto; right: auto; top: auto; width: auto;
+        min-width: 0; max-width: none; max-height: none; overflow-y: visible;
+        margin-top: 0; padding: 2px 0 2px 0; border: none; box-shadow: none; border-radius: 0;
+        z-index: auto;
       }
       .main-nav .nav-drop.open .nav-drop-menu,
       .main-nav .nav-drop.open .nav-drop-menu.wide {
-        display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 8px;
+        display: flex; flex-direction: column; gap: 0;
       }
       .main-nav .nav-drop-item {
-        white-space: normal; font-size: 12.5px; padding: 8px 8px; text-align: start;
+        white-space: normal; font-size: 13.5px; padding: 9px 8px 9px 12px; text-align: start;
       }
-
-      /* মোবাইলে মেনু খোলা থাকলে (mobile-open) স্ক্রলযোগ্য ও সম্পূর্ণ দৃশ্যমান */
-      .main-nav.mobile-open {
-        max-height: 70vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
-        box-shadow: 0 6px 18px rgba(0,0,0,.12);
-      }
-      .header.mobile-open { row-gap: 8px; }
-      .header.mobile-open .header-tools { flex-wrap: wrap; overflow: visible; }
-    }
-    @media (max-width: 420px) {
-      .main-nav { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-      .main-nav .nav-pill, .main-nav .nav-btn { font-size: 11px; }
-      .main-nav .nav-drop.open .nav-drop-menu,
-      .main-nav .nav-drop.open .nav-drop-menu.wide { grid-template-columns: 1fr; }
+      .main-nav .nav-drop-group-title { padding: 8px 8px 2px 12px; }
     }
   </style>
 </head>
@@ -1399,11 +1450,7 @@
 <!-- ═══════════════ HEADER ═══════════════ -->
 <header class="header">
   <div class="logo-area">
-    <div class="logo-circle"><img src="./assets/app-logo.png" alt="নুরুল কোরআন মাদ্রাসা লোগো" /></div>
-    <div class="logo-text">
-      <h1>নুরুল কোরআন মাদ্রাসা</h1>
-      <p>Nurul Quran Madrasa</p>
-    </div>
+    <img src="./assets/receipt-header.png" alt="নুরুল কোরআন মাদ্রাসা হেডার" class="receipt-header-img" />
   </div>
   <div class="header-tools">
     <button class="tool-btn" onclick="showPage('admission', this); resetAdmission();"><span class="tool-icon">+</span> ভর্তি</button>
@@ -1416,6 +1463,9 @@
     </button>
   </div>
   <div class="header-right">
+    <button class="mnav-toggle-btn" id="mnavToggleBtn" title="মেনু" aria-label="মেনু খুলুন" onclick="openMobileSidebar()">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
     <div class="bell-wrap">
       <button class="bell-btn" title="নোটিফিকেশন" onclick="toggleMsgPanel(event)">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
@@ -1429,19 +1479,32 @@
         <div id="nqMsgList"><div style="padding:18px;text-align:center;color:#888;">লোড হচ্ছে...</div></div>
       </div>
     </div>
-    <div class="user-box" style="display:flex;align-items:center;gap:10px;">
+    <div class="user-box" style="display:flex;align-items:center;gap:6px;flex-wrap:nowrap;justify-content:flex-end;">
       <div style="text-align:right;line-height:1.2;">
         <div data-user-name style="font-weight:700;font-size:.88rem;color:#1f2937;">ব্যবহারকারী</div>
-        <div data-user-role style="font-size:.72rem;color:#6b7280;">—</div>
+        <div data-user-role style="font-size:.72rem;color:#6b7280;"></div>
       </div>
       <div class="avatar-circle">ব</div>
-      <button data-logout title="লগআউট" style="background:#fef2f2;color:#b42318;border:1px solid #fecaca;border-radius:8px;padding:6px 12px;font-size:.82rem;font-weight:600;cursor:pointer;">লগআউট</button>
+      <div class="user-box-actions">
+        <button onclick="showUserProfile()" title="প্রোফাইল" style="background:#e3f2fd;color:#1565c0;border:1px solid #90caf9;border-radius:8px;padding:6px 12px;font-size:.75rem;font-weight:600;cursor:pointer;font-family:'Kalpurush','Hind Siliguri','Noto Sans Bengali',sans-serif;white-space:nowrap;">প্রোফাইল</button>
+        <button onclick="showUserSettings()" title="সেটিং" style="background:#f0f4f8;color:#555;border:1px solid #d0d0d0;border-radius:8px;padding:6px 12px;font-size:.75rem;font-weight:600;cursor:pointer;font-family:'Kalpurush','Hind Siliguri','Noto Sans Bengali',sans-serif;white-space:nowrap;">সেটিং</button>
+        <button data-logout title="লগআউট" style="background:#fef2f2;color:#b42318;border:1px solid #fecaca;border-radius:8px;padding:6px 12px;font-size:.75rem;font-weight:600;cursor:pointer;font-family:'Kalpurush','Hind Siliguri','Noto Sans Bengali',sans-serif;white-space:nowrap;">লগআউট</button>
+      </div>
     </div>
   </div>
 </header>
 
+<!-- মোবাইল সাইডবার ওভারলে (ব্যাকড্রপ) -->
+<div class="nav-backdrop" id="navBackdrop" onclick="closeMobileSidebar()"></div>
+
 <!-- ═══════════════ MAIN NAV ═══════════════ -->
 <nav class="main-nav" id="mainNav">
+
+  <!-- মোবাইলে সাইডবার বন্ধ করার বাটন -->
+  <button class="mnav-close-btn" onclick="closeMobileSidebar()" aria-label="মেনু বন্ধ করুন">✕</button>
+
+  <!-- মোবাইলে user-box এখানে সরিয়ে আনা হবে (JS) -->
+  <div class="mnav-user-slot" id="mnavUserSlot"></div>
 
   <!-- ড্যাশবোর্ড (direct link, no dropdown) -->
   <button class="nav-pill nav-p-dash active" id="navPillDashboard" data-mod="dash" onclick="showPage('dashboard'); setActivePill(this);">
@@ -1456,19 +1519,19 @@
       শিক্ষার্থী <span class="nav-caret"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
     </button>
     <div class="nav-drop-menu">
-      <button class="nav-drop-item" onclick="showPage('studentDashboard')">শিক্ষার্থী ড্যাশবোর্ড</button>
-      <button class="nav-drop-item" onclick="showPage('admission'); resetAdmission();">ভর্তি</button>
-      <button class="nav-drop-item" onclick="showPage('students')">শিক্ষার্থীর তালিকা</button>
-      <button class="nav-drop-item" onclick="showPage('hajira'); renderHajira();">হাজিরা</button>
-      <button class="nav-drop-item" onclick="showPage('hazlist'); renderHazList();">হাজিরার তালিকা</button>
-      <button class="nav-drop-item" onclick="showPage('leaveapply'); renderLeaveApply();">ছুটির আবেদন</button>
-      <button class="nav-drop-item" onclick="showPage('leaveadmin'); renderLeaveAdmin();">ছুটি ব্যবস্থাপনা</button>
-      <button class="nav-drop-item" onclick="showPage('grouptransfer'); renderGroupTransfer();">শিক্ষার্থীর গ্রুপ পরিবর্তন</button>
-      <button class="nav-drop-item" onclick="showPage('classtransfer'); renderClassTransfer();">শিক্ষার্থীর শ্রেণী পরিবর্তন</button>
-      <button class="nav-drop-item" onclick="showPage('stumobile'); renderStuMobile();">মোবাইল নং</button>
-      <button class="nav-drop-item" onclick="showPage('stutransfer'); renderStuTransfer();">স্থানান্তর/বহিষ্কার</button>
-      <button class="nav-drop-item" onclick="showPage('parents'); renderParents && renderParents();">অভিভাবক তালিকা</button>
-      <button class="nav-drop-item" onclick="showPage('committee'); renderCommittee && renderCommittee();">ক্লাস কমিটি</button>
+      <button class="nav-drop-item" onclick="showPage('studentDashboard')"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span class="ndi-text">শিক্ষার্থী ড্যাশবোর্ড</span></button>
+      <button class="nav-drop-item" onclick="showPage('admission'); resetAdmission();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span><span class="ndi-text">ভর্তি</span></button>
+      <button class="nav-drop-item" onclick="showPage('students')"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></span><span class="ndi-text">শিক্ষার্থীর তালিকা</span></button>
+      <button class="nav-drop-item" onclick="showPage('hajira'); renderHajira();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></span><span class="ndi-text">হাজিরা</span></button>
+      <button class="nav-drop-item" onclick="showPage('hazlist'); renderHazList();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg></span><span class="ndi-text">হাজিরার তালিকা</span></button>
+      <button class="nav-drop-item" onclick="showPage('leaveapply'); renderLeaveApply();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="9.5" y1="14" x2="14.5" y2="19"/><line x1="14.5" y1="14" x2="9.5" y2="19"/></svg></span><span class="ndi-text">ছুটির আবেদন</span></button>
+      <button class="nav-drop-item" onclick="showPage('leaveadmin'); renderLeaveAdmin();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16l2 2 4-4"/></svg></span><span class="ndi-text">ছুটি ব্যবস্থাপনা</span></button>
+      <button class="nav-drop-item" onclick="showPage('grouptransfer'); renderGroupTransfer();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h11l-3-3"/><path d="M17 17H6l3 3"/></svg></span><span class="ndi-text">শিক্ষার্থীর গ্রুপ পরিবর্তন</span></button>
+      <button class="nav-drop-item" onclick="showPage('classtransfer'); renderClassTransfer();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h11l-3-3"/><path d="M17 17H6l3 3"/></svg></span><span class="ndi-text">শিক্ষার্থীর শ্রেণী পরিবর্তন</span></button>
+      <button class="nav-drop-item" onclick="showPage('stumobile'); renderStuMobile();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.96.36 1.9.7 2.81a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0122 16.92z"/></svg></span><span class="ndi-text">মোবাইল নং</span></button>
+      <button class="nav-drop-item" onclick="showPage('stutransfer'); renderStuTransfer();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a4 4 0 014-4h4a4 4 0 014 4v2"/><line x1="17" y1="8" x2="22" y2="13"/><line x1="22" y1="8" x2="17" y2="13"/></svg></span><span class="ndi-text">স্থানান্তর/বহিষ্কার</span></button>
+      <button class="nav-drop-item" onclick="showPage('parents'); renderParents && renderParents();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-3-3.87"/><path d="M7 21v-2a4 4 0 013-3.87"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.85"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></span><span class="ndi-text">অভিভাবক তালিকা</span></button>
+      <button class="nav-drop-item" onclick="showPage('committee'); renderCommittee && renderCommittee();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-3-3.87"/><path d="M7 21v-2a4 4 0 013-3.87"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.85"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></span><span class="ndi-text">ক্লাস কমিটি</span></button>
     </div>
   </div>
 
@@ -1479,18 +1542,18 @@
       স্টাফ <span class="nav-caret"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
     </button>
     <div class="nav-drop-menu">
-      <button class="nav-drop-item" onclick="showPage('staffdash'); renderStaffDash();">স্টাফ ড্যাশবোর্ড</button>
-      <button class="nav-drop-item" onclick="showPage('staffAdmission'); resetStaffAdmission();">নিয়োগ</button>
-      <button class="nav-drop-item" onclick="showPage('teachers'); renderTeachers();">স্টাফ তালিকা</button>
-      <button class="nav-drop-item" onclick="showPage('staffhaz'); renderStaffHaz();">হাজিরা</button>
-      <button class="nav-drop-item" onclick="showPage('staffmonthly'); renderStaffMonthly();">মাসওয়ারী রিপোর্ট</button>
-      <button class="nav-drop-item" onclick="showPage('staffhazdetail'); renderStaffHazDetail();">হাজিরার বিস্তারিত</button>
-      <button class="nav-drop-item" onclick="showPage('staffoutwork'); renderStaffOutWork();">বাইরের কাজ</button>
-      <button class="nav-drop-item" onclick="showPage('staffsalary'); renderStaffSalary();">বেতন শীট</button>
-      <button class="nav-drop-item" onclick="showPage('staffleaveapply'); renderStaffLeaveApply();">ছুটির আবেদন</button>
-      <button class="nav-drop-item" onclick="showPage('staffleaveadmin'); renderStaffLeaveAdmin();">ছুটি ব্যবস্থাপনা</button>
-      <button class="nav-drop-item" onclick="showPage('staffclassschedule'); renderStaffClassSchedule();">শ্রেণীর দায়িত্বের তালিকা</button>
-      <button class="nav-drop-item" onclick="showPage('staffdesignation'); renderStaffDesignation();">স্টাফ পদবী</button>
+      <button class="nav-drop-item" onclick="showPage('staffdash'); renderStaffDash();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span class="ndi-text">স্টাফ ড্যাশবোর্ড</span></button>
+      <button class="nav-drop-item" onclick="showPage('staffAdmission'); resetStaffAdmission();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span><span class="ndi-text">নিয়োগ</span></button>
+      <button class="nav-drop-item" onclick="showPage('teachers'); renderTeachers();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></span><span class="ndi-text">স্টাফ তালিকা</span></button>
+      <button class="nav-drop-item" onclick="showPage('staffhaz'); renderStaffHaz();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></span><span class="ndi-text">হাজিরা</span></button>
+      <button class="nav-drop-item" onclick="showPage('staffmonthly'); renderStaffMonthly();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span><span class="ndi-text">মাসওয়ারী রিপোর্ট</span></button>
+      <button class="nav-drop-item" onclick="showPage('staffhazdetail'); renderStaffHazDetail();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg></span><span class="ndi-text">হাজিরার বিস্তারিত</span></button>
+      <button class="nav-drop-item" onclick="showPage('staffoutwork'); renderStaffOutWork();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v16"/></svg></span><span class="ndi-text">বাইরের কাজ</span></button>
+      <button class="nav-drop-item" onclick="showPage('staffsalary'); renderStaffSalary();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 010-4h14v4"/><path d="M3 5v14a2 2 0 002 2h16v-5"/><path d="M18 12a2 2 0 000 4h4v-4z"/></svg></span><span class="ndi-text">বেতন শীট</span></button>
+      <button class="nav-drop-item" onclick="showPage('staffleaveapply'); renderStaffLeaveApply();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="9.5" y1="14" x2="14.5" y2="19"/><line x1="14.5" y1="14" x2="9.5" y2="19"/></svg></span><span class="ndi-text">ছুটির আবেদন</span></button>
+      <button class="nav-drop-item" onclick="showPage('staffleaveadmin'); renderStaffLeaveAdmin();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M9 16l2 2 4-4"/></svg></span><span class="ndi-text">ছুটি ব্যবস্থাপনা</span></button>
+      <button class="nav-drop-item" onclick="showPage('staffclassschedule'); renderStaffClassSchedule();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span><span class="ndi-text">শ্রেণীর দায়িত্বের তালিকা</span></button>
+      <button class="nav-drop-item" onclick="showPage('staffdesignation'); renderStaffDesignation();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41L13.42 20.58a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span><span class="ndi-text">স্টাফ পদবী</span></button>
     </div>
   </div>
 
@@ -1501,14 +1564,14 @@
       ফি <span class="nav-caret"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
     </button>
     <div class="nav-drop-menu">
-      <button class="nav-drop-item" onclick="showPage('feedash')">ফি ড্যাশবোর্ড</button>
-      <button class="nav-drop-item" onclick="showPage('feeadd')">ফি যোগ করুন</button>
-      <button class="nav-drop-item" onclick="showPage('feelist')">ফি তালিকা</button>
-      <button class="nav-drop-item" onclick="showPage('duelist')">বকেয়া তালিকা</button>
-      <button class="nav-drop-item" onclick="showPage('adai'); resetAdai();">আদায়</button>
-      <button class="nav-drop-item" onclick="showPage('accounts')">আদায়ের তালিকা</button>
-      <button class="nav-drop-item" onclick="showPage('duedetail')">বকেয়ার বিস্তারিত</button>
-      <button class="nav-drop-item" onclick="showPage('collectiondetail')">আদায়ের বিস্তারিত</button>
+      <button class="nav-drop-item" onclick="showPage('feedash')"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span class="ndi-text">ফি ড্যাশবোর্ড</span></button>
+      <button class="nav-drop-item" onclick="showPage('feeadd')"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span><span class="ndi-text">ফি যোগ করুন</span></button>
+      <button class="nav-drop-item" onclick="showPage('feelist')"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></span><span class="ndi-text">ফি তালিকা</span></button>
+      <button class="nav-drop-item" onclick="showPage('duelist')"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></span><span class="ndi-text">বকেয়া তালিকা</span></button>
+      <button class="nav-drop-item" onclick="showPage('adai'); resetAdai();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10"/><path d="M15 9.3c0-1.3-1.34-2.3-3-2.3s-3 1-3 2.3S10.34 11.6 12 11.6s3 1 3 2.3-1.34 2.3-3 2.3-3-1-3-2.3"/></svg></span><span class="ndi-text">আদায়</span></button>
+      <button class="nav-drop-item" onclick="showPage('accounts')"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg></span><span class="ndi-text">আদায়ের তালিকা</span></button>
+      <button class="nav-drop-item" onclick="showPage('duedetail')"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg></span><span class="ndi-text">বকেয়ার বিস্তারিত</span></button>
+      <button class="nav-drop-item" onclick="showPage('collectiondetail')"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg></span><span class="ndi-text">আদায়ের বিস্তারিত</span></button>
     </div>
   </div>
 
@@ -1519,15 +1582,15 @@
       পরীক্ষা <span class="nav-caret"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
     </button>
     <div class="nav-drop-menu">
-      <button class="nav-drop-item" onclick="showPage('examsubject'); renderExamSubjects();">পরীক্ষার বিষয়</button>
-      <button class="nav-drop-item" onclick="showPage('examtype'); renderExamTypes();">পরীক্ষার ধরন</button>
-      <button class="nav-drop-item" onclick="showPage('examcreate'); renderExamCreatePage();">পরীক্ষা তৈরি</button>
-      <button class="nav-drop-item" onclick="showPage('syllabus'); renderSyllabusPage();">সিলেবাস</button>
-      <button class="nav-drop-item" onclick="showPage('examlist'); renderExamList();">পরীক্ষার তালিকা</button>
-      <button class="nav-drop-item" onclick="showPage('resultcreate'); renderResultCreatePage();">ফলাফল তৈরি</button>
-      <button class="nav-drop-item" onclick="showPage('resultlist'); renderResultList();">ফলাফলের তালিকা</button>
-      <button class="nav-drop-item" onclick="showPage('resultpublish'); renderResultPublishList();">ফলাফল প্রকাশ</button>
-      <button class="nav-drop-item" onclick="showPage('marksheet'); resetMarksheetSearch();">পরীক্ষার মার্কশীট</button>
+      <button class="nav-drop-item" onclick="showPage('examsubject'); renderExamSubjects();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></span><span class="ndi-text">পরীক্ষার বিষয়</span></button>
+      <button class="nav-drop-item" onclick="showPage('examtype'); renderExamTypes();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41L13.42 20.58a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span><span class="ndi-text">পরীক্ষার ধরন</span></button>
+      <button class="nav-drop-item" onclick="showPage('examcreate'); renderExamCreatePage();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span><span class="ndi-text">পরীক্ষা তৈরি</span></button>
+      <button class="nav-drop-item" onclick="showPage('syllabus'); renderSyllabusPage();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></span><span class="ndi-text">সিলেবাস</span></button>
+      <button class="nav-drop-item" onclick="showPage('examlist'); renderExamList();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></span><span class="ndi-text">পরীক্ষার তালিকা</span></button>
+      <button class="nav-drop-item" onclick="showPage('resultcreate'); renderResultCreatePage();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.5 13.5L17 22l-5-3-5 3 1.5-8.5"/></svg></span><span class="ndi-text">ফলাফল তৈরি</span></button>
+      <button class="nav-drop-item" onclick="showPage('resultlist'); renderResultList();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></span><span class="ndi-text">ফলাফলের তালিকা</span></button>
+      <button class="nav-drop-item" onclick="showPage('resultpublish'); renderResultPublishList();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></span><span class="ndi-text">ফলাফল প্রকাশ</span></button>
+      <button class="nav-drop-item" onclick="showPage('marksheet'); resetMarksheetSearch();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg></span><span class="ndi-text">পরীক্ষার মার্কশীট</span></button>
     </div>
   </div>
 
@@ -1538,12 +1601,12 @@
       ক্লাস রুটিন <span class="nav-caret"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
     </button>
     <div class="nav-drop-menu">
-      <button class="nav-drop-item" onclick="showPage('crDailyNew'); renderCrDailyNew();">নতুন (দৈনন্দিন)</button>
-      <button class="nav-drop-item" onclick="showPage('crResidentialNew'); renderCrResidentialList();">নতুন (আবাসিক)</button>
-      <button class="nav-drop-item" onclick="showPage('crList'); renderClassRoutineList();">তালিকা</button>
-      <button class="nav-drop-item" onclick="showPage('crDailyTable'); renderCrDailyTable();">ক্লাস রুটিন (দৈনন্দিন)</button>
-      <button class="nav-drop-item" onclick="showPage('crResidentialTable'); renderCrResidentialTable();">ক্লাস রুটিন (আবাসিক)</button>
-      <button class="nav-drop-item" onclick="showPage('crTimeSlot'); renderCrTimeSlots();">ক্লাসের সময়</button>
+      <button class="nav-drop-item" onclick="showPage('crDailyNew'); renderCrDailyNew();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span><span class="ndi-text">নতুন (দৈনন্দিন)</span></button>
+      <button class="nav-drop-item" onclick="showPage('crResidentialNew'); renderCrResidentialList();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span><span class="ndi-text">নতুন (আবাসিক)</span></button>
+      <button class="nav-drop-item" onclick="showPage('crList'); renderClassRoutineList();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></span><span class="ndi-text">তালিকা</span></button>
+      <button class="nav-drop-item" onclick="showPage('crDailyTable'); renderCrDailyTable();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg></span><span class="ndi-text">ক্লাস রুটিন (দৈনন্দিন)</span></button>
+      <button class="nav-drop-item" onclick="showPage('crResidentialTable'); renderCrResidentialTable();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg></span><span class="ndi-text">ক্লাস রুটিন (আবাসিক)</span></button>
+      <button class="nav-drop-item" onclick="showPage('crTimeSlot'); renderCrTimeSlots();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg></span><span class="ndi-text">ক্লাসের সময়</span></button>
     </div>
   </div>
 
@@ -1556,22 +1619,22 @@
     <div class="nav-drop-menu wide">
       <div class="nav-drop-group">
         <div class="nav-drop-group-title">শিক্ষার্থীর আয়/ব্যয়</div>
-        <button class="nav-drop-item" onclick="showPage('studentFinance')">শিক্ষার্থীর আয়/ব্যয়</button>
-        <button class="nav-drop-item" onclick="showPage('income')">আয়</button>
-        <button class="nav-drop-item" onclick="showPage('expense')">ব্যয়</button>
-        <button class="nav-drop-item" onclick="showPage('expenseList')">ব্যয়ের তালিকা</button>
+        <button class="nav-drop-item" onclick="showPage('studentFinance')"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span><span class="ndi-text">শিক্ষার্থীর আয়/ব্যয়</span></button>
+        <button class="nav-drop-item" onclick="showPage('income')"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg></span><span class="ndi-text">আয়</span></button>
+        <button class="nav-drop-item" onclick="showPage('expense')"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg></span><span class="ndi-text">ব্যয়</span></button>
+        <button class="nav-drop-item" onclick="showPage('expenseList')"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></span><span class="ndi-text">ব্যয়ের তালিকা</span></button>
       </div>
       <div class="nav-drop-group">
         <div class="nav-drop-group-title">ডোনেশন</div>
-        <button class="nav-drop-item" onclick="showPage('donationGroup')">ডোনেশন গ্রুপ তৈরি</button>
-        <button class="nav-drop-item" onclick="showPage('donationCollect')">ডোনেশন আদায়</button>
-        <button class="nav-drop-item" onclick="showPage('donationReport')">ডোনেশন রিপোর্ট</button>
+        <button class="nav-drop-item" onclick="showPage('donationGroup')"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></span><span class="ndi-text">ডোনেশন গ্রুপ তৈরি</span></button>
+        <button class="nav-drop-item" onclick="showPage('donationCollect')"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></span><span class="ndi-text">ডোনেশন আদায়</span></button>
+        <button class="nav-drop-item" onclick="showPage('donationReport')"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span><span class="ndi-text">ডোনেশন রিপোর্ট</span></button>
       </div>
       <div class="nav-drop-group">
         <div class="nav-drop-group-title">হিসাব</div>
-        <button class="nav-drop-item" onclick="showPage('accounts')">আদায়কারীর হিসাব</button>
-        <button class="nav-drop-item" onclick="showPage('cashbook')">ক্যাশ বুক</button>
-        <button class="nav-drop-item" onclick="showPage('finance')">লাভ/ক্ষতি</button>
+        <button class="nav-drop-item" onclick="showPage('accounts')"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg></span><span class="ndi-text">আদায়কারীর হিসাব</span></button>
+        <button class="nav-drop-item" onclick="showPage('cashbook')"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg></span><span class="ndi-text">ক্যাশ বুক</span></button>
+        <button class="nav-drop-item" onclick="showPage('finance')"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span><span class="ndi-text">লাভ/ক্ষতি</span></button>
       </div>
     </div>
   </div>
@@ -1583,17 +1646,17 @@
       অন্যান্য <span class="nav-caret"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
     </button>
     <div class="nav-drop-menu">
-      <button class="nav-drop-item" onclick="showPage('othersDashboard'); renderOthersDashboard();">অন্যান্য ড্যাশবোর্ড</button>
-      <button class="nav-drop-item" onclick="showPage('feeTypes'); renderFeeTypes();">ফি ধরন</button>
-      <button class="nav-drop-item" onclick="showPage('transportFare'); renderTransportBuses();">যানবাহন ভাড়া</button>
-      <button class="nav-drop-item" onclick="showPage('otClass'); renderOtClasses();">শ্রেণী</button>
-      <button class="nav-drop-item" onclick="showPage('otDivision'); renderOtDivisions();">বিভাগ</button>
-      <button class="nav-drop-item" onclick="showPage('classGroup'); renderClassGroups();">ক্লাস গ্রুপ</button>
-      <button class="nav-drop-item" onclick="showPage('ieFund'); renderIeFunds();">আয়/ব্যয় ফান্ড</button>
-      <button class="nav-drop-item" onclick="showPage('ieCategory'); renderIeCategories();">আয়/ব্যয় খাত</button>
-      <button class="nav-drop-item" onclick="showPage('mealRoutine'); renderMealRoutine();">খাবার রুটিন</button>
-      <button class="nav-drop-item" onclick="showPage('noticeBoard'); renderNotices();">নোটিশ</button>
-      <button class="nav-drop-item" onclick="showPage('sitePanel'); initSitePanel();">ওয়েবসাইট প্যানেল</button>
+      <button class="nav-drop-item" onclick="showPage('othersDashboard'); renderOthersDashboard();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></span><span class="ndi-text">অন্যান্য ড্যাশবোর্ড</span></button>
+      <button class="nav-drop-item" onclick="showPage('feeTypes'); renderFeeTypes();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.59 13.41L13.42 20.58a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span><span class="ndi-text">ফি ধরন</span></button>
+      <button class="nav-drop-item" onclick="showPage('transportFare'); renderTransportBuses();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="7.5" cy="18" r="1.5"/><circle cx="16.5" cy="18" r="1.5"/><line x1="3" y1="11" x2="21" y2="11"/></svg></span><span class="ndi-text">যানবাহন ভাড়া</span></button>
+      <button class="nav-drop-item" onclick="showPage('otClass'); renderOtClasses();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></span><span class="ndi-text">শ্রেণী</span></button>
+      <button class="nav-drop-item" onclick="showPage('otDivision'); renderOtDivisions();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></span><span class="ndi-text">বিভাগ</span></button>
+      <button class="nav-drop-item" onclick="showPage('classGroup'); renderClassGroups();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></span><span class="ndi-text">ক্লাস গ্রুপ</span></button>
+      <button class="nav-drop-item" onclick="showPage('ieFund'); renderIeFunds();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v10"/><path d="M15 9.3c0-1.3-1.34-2.3-3-2.3s-3 1-3 2.3S10.34 11.6 12 11.6s3 1 3 2.3-1.34 2.3-3 2.3-3-1-3-2.3"/></svg></span><span class="ndi-text">আয়/ব্যয় ফান্ড</span></button>
+      <button class="nav-drop-item" onclick="showPage('ieCategory'); renderIeCategories();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg></span><span class="ndi-text">আয়/ব্যয় খাত</span></button>
+      <button class="nav-drop-item" onclick="showPage('mealRoutine'); renderMealRoutine();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg></span><span class="ndi-text">খাবার রুটিন</span></button>
+      <button class="nav-drop-item" onclick="showPage('noticeBoard'); renderNotices();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></span><span class="ndi-text">নোটিশ</span></button>
+      <button class="nav-drop-item" onclick="showPage('sitePanel'); initSitePanel();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg></span><span class="ndi-text">ওয়েবসাইট প্যানেল</span></button>
     </div>
   </div>
 
@@ -1604,9 +1667,9 @@
       বাড়ির কাজ <span class="nav-caret"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
     </button>
     <div class="nav-drop-menu">
-      <button class="nav-drop-item" onclick="showPage('hwDailyNew'); renderHwDailyList();">নতুন (দৈনন্দিন)</button>
-      <button class="nav-drop-item" onclick="showPage('hwResidentialNew'); renderHwResidentialStudents();">নতুন (আবাসিক)</button>
-      <button class="nav-drop-item" onclick="showPage('hwList'); renderHwList();">তালিকা</button>
+      <button class="nav-drop-item" onclick="showPage('hwDailyNew'); renderHwDailyList();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></span><span class="ndi-text">নতুন (দৈনন্দিন)</span></button>
+      <button class="nav-drop-item" onclick="showPage('hwResidentialNew'); renderHwResidentialStudents();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span><span class="ndi-text">নতুন (আবাসিক)</span></button>
+      <button class="nav-drop-item" onclick="showPage('hwList'); renderHwList();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></span><span class="ndi-text">তালিকা</span></button>
     </div>
   </div>
 
@@ -1617,10 +1680,10 @@
       ম্যাসেজ <span class="nav-caret"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
     </button>
     <div class="nav-drop-menu">
-      <button class="nav-drop-item" onclick="showPage('msgDashboard'); renderMsgDashboard();">ম্যাসেজ ড্যাশবোর্ড</button>
-      <button class="nav-drop-item" onclick="showPage('msgSend'); renderMsgSendPage();">ম্যাসেজ পাঠান</button>
-      <button class="nav-drop-item" onclick="showPage('msgList'); renderMsgListPage();">ম্যাসেজ তালিকা</button>
-      <button class="nav-drop-item" onclick="showPage('msgTemplate'); renderMsgTemplatePage();">ম্যাসেজ টেমপ্লেট</button>
+      <button class="nav-drop-item" onclick="showPage('msgDashboard'); renderMsgDashboard();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 01-1 4 8.5 8.5 0 01-11.8 3.4L3 21l1.5-4.7A8.5 8.5 0 0112 3.5a8.4 8.4 0 019 8z"/></svg></span><span class="ndi-text">ম্যাসেজ ড্যাশবোর্ড</span></button>
+      <button class="nav-drop-item" onclick="showPage('msgSend'); renderMsgSendPage();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></span><span class="ndi-text">ম্যাসেজ পাঠান</span></button>
+      <button class="nav-drop-item" onclick="showPage('msgList'); renderMsgListPage();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></span><span class="ndi-text">ম্যাসেজ তালিকা</span></button>
+      <button class="nav-drop-item" onclick="showPage('msgTemplate'); renderMsgTemplatePage();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg></span><span class="ndi-text">ম্যাসেজ টেমপ্লেট</span></button>
     </div>
   </div>
 
@@ -1631,8 +1694,8 @@
       ব্যবহারকারী <span class="nav-caret"><svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
     </button>
     <div class="nav-drop-menu">
-      <button class="nav-drop-item" onclick="showPage('userNew'); resetUserForm();">নতুন ব্যবহারকারী</button>
-      <button class="nav-drop-item" onclick="showPage('userList'); loadUsers();">তালিকা</button>
+      <button class="nav-drop-item" onclick="showPage('userNew'); resetUserForm();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span><span class="ndi-text">নতুন ব্যবহারকারী</span></button>
+      <button class="nav-drop-item" onclick="showPage('userList'); loadUsers();"><span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-3-3.87"/><path d="M7 21v-2a4 4 0 013-3.87"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.85"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></span><span class="ndi-text">তালিকা</span></button>
     </div>
   </div>
 
@@ -1646,11 +1709,6 @@
 
     <!-- Sub-page: Main Dashboard -->
     <div id="subpage-dashboard-main">
-      <div class="dash-status-row">
-        <span class="msg-left">অবশিষ্ট ম্যাসেজ : <span id="dashMsgLeft">০</span> টি</span>
-        <span class="term-right">মেয়াদ <span id="dashTermDate">৩০/০১/২০২৭</span> তারিখ পর্যন্ত, বাকি আছে <span id="dashTermDays">১৮৯</span> দিন, অবস্থা চলমান</span>
-      </div>
-
       <div class="cards-grid-4">
         <div class="card c-salmon" style="cursor:pointer;" onclick="showPage('admission'); resetAdmission();"><span class="card-label">আজকের ভর্তি</span><span class="card-value">১ জন</span></div>
         <div class="card c-orange" style="cursor:pointer;" onclick="showPage('students')"><span class="card-label">মোট শিক্ষার্থী</span><span class="card-value" id="dashTotalStudents">০ জন</span></div>
@@ -4292,6 +4350,98 @@
   </div>
 
   <!-- ═══════════════ অন্যান্য মেনু: ১১. ওয়েবসাইট প্যানেল ═══════════════ -->
+  <!-- ═══════════════ ব্যবহারকারী প্রোফাইল পেজ ═══════════════ -->
+  <div class="page" id="page-userProfile">
+    <div class="section-title">আমার প্রোফাইল</div>
+    <div style="max-width:600px;margin:0 auto;">
+      <!-- প্রোফাইল ছবি আপলোড সেকশন -->
+      <div style="text-align:center;padding:20px;background:#f9fafb;border-radius:10px;margin-bottom:20px;">
+        <div style="width:120px;height:120px;margin:0 auto 15px;border-radius:50%;border:3px solid #1565c0;overflow:hidden;background:#e3f2fd;display:flex;align-items:center;justify-content:center;">
+          <img id="profilePicPreview" src="" alt="প্রোফাইল ছবি" style="width:100%;height:100%;object-fit:cover;display:none;" />
+          <span id="profilePicPlaceholder" style="font-size:40px;color:#1565c0;">👤</span>
+        </div>
+        <input type="file" id="profilePicInput" accept="image/*" style="display:none;" onchange="uploadProfilePic()" />
+        <button onclick="document.getElementById('profilePicInput').click()" style="background:#1565c0;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer;font-family:'Kalpurush','Hind Siliguri','Noto Sans Bengali',sans-serif;font-weight:600;">ছবি আপলোড করুন</button>
+      </div>
+
+      <!-- ব্যবহারকারী তথ্য ফর্ম -->
+      <div class="form-row">
+        <label>নাম</label>
+        <input id="profileName" type="text" placeholder="আপনার নাম" />
+      </div>
+
+      <div class="form-row">
+        <label>পিতার নাম</label>
+        <input id="profileFathersName" type="text" placeholder="পিতার নাম" />
+      </div>
+
+      <div class="form-row">
+        <label>লঙ্গীন আইডি</label>
+        <input id="profileUsername" type="text" placeholder="ব্যবহারকারী নাম" />
+      </div>
+
+      <div class="form-row">
+        <label>ইমেইল</label>
+        <input id="profileEmail" type="email" placeholder="ইমেইল ঠিকানা" />
+      </div>
+
+      <div class="form-row">
+        <label>মোবাইল নম্বর</label>
+        <input id="profileMobile" type="tel" placeholder="মোবাইল নম্বর" />
+      </div>
+
+      <div class="form-row">
+        <label>বর্তমান ঠিকানা</label>
+        <input id="profileAddress" type="text" placeholder="বর্তমান ঠিকানা" />
+      </div>
+
+      <div class="form-row">
+        <label>স্থায়ী ঠিকানা</label>
+        <input id="profilePermanentAddress" type="text" placeholder="স্থায়ী ঠিকানা" />
+      </div>
+
+      <button onclick="saveUserProfile()" style="background:#1565c0;color:#fff;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-family:'Kalpurush','Hind Siliguri','Noto Sans Bengali',sans-serif;font-weight:600;width:100%;margin-top:20px;">সংরক্ষণ করুন</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════ ব্যবহারকারী সেটিং পেজ ═══════════════ -->
+  <div class="page" id="page-userSettings">
+    <div class="section-title">সেটিং</div>
+    <div style="max-width:600px;margin:0 auto;background:#f9fafb;border-radius:10px;padding:20px;">
+      <!-- প্রোফাইল হেডার -->
+      <div style="text-align:center;margin-bottom:30px;padding-bottom:20px;border-bottom:1px solid #e0e0e0;">
+        <div style="width:100px;height:100px;margin:0 auto 12px;border-radius:50%;border:3px solid #1565c0;overflow:hidden;background:#e3f2fd;display:flex;align-items:center;justify-content:center;">
+          <img id="settingsPicPreview" src="" alt="প্রোফাইল ছবি" style="width:100%;height:100%;object-fit:cover;display:none;" />
+          <span id="settingsPicPlaceholder" style="font-size:35px;color:#1565c0;">👤</span>
+        </div>
+        <div id="settingsUserName" style="font-weight:700;font-size:16px;color:#1f2937;margin-bottom:4px;">নাম প্রদর্শিত হবে</div>
+        <div id="settingsUserRole" style="font-size:13px;color:#6b7280;">ব্যবহারকারীর ভূমিকা</div>
+      </div>
+
+      <!-- পাস্সওয়ার্ড পরিবর্তন সেকশন -->
+      <div style="background:#fff;padding:20px;border-radius:8px;">
+        <div style="font-weight:700;font-size:15px;color:#1f2937;margin-bottom:15px;">পাস্সওয়ার্ড পরিবর্তন করুন</div>
+
+        <div class="form-row">
+          <label>বর্তমান পাসওয়ার্ড</label>
+          <input id="settingsCurrentPassword" type="password" placeholder="বর্তমান পাস্সওয়ার্ড" />
+        </div>
+
+        <div class="form-row">
+          <label>নতুন পাসওয়ার্ড</label>
+          <input id="settingsNewPassword" type="password" placeholder="নতুন পাস্সওয়ার্ড" />
+        </div>
+
+        <div class="form-row">
+          <label>নতুন পাসওয়ার্ড পুনরাবৃত্তি করুন</label>
+          <input id="settingsConfirmPassword" type="password" placeholder="নতুন পাস্সওয়ার্ড পুনরাবৃত্তি করুন" />
+        </div>
+
+        <button onclick="changePassword()" style="background:#1565c0;color:#fff;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-family:'Kalpurush','Hind Siliguri','Noto Sans Bengali',sans-serif;font-weight:600;width:100%;">পাস্সওয়ার্ড পরিবর্তন করুন</button>
+      </div>
+    </div>
+  </div>
+
   <div class="page" id="page-sitePanel">
     <div class="section-title">অ্যাডমিন প্যানেল</div>
     <div class="sub-nav visible" style="position:static;">
@@ -6370,27 +6520,8 @@ function showSubPage(subId, btn, navId, skipRemember) {
 
 /* বর্তমানে যে পেজে/সাব-পেজে আছেন, রিফ্রেশের পর ঠিক সেখানেই ফিরিয়ে আনে */
 function restoreLastPage() {
-  let lastPage = '';
-  let lastSub = null;
-  try {
-    lastPage = localStorage.getItem('nq_last_page') || '';
-    const rawSub = localStorage.getItem('nq_last_subpage');
-    lastSub = rawSub ? JSON.parse(rawSub) : null;
-  } catch (e) {}
-
-  if (!lastPage || !document.getElementById('page-' + lastPage) ||
-      (window.NQAuth && !window.NQAuth.canAccessPage(lastPage))) {
-    showPage('dashboard', null, true);
-    return;
-  }
-
-  showPage(lastPage, null, true);
-
-  if (lastSub && lastSub.subId && lastSub.navId && document.getElementById('subpage-' + lastSub.subId)) {
-    const navEl = document.getElementById(lastSub.navId);
-    const subBtn = navEl ? navEl.querySelector('.sub-btn[onclick*="\'' + lastSub.subId + '\'"]') : null;
-    showSubPage(lastSub.subId, subBtn, lastSub.navId, true);
-  }
+  // ডিফল্ট পেজ সবসময় ড্যাশবোর্ড দেখাবে
+  showPage('dashboard', null, true);
 }
 
 /* ─── Mega-menu nav helpers ─── */
@@ -6409,6 +6540,44 @@ function setActivePill(pillEl) {
   document.querySelectorAll('#mainNav .nav-pill').forEach(p => p.classList.remove('active'));
   if (pillEl) pillEl.classList.add('active');
 }
+
+/* ─── মোবাইল অফ-ক্যানভাস সাইডবার (main-nav + user-box) ─── */
+const mnavMobileQuery = window.matchMedia('(max-width: 700px)');
+
+function placeUserBoxForViewport() {
+  const userBox = document.querySelector('.header-right .user-box, #mainNav .user-box');
+  const mobileSlot = document.getElementById('mnavUserSlot');
+  const headerRight = document.querySelector('.header-right');
+  if (!userBox || !mobileSlot || !headerRight) return;
+  if (mnavMobileQuery.matches) {
+    if (userBox.parentElement !== mobileSlot) mobileSlot.appendChild(userBox);
+  } else {
+    if (userBox.parentElement !== headerRight) headerRight.appendChild(userBox);
+  }
+}
+
+function openMobileSidebar() {
+  document.body.classList.add('sidebar-open');
+}
+
+function closeMobileSidebar() {
+  document.body.classList.remove('sidebar-open');
+  closeAllNavDrops();
+}
+
+document.addEventListener('DOMContentLoaded', placeUserBoxForViewport);
+placeUserBoxForViewport();
+mnavMobileQuery.addEventListener('change', () => {
+  placeUserBoxForViewport();
+  closeMobileSidebar();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeMobileSidebar(); });
+/* সাইডবারের নেভ আইটেমে ক্লিক করলে (dropdown pill ছাড়া) মোবাইলে সাইডবার বন্ধ হবে */
+document.addEventListener('click', e => {
+  if (!mnavMobileQuery.matches) return;
+  const item = e.target.closest('#mainNav .nav-pill:not([onclick*="toggleNavDrop"]), #mainNav .nav-drop-item');
+  if (item) closeMobileSidebar();
+});
 
 document.addEventListener('click', function (e) {
   if (!e.target.closest('.nav-drop')) closeAllNavDrops();
@@ -13959,6 +14128,180 @@ function saveHwResidential() {
   showPage('hwList');
   renderHwList();
 }
+
+/* ═══════════════ ব্যবহারকারী প্রোফাইল ও সেটিং ═══════════════ */
+
+// ব্যবহারকারী ডেটা সংরক্ষণের জন্য LocalStorage
+const userProfileKey = 'nq_user_profile';
+const userProfilePicKey = 'nq_user_profile_pic';
+
+// হেডার/সাইডবারের অ্যাভাটার (.avatar-circle) সহ অ্যাপের সব জায়গায় প্রোফাইল ছবি বসানো
+function applyProfilePicEverywhere(picData) {
+  document.querySelectorAll('.avatar-circle').forEach(function (el) {
+    if (!el.dataset.defaultText) {
+      el.dataset.defaultText = el.textContent.trim() || 'ব';
+    }
+    if (picData) {
+      el.innerHTML = '<img src="' + picData + '" alt="প্রোফাইল ছবি" style="width:100%;height:100%;object-fit:cover;display:block;">';
+    } else {
+      el.innerHTML = el.dataset.defaultText;
+    }
+  });
+}
+
+function initializeUserProfile() {
+  try {
+    const saved = localStorage.getItem(userProfileKey);
+    if (saved) {
+      const profileData = JSON.parse(saved);
+      document.getElementById('profileName').value = profileData.name || '';
+      document.getElementById('profileFathersName').value = profileData.fathersName || '';
+      document.getElementById('profileUsername').value = profileData.username || '';
+      document.getElementById('profileEmail').value = profileData.email || '';
+      document.getElementById('profileMobile').value = profileData.mobile || '';
+      document.getElementById('profileAddress').value = profileData.address || '';
+      document.getElementById('profilePermanentAddress').value = profileData.permanentAddress || '';
+    }
+    
+    const savedPic = localStorage.getItem(userProfilePicKey);
+    if (savedPic) {
+      const picImg = document.getElementById('profilePicPreview');
+      const picImg2 = document.getElementById('settingsPicPreview');
+      const placeholder1 = document.getElementById('profilePicPlaceholder');
+      const placeholder2 = document.getElementById('settingsPicPlaceholder');
+      
+      picImg.src = savedPic;
+      picImg.style.display = 'block';
+      picImg2.src = savedPic;
+      picImg2.style.display = 'block';
+      placeholder1.style.display = 'none';
+      placeholder2.style.display = 'none';
+    }
+    applyProfilePicEverywhere(savedPic || null);
+
+    updateSettingsDisplay();
+  } catch (e) {
+    console.error('প্রোফাইল লোড করতে সমস্যা:', e);
+  }
+}
+
+function showUserProfile() {
+  initializeUserProfile();
+  showPage('userProfile');
+}
+
+function showUserSettings() {
+  initializeUserProfile();
+  updateSettingsDisplay();
+  showPage('userSettings');
+}
+
+function updateSettingsDisplay() {
+  const userName = document.getElementById('profileName').value || 'আমার নাম';
+  const userRole = document.querySelector('[data-user-role]')?.textContent || 'ব্যবহারকারী';
+  
+  const settingsName = document.getElementById('settingsUserName');
+  const settingsRole = document.getElementById('settingsUserRole');
+  
+  if (settingsName) settingsName.textContent = userName;
+  if (settingsRole) settingsRole.textContent = userRole;
+}
+
+function uploadProfilePic() {
+  const input = document.getElementById('profilePicInput');
+  const file = input.files[0];
+  
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const picData = e.target.result;
+    
+    // প্রোফাইল পেজে দেখান
+    const profilePicImg = document.getElementById('profilePicPreview');
+    const profilePicPlaceholder = document.getElementById('profilePicPlaceholder');
+    profilePicImg.src = picData;
+    profilePicImg.style.display = 'block';
+    profilePicPlaceholder.style.display = 'none';
+    
+    // সেটিং পেজে দেখান
+    const settingsPicImg = document.getElementById('settingsPicPreview');
+    const settingsPicPlaceholder = document.getElementById('settingsPicPlaceholder');
+    settingsPicImg.src = picData;
+    settingsPicImg.style.display = 'block';
+    settingsPicPlaceholder.style.display = 'none';
+    
+    // LocalStorage-এ সংরক্ষণ করুন
+    try {
+      localStorage.setItem(userProfilePicKey, picData);
+      applyProfilePicEverywhere(picData);
+      showToast('প্রোফাইল ছবি আপলোড হয়েছে');
+    } catch (e) {
+      console.error('ছবি সংরক্ষণ করতে সমস্যা:', e);
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function saveUserProfile() {
+  const profileData = {
+    name: document.getElementById('profileName').value,
+    fathersName: document.getElementById('profileFathersName').value,
+    username: document.getElementById('profileUsername').value,
+    email: document.getElementById('profileEmail').value,
+    mobile: document.getElementById('profileMobile').value,
+    address: document.getElementById('profileAddress').value,
+    permanentAddress: document.getElementById('profilePermanentAddress').value,
+    savedAt: new Date().toLocaleString('bn-BD')
+  };
+  
+  try {
+    localStorage.setItem(userProfileKey, JSON.stringify(profileData));
+    showToast('প্রোফাইল সংরক্ষিত হয়েছে');
+    updateSettingsDisplay();
+  } catch (e) {
+    showErrorPopup('প্রোফাইল সংরক্ষণ করতে সমস্যা হয়েছে:', e.message);
+  }
+}
+
+function changePassword() {
+  const currentPass = document.getElementById('settingsCurrentPassword').value;
+  const newPass = document.getElementById('settingsNewPassword').value;
+  const confirmPass = document.getElementById('settingsConfirmPassword').value;
+  
+  if (!currentPass) {
+    showErrorPopup('বর্তমান পাস্সওয়ার্ড দিন');
+    return;
+  }
+  
+  if (!newPass) {
+    showErrorPopup('নতুন পাস্সওয়ার্ড দিন');
+    return;
+  }
+  
+  if (newPass !== confirmPass) {
+    showErrorPopup('নতুন পাস্সওয়ার্ড মিলে না');
+    return;
+  }
+  
+  if (newPass.length < 6) {
+    showErrorPopup('পাস্সওয়ার্ড কমপক্ষে ৬ অক্ষর দীর্ঘ হতে হবে');
+    return;
+  }
+  
+  // এখানে সার্ভারে পাস্সওয়ার্ড পরিবর্তনের রিকোয়েস্ট পাঠান
+  showToast('পাস্সওয়ার্ড পরিবর্তনের অনুরোধ পাঠানো হয়েছে (সার্ভার ইন্টিগ্রেশন প্রয়োজন)');
+  
+  // ফর্ম পরিষ্কার করুন
+  document.getElementById('settingsCurrentPassword').value = '';
+  document.getElementById('settingsNewPassword').value = '';
+  document.getElementById('settingsConfirmPassword').value = '';
+}
+
+// পেজ লোড হওয়ার সময় ইনিশিয়ালাইজ করুন
+document.addEventListener('DOMContentLoaded', function() {
+  initializeUserProfile();
+});
 
 </script>
 <script src="pwa-install.js"></script>
