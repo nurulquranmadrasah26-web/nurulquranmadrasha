@@ -4424,7 +4424,7 @@
 
         <div class="form-row">
           <label>বর্তমান পাসওয়ার্ড</label>
-          <input id="settingsCurrentPassword" type="password" placeholder="বর্তমান পাস্সওয়ার্ড" />
+          <input id="settingsCurrentPassword" type="password" placeholder="বর্তমান পাসওয়ার্ড" />
         </div>
 
         <div class="form-row">
@@ -14339,22 +14339,22 @@ async function changePassword() {
   const confirmPass = document.getElementById('settingsConfirmPassword').value;
 
   if (!currentPass) {
-    showErrorPopup('বর্তমান পাস্সওয়ার্ড দিন');
+    showErrorPopup('বর্তমান পাসওয়ার্ড দিন');
     return;
   }
 
   if (!newPass) {
-    showErrorPopup('নতুন পাস্সওয়ার্ড দিন');
+    showErrorPopup('নতুন পাসওয়ার্ড দিন');
     return;
   }
 
   if (newPass !== confirmPass) {
-    showErrorPopup('নতুন পাস্সওয়ার্ড মিলে না');
+    showErrorPopup('নতুন পাসওয়ার্ড মিলে না');
     return;
   }
 
   if (newPass.length < 6) {
-    showErrorPopup('পাস্সওয়ার্ড কমপক্ষে ৬ অক্ষর দীর্ঘ হতে হবে');
+    showErrorPopup('পাসওয়ার্ড কমপক্ষে ৬ অক্ষর দীর্ঘ হতে হবে');
     return;
   }
 
