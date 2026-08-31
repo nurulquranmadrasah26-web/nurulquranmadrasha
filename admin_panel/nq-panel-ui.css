@@ -1,0 +1,109 @@
+/* ==========================================================
+   নুরুল কোরআন মাদ্রাসা — শিক্ষক ও শিক্ষার্থী প্যানেল UI
+   - সব ইমোজির পরিবর্তে SVG আইকন
+   - কোথাও বর্ডার রেডিয়াস নেই (শুধু অ্যাভাটার/লোগো বৃত্ত)
+   - এডমিন প্যানেলের কালারফুল ডিজাইনের সাথে মিল
+   ========================================================== */
+
+:root{
+  --nq-blue:#1565c0;
+  --nq-blue-light:#e3f2fd;
+  --nq-green:#2e7d32;
+  --nq-green-light:#e8f5e9;
+  --nq-red:#c62828;
+  --nq-red-light:#ffebee;
+  --nq-amber:#ef6c00;
+  --nq-amber-light:#fff8e1;
+  --nq-purple:#7b1fa2;
+  --nq-purple-light:#f3e5f5;
+  --nq-maroon:#c2185b;
+  --nq-maroon-light:#fce4ec;
+  --nq-muted:#6b7280;
+  --nq-line:#e0e0e0;
+}
+
+/* ---------- বর্ডার রেডিয়াস সম্পূর্ণ বাতিল ---------- */
+*, *::before, *::after{ border-radius:0 !important; }
+.brand .logo, .avatar, .avatar-circle, .logo-circle,
+.icon-badge, .profile-photo, img.round, .stu-photo{
+  border-radius:50% !important;
+}
+
+/* ---------- আইকন ---------- */
+.nqi{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:1.15em; height:1.15em; vertical-align:-0.18em;
+  flex:0 0 auto; line-height:0;
+}
+.nqi > svg{ width:100%; height:100%; display:block; }
+.nqi-blue{ color:var(--nq-blue); }
+.nqi-green{ color:var(--nq-green); }
+.nqi-red{ color:var(--nq-red); }
+.nqi-amber{ color:var(--nq-amber); }
+.nqi-purple{ color:var(--nq-purple); }
+.nqi-maroon{ color:var(--nq-maroon); }
+.nqi-muted{ color:var(--nq-muted); }
+
+/* গাঢ় ব্যাকগ্রাউন্ডে আইকন সাদা */
+header .nqi, .topbar .nqi, .page-head .nqi,
+.nav-btn .nqi, .bottomnav a .nqi, .tile .nqi,
+.fee-save .nqi, .btn .nqi, button[style*="#fff"] .nqi,
+.icon-box .nqi, .hw-title .nqi, .exam-banner .nqi,
+.card-head .nqi{ color:inherit; }
+
+.icon-box .nqi{ width:1.1em; height:1.1em; }
+
+/* ---------- এডমিন প্যানেলের সাথে মিল: কালারফুল ---------- */
+.page-head{ border-bottom:3px solid var(--nq-blue); }
+.page-head-left .icon-box{
+  background:var(--nq-blue) !important; color:#fff !important;
+  display:inline-flex; align-items:center; justify-content:center;
+}
+.page-head-left h1{ color:#0d47a1; }
+
+nav.mainnav a{ border:1px solid transparent; }
+nav.mainnav a:hover{ background:var(--nq-blue-light); border-color:#90caf9; }
+nav.mainnav a.active{ background:var(--nq-blue); color:#fff; }
+nav.mainnav a.active .nqi{ color:#fff; }
+
+.quicklinks button{
+  border:1.5px solid var(--nq-line) !important;
+  background:#fff; color:#263238; font-weight:600;
+}
+.quicklinks .qb-dash{ border-color:#a5d6a7 !important; background:var(--nq-green-light); color:var(--nq-green); }
+.quicklinks .qb-admit{ border-color:#90caf9 !important; background:var(--nq-blue-light); color:var(--nq-blue); }
+.quicklinks .qb-attend{ border-color:#ffe082 !important; background:var(--nq-amber-light); color:var(--nq-amber); }
+.quicklinks .qb-fee{ border-color:#f8bbd0 !important; background:var(--nq-maroon-light); color:var(--nq-maroon); }
+.quicklinks .qb-hw{ border-color:#ce93d8 !important; background:var(--nq-purple-light); color:var(--nq-purple); }
+.quicklinks button .nqi{ color:inherit; }
+
+.tile{ border:1px solid var(--nq-line); }
+.tile .ic{ display:inline-flex; align-items:center; justify-content:center; }
+.tile .ic .nqi{ color:inherit; width:1.4em; height:1.4em; }
+
+.bell .nqi{ color:var(--nq-amber); }
+.badge{ background:var(--nq-red) !important; color:#fff !important; }
+
+table th{ background:var(--nq-blue-light); color:#0d47a1; }
+table td, table th{ border-color:var(--nq-line); }
+
+.fee-save{ background:var(--nq-green) !important; color:#fff !important; }
+.fee-save .nqi{ color:#fff; }
+
+/* শিক্ষার্থী প্যানেল */
+.nav-btn .icon{ display:inline-flex; align-items:center; justify-content:center; }
+.nav-btn .icon .nqi{ width:1.35em; height:1.35em; color:inherit; }
+.nav-btn.active{ color:var(--nq-blue); }
+.card-head .title{ display:flex; align-items:center; gap:7px; color:#0d47a1; }
+.icon-badge{ display:inline-flex; align-items:center; justify-content:center; color:#fff; }
+.icon-badge .nqi{ color:#fff; }
+.notice-empty .bell{ display:flex; align-items:center; justify-content:center; }
+.notice-empty .bell .nqi{ width:34px; height:34px; color:var(--nq-muted); }
+.hw-title .nqi, .exam-banner .nqi, .syllabus-item .head .nqi{ color:#fff; }
+.syllabus-item .head{ background:var(--nq-purple); color:#fff; }
+.hw-item .hw-title{ color:#fff; }
+
+/* মোবাইল ড্রয়ার */
+.nq-drawer-grid button .ic{ display:inline-flex; align-items:center; justify-content:center; }
+.nq-drawer-grid button .ic .nqi{ width:26px; height:26px; color:var(--nq-blue); }
+.nq-drawer-grid button{ border:1px solid var(--nq-line); }

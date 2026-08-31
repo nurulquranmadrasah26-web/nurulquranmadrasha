@@ -13,6 +13,7 @@ var SHELL = [
   './student.html',
   './teacher.html',
   './teacher-mobile.css',
+  './nq-panel-ui.css',
   './teacher-mobile.js',
   './config.js',
   './auth.js',

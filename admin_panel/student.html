@@ -24,6 +24,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="./nq-font.css">
+<link rel="stylesheet" href="./nq-panel-ui.css">
 <style>
   :root{
     --home-grad: linear-gradient(120deg,#16a34a,#a3e635);
@@ -424,13 +425,13 @@
       <div style="display:flex;align-items:center;gap:10px;">
         <img src="./assets/app-logo.png" alt="লোগো" style="width:42px;height:42px;object-fit:contain;background:#fff;border-radius:50%;padding:2px;flex:none;">
         <div>
-        <h1 id="stuGreet">হ্যালো! 👋</h1>
+        <h1 id="stuGreet">হ্যালো! <span class="nqi nqi-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 11V4.5a1.5 1.5 0 013 0V11"/><path d="M11 10V3.5a1.5 1.5 0 013 0V11"/><path d="M14 11V5.5a1.5 1.5 0 013 0V13"/><path d="M17 10.5a1.5 1.5 0 013 0V15a6 6 0 01-6 6h-2a6 6 0 01-6-6v-2a1.5 1.5 0 013 0"/></svg></span></h1>
         <div class="meta" id="stuMeta">লোড হচ্ছে...</div>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
         <span id="nqBellHost"></span>
-        <div class="present-pill" id="stuStatus">👤 উপস্থিত</div>
+        <div class="present-pill" id="stuStatus"><span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span> উপস্থিত</div>
       </div>
     </div>
   </header>
@@ -441,26 +442,26 @@
     <section class="tab-panel active" id="tab-home">
       <div class="card">
         <div class="card-head">
-          <div class="title">📖 বাড়ির পড়া</div>
+          <div class="title"><span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h9a3 3 0 013 3v13a2.5 2.5 0 00-2.5-2.5H4z"/><path d="M20 4h-3a3 3 0 00-3 3v13a2.5 2.5 0 012.5-2.5H20z"/></svg></span> বাড়ির পড়া</div>
           <div class="date-chip" id="stuHwDate" title="তারিখ পরিবর্তন করতে ক্লিক করুন">
-            <span id="stuHwDateText">📅</span>
+            <span id="stuHwDateText"><span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span></span>
             <input type="date" id="stuHwDateInput" />
             <button type="button" class="reset-day" id="stuHwToday" title="আজকের পড়া">আজ</button>
           </div>
         </div>
-        <div id="stuHomework"><div class="notice-empty"><div class="bell">📖</div><div>লোড হচ্ছে...</div></div></div>
+        <div id="stuHomework"><div class="notice-empty"><div class="bell"><span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h9a3 3 0 013 3v13a2.5 2.5 0 00-2.5-2.5H4z"/><path d="M20 4h-3a3 3 0 00-3 3v13a2.5 2.5 0 012.5-2.5H20z"/></svg></span></div><div>লোড হচ্ছে...</div></div></div>
       </div>
 
       <div class="card">
         <div class="card-head">
-          <div class="title">🗂️ পরীক্ষার সিলেবাস</div>
+          <div class="title"><span class="nqi nqi-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h6l2 2h10v11H3z"/></svg></span> পরীক্ষার সিলেবাস</div>
         </div>
         <div id="stuSyllabus"></div>
       </div>
 
       <div class="card">
         <div class="card-head">
-          <div class="title">🔔 নোটিশ বোর্ড</div>
+          <div class="title"><span class="nqi nqi-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></span> নোটিশ বোর্ড</div>
         </div>
         <div id="stuNotices"></div>
       </div>
@@ -471,13 +472,13 @@
     <!-- ROUTINE -->
     <section class="tab-panel" id="tab-routine">
       <div class="card">
-        <div class="card-head"><div class="title">📅 পরীক্ষার সময়সূচী</div></div>
+        <div class="card-head"><div class="title"><span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span> পরীক্ষার সময়সূচী</div></div>
         <div id="stuExamRoutine"></div>
       </div>
 
       <div class="card">
         <div class="card-head">
-          <div class="title">📅 ক্লাস রুটিন</div>
+          <div class="title"><span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span> ক্লাস রুটিন</div>
         </div>
         <div id="stuClassRoutine"></div>
       </div>
@@ -487,9 +488,9 @@
     <section class="tab-panel" id="tab-attendance">
       <div class="card">
         <div class="card-head">
-          <div class="title">✅ উপস্থিতির ইতিহাস</div>
+          <div class="title"><span class="nqi nqi-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></span> উপস্থিতির ইতিহাস</div>
           <div class="select-chip">
-            <span>🗓️</span>
+            <span><span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span></span>
             <select id="stuAttMonth" onchange="renderAttendance()" style="border:none;background:transparent;font-family:inherit;font-weight:600;color:#92650f;font-size:12.5px;outline:none;"></select>
           </div>
         </div>
@@ -501,7 +502,7 @@
     <!-- RESULT -->
     <section class="tab-panel" id="tab-result">
       <div class="card">
-        <div class="card-head"><div class="title">📈 পরীক্ষার ফলাফল</div></div>
+        <div class="card-head"><div class="title"><span class="nqi nqi-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg></span> পরীক্ষার ফলাফল</div></div>
         <div id="stuResult" style="padding:14px 16px;"></div>
       </div>
     </section>
@@ -509,11 +510,11 @@
     <!-- PAYMENT -->
     <section class="tab-panel" id="tab-payment">
       <div class="card">
-        <div class="card-head"><div class="title">💳 পেমেন্ট হিস্টোরি</div></div>
+        <div class="card-head"><div class="title"><span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg></span> পেমেন্ট হিস্টোরি</div></div>
         <div id="stuPayments" style="padding:14px 16px;"></div>
       </div>
       <div class="card">
-        <div class="card-head"><div class="title">🧾 বকেয়া</div></div>
+        <div class="card-head"><div class="title"><span class="nqi nqi-maroon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2z"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="14" y2="12"/></svg></span> বকেয়া</div></div>
         <div id="stuDues" style="padding:14px 16px;"></div>
       </div>
     </section>
@@ -522,7 +523,7 @@
     <section class="tab-panel" id="tab-messages">
       <div class="card">
         <div class="card-head">
-          <div class="title">💬 ইনবক্স</div>
+          <div class="title"><span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H8l-5 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span> ইনবক্স</div>
         </div>
         <div id="inbox-container" style="padding:14px 16px;">
           <div style="text-align:center;color:#9ca3af;padding:20px;">লোড হচ্ছে...</div>
@@ -531,13 +532,13 @@
 
       <div class="card">
         <div class="card-head">
-          <div class="title">📤 মেসেজ পাঠান</div>
+          <div class="title"><span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></span> মেসেজ পাঠান</div>
         </div>
         <div style="padding:14px 16px;">
           <div style="margin-bottom:12px;">
             <label style="display:block;font-size:12px;color:#6b7280;margin-bottom:6px;">প্রাপক</label>
             <select id="msgToUser" style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;background:#f9fafb;"><option value="">-- লোড হচ্ছে --</option></select>
-            <div style="font-size:12px;color:#9ca3af;margin-top:6px;">🔒 বার্তা শুধুমাত্র সুপার এডমিনের কাছে যাবে।</div>
+            <div style="font-size:12px;color:#9ca3af;margin-top:6px;"><span class="nqi nqi-muted"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11"/><path d="M8 10V7a4 4 0 018 0v3"/></svg></span> বার্তা শুধুমাত্র সুপার এডমিনের কাছে যাবে।</div>
           </div>
           <div style="margin-bottom:12px;">
             <label style="display:block;font-size:12px;color:#6b7280;margin-bottom:6px;">বিষয়</label>
@@ -556,23 +557,23 @@
     <section class="tab-panel" id="tab-settings">
       <div class="card">
         <div class="card-head">
-          <div class="title">👤 প্রোফাইল</div>
-          <button type="button" id="stuProfileEditBtn" onclick="toggleProfileEdit()" style="background:#2563eb;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;">✏️ এডিট</button>
+          <div class="title"><span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span> প্রোফাইল</div>
+          <button type="button" id="stuProfileEditBtn" onclick="toggleProfileEdit()" style="background:#2563eb;color:#fff;border:none;border-radius:8px;padding:7px 14px;font-size:13px;font-weight:600;cursor:pointer;"><span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></span> এডিট</button>
         </div>
         <div style="padding:14px 16px;font-size:14px;line-height:2;" id="stuProfile"></div>
         <div style="padding:0 16px 16px;display:none;" id="stuProfileForm"></div>
       </div>
       <div class="card">
-        <div class="card-head"><div class="title">🔔 নোটিফিকেশন ও অ্যাপ</div></div>
+        <div class="card-head"><div class="title"><span class="nqi nqi-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></span> নোটিফিকেশন ও অ্যাপ</div></div>
         <div style="padding:14px 16px;">
-          <button id="nqPushBtn" type="button" style="width:100%;background:#16a34a;color:#fff;padding:11px;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:10px;">🔔 নোটিফিকেশন চালু করুন</button>
-          <button type="button" onclick="window.NQPwa && window.NQPwa.show()" style="width:100%;background:#0b3d24;color:#fff;padding:11px;border:none;border-radius:8px;font-weight:600;cursor:pointer;">📲 অ্যাপ ইনস্টল করুন</button>
+          <button id="nqPushBtn" type="button" style="width:100%;background:#16a34a;color:#fff;padding:11px;border:none;border-radius:8px;font-weight:600;cursor:pointer;margin-bottom:10px;"><span class="nqi nqi-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></span> নোটিফিকেশন চালু করুন</button>
+          <button type="button" onclick="window.NQPwa && window.NQPwa.show()" style="width:100%;background:#0b3d24;color:#fff;padding:11px;border:none;border-radius:8px;font-weight:600;cursor:pointer;"><span class="nqi nqi-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20"/><line x1="10" y1="18" x2="14" y2="18"/></svg></span> অ্যাপ ইনস্টল করুন</button>
           <div style="font-size:12.5px;color:#6b7280;margin-top:8px;line-height:1.7;">নোটিফিকেশন চালু থাকলে নতুন বাড়ির কাজ, বেতনের বকেয়া ও নোটিশ সরাসরি ফোনে পৌঁছে যাবে।</div>
         </div>
       </div>
       <div class="card">
 
-        <div class="card-head"><div class="title">🔑 পাসওয়ার্ড পরিবর্তন</div></div>
+        <div class="card-head"><div class="title"><span class="nqi nqi-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9"/><path d="M17 6l3 3"/></svg></span> পাসওয়ার্ড পরিবর্তন</div></div>
         <div style="padding:14px 16px;">
           <input type="password" id="stuPwCur" placeholder="বর্তমান পাসওয়ার্ড" style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;margin-bottom:10px;">
           <input type="password" id="stuPwNew" placeholder="নতুন পাসওয়ার্ড" style="width:100%;padding:8px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px;margin-bottom:10px;">
@@ -582,11 +583,11 @@
       </div>
       <div class="card">
         <div class="settings-row" id="notif-row">
-          <div class="left"><div class="icon-badge" style="background:#22c55e;">🔔</div>নোটিফিকেশন</div>
+          <div class="left"><div class="icon-badge" style="background:#22c55e;"><span class="nqi nqi-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></span></div>নোটিফিকেশন</div>
           <div class="toggle on" id="notif-toggle"></div>
         </div>
         <div class="settings-row logout" onclick="NQAuth.logout()" style="cursor:pointer;">
-          <div class="left"><div class="icon-badge">🚪</div>লগআউট</div>
+          <div class="left"><div class="icon-badge"><span class="nqi nqi-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span></div>লগআউট</div>
           <div class="chev">›</div>
         </div>
       </div>
@@ -595,20 +596,20 @@
   </main>
 
   <nav class="bottom">
-    <button class="nav-btn active" data-tab="home" data-grad="var(--home-grad)"><span class="icon">🏠</span>হোম</button>
-    <button class="nav-btn" data-tab="routine" data-grad="var(--routine-grad)"><span class="icon">📅</span>রুটিন</button>
-    <button class="nav-btn" data-tab="messages" data-grad="linear-gradient(120deg,#3b82f6,#8b5cf6)" style="position:relative;"><span class="icon">💬</span>বার্তা<span id="msgUnreadBadge" style="display:none;position:absolute;top:2px;right:8px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;line-height:16px;border-radius:8px;padding:0 4px;"></span></button>
-    <button class="nav-btn" data-tab="attendance" data-grad="var(--attendance-grad)"><span class="icon">✅</span>হাজিরা</button>
-    <button class="nav-btn" data-tab="payment" data-grad="var(--payment-grad)"><span class="icon">💳</span>পেমেন্ট</button>
-    <button class="nav-btn" data-tab="settings" data-grad="var(--settings-grad)"><span class="icon">⚙️</span>সেটিংস</button>
+    <button class="nav-btn active" data-tab="home" data-grad="var(--home-grad)"><span class="icon"><span class="nqi nqi-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span></span>হোম</button>
+    <button class="nav-btn" data-tab="routine" data-grad="var(--routine-grad)"><span class="icon"><span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span></span>রুটিন</button>
+    <button class="nav-btn" data-tab="messages" data-grad="linear-gradient(120deg,#3b82f6,#8b5cf6)" style="position:relative;"><span class="icon"><span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 01-2 2H8l-5 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg></span></span>বার্তা<span id="msgUnreadBadge" style="display:none;position:absolute;top:2px;right:8px;background:#ef4444;color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;line-height:16px;border-radius:8px;padding:0 4px;"></span></button>
+    <button class="nav-btn" data-tab="attendance" data-grad="var(--attendance-grad)"><span class="icon"><span class="nqi nqi-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></span></span>হাজিরা</button>
+    <button class="nav-btn" data-tab="payment" data-grad="var(--payment-grad)"><span class="icon"><span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg></span></span>পেমেন্ট</button>
+    <button class="nav-btn" data-tab="settings" data-grad="var(--settings-grad)"><span class="icon"><span class="nqi nqi-muted"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-2.9 1.2V21a2 2 0 11-4 0v-.1A1.7 1.7 0 007 19.4l-.1.1a2 2 0 11-2.8-2.8l.1-.1A1.7 1.7 0 003 13.6H3a2 2 0 110-4h.1A1.7 1.7 0 004.6 7l-.1-.1a2 2 0 112.8-2.8l.1.1A1.7 1.7 0 0010 3.6V3a2 2 0 114 0v.1a1.7 1.7 0 002.9 1.2l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 001.2 2.9H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg></span></span>সেটিংস</button>
   </nav>
 
 </div>
 
 <script>
-/* ══════════════════════════════════════════════════════════════
+/* 
    স্টুডেন্ট প্যানেল — এডমিন প্যানেলের ডেটার সাথে সরাসরি সংযুক্ত
-   ══════════════════════════════════════════════════════════════ */
+    */
 var S = {};
 var ME = null;      // স্টোরে থাকা শিক্ষার্থীর রেকর্ড
 var DIR = [];
@@ -691,18 +692,18 @@ function boot(){
     var pushBtn = document.getElementById('nqPushBtn');
     if (pushBtn) {
       window.NQNotify.isPushOn().then(function (on) {
-        pushBtn.textContent = on ? '🔔 নোটিফিকেশন চালু আছে' : '🔔 নোটিফিকেশন চালু করুন';
+ pushBtn.innerHTML = on ? '<span class="nqi nqi-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></span> নোটিফিকেশন চালু আছে' : '<span class="nqi nqi-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></span> নোটিফিকেশন চালু করুন';
         pushBtn.dataset.on = on ? '1' : '';
       });
       pushBtn.addEventListener('click', function () {
         if (pushBtn.dataset.on) {
           window.NQNotify.disablePush().then(function () {
-            pushBtn.dataset.on = ''; pushBtn.textContent = '🔔 নোটিফিকেশন চালু করুন';
+ pushBtn.dataset.on = ''; pushBtn.innerHTML = '<span class="nqi nqi-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></span> নোটিফিকেশন চালু করুন';
           });
           return;
         }
         window.NQNotify.enablePush().then(function () {
-          pushBtn.dataset.on = '1'; pushBtn.textContent = '🔔 নোটিফিকেশন চালু আছে';
+ pushBtn.dataset.on = '1'; pushBtn.innerHTML = '<span class="nqi nqi-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></span> নোটিফিকেশন চালু আছে';
           alert('নোটিফিকেশন চালু হয়েছে — নতুন বাড়ির কাজ দিলেই জানানো হবে।');
         }).catch(function (e) { alert(e.message || 'নোটিফিকেশন চালু করা যায়নি'); });
       });
@@ -711,13 +712,13 @@ function boot(){
 }
 
 function renderHeader(u){
-  document.getElementById('stuGreet').textContent = 'হ্যালো, ' + (ME ? ME.name : (u.name || 'শিক্ষার্থী')) + ' ! 👋';
+ document.getElementById('stuGreet').innerHTML = 'হ্যালো, ' + (ME ? ME.name : (u.name || 'শিক্ষার্থী')) + ' ! <span class="nqi nqi-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 11V4.5a1.5 1.5 0 013 0V11"/><path d="M11 10V3.5a1.5 1.5 0 013 0V11"/><path d="M14 11V5.5a1.5 1.5 0 013 0V13"/><path d="M17 10.5a1.5 1.5 0 013 0V15a6 6 0 01-6 6h-2a6 6 0 01-6-6v-2a1.5 1.5 0 013 0"/></svg></span>';
   document.getElementById('stuMeta').innerHTML = ME
-    ? '🎫 ' + bn(ME.id) + ' &nbsp;|&nbsp; 🎓 ' + esc(ME.cls) + ' &nbsp;|&nbsp; ' + esc(ME.type || 'অনাবাসিক')
+    ? '<span class="nqi nqi-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 012-2h14a2 2 0 012 2 2 2 0 000 4 2 2 0 000 4 2 2 0 01-2 2H5a2 2 0 01-2-2 2 2 0 000-4 2 2 0 000-4z"/><line x1="12" y1="8" x2="12" y2="16"/></svg></span> ' + bn(ME.id) + ' &nbsp;|&nbsp; <span class="nqi nqi-maroon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 9L12 4 2 9l10 5 10-5z"/><path d="M6 11v5c0 1.4 2.7 2.6 6 2.6s6-1.2 6-2.6v-5"/></svg></span> ' + esc(ME.cls) + ' &nbsp;|&nbsp; ' + esc(ME.type || 'অনাবাসিক')
     : 'তথ্য পাওয়া যায়নি';
   var st = ME ? (obj(S.attendance)[ME.id] || 'present') : 'present';
-  var map = { present:'👤 উপস্থিত', absent:'🚫 অনুপস্থিত', leave:'🌴 ছুটিতে' };
-  document.getElementById('stuStatus').textContent = map[st] || map.present;
+  var map = { present:'<span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span> উপস্থিত', absent:'<span class="nqi nqi-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="5.6" y1="5.6" x2="18.4" y2="18.4"/></svg></span> অনুপস্থিত', leave:'<span class="nqi nqi-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22V11"/><path d="M12 11c-2-3-6-3-8-1 2-3 6-4 8-1 2-3 6-2 8 1-2-2-6-2-8 1z"/></svg></span> ছুটিতে' };
+  document.getElementById('stuStatus').innerHTML = map[st] || map.present;
 }
 
 /* ---------- হোম ---------- */
@@ -746,7 +747,7 @@ function renderHome(){
   initHwDatePicker();
   var dateInput = document.getElementById('stuHwDateInput');
   if (dateInput) dateInput.value = HW_DATE || '';
-  document.getElementById('stuHwDateText').textContent = '📅 ' + (HW_DATE ? bnDate(HW_DATE) : 'সব তারিখ');
+ document.getElementById('stuHwDateText').innerHTML = '<span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span> ' + (HW_DATE ? bnDate(HW_DATE) : 'সব তারিখ');
 
   var cls = ME ? ME.cls : '';
   var sameDay = function(h){
@@ -769,7 +770,7 @@ function renderHome(){
     return '<div class="hw-item"><div class="hw-title">' + esc(h.category || 'আবাসিক') + '- ' + esc(h.date) + '</div>' +
       '<div class="hw-body">' + esc(h.comment) + '</div></div>';
   })).join('');
-  box.innerHTML = html || ('<div class="notice-empty"><div class="bell">📖</div><div>' +
+  box.innerHTML = html || ('<div class="notice-empty"><div class="bell"><span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h9a3 3 0 013 3v13a2.5 2.5 0 00-2.5-2.5H4z"/><path d="M20 4h-3a3 3 0 00-3 3v13a2.5 2.5 0 012.5-2.5H20z"/></svg></span></div><div>' +
     (HW_DATE ? bnDate(HW_DATE) + ' তারিখে কোনো পড়া নেই' : 'কোনো বাড়ির পড়া নেই') + '</div></div>');
 
   /* এডমিন প্যানেলের সিলেবাস (syllabusItems) — নির্ধারিত তারিখসীমার ভেতরে থাকলেই দেখানো হয় */
@@ -785,18 +786,18 @@ function renderHome(){
   document.getElementById('stuSyllabus').innerHTML = syll.length ? syll.map(function(x){
     var head = (x.examTypeName ? x.examTypeName + ' • ' : '') + (x.subjectName || x.subject || x.title || '-');
     var range = (x.showFrom || x.showTo)
-      ? '<div style="font-size:11.5px;color:#6b7280;margin-top:4px;">🗓️ ' + bnDate(x.showFrom || today) + ' — ' + bnDate(x.showTo || today) + '</div>'
+      ? '<div style="font-size:11.5px;color:#6b7280;margin-top:4px;"><span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span> ' + bnDate(x.showFrom || today) + ' — ' + bnDate(x.showTo || today) + '</div>'
       : '';
-    return '<div class="syllabus-item"><div class="head">📁 ' + esc(head) + '</div><p>' +
+    return '<div class="syllabus-item"><div class="head"><span class="nqi nqi-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h6l2 2h10v11H3z"/></svg></span> ' + esc(head) + '</div><p>' +
       esc(x.title && x.subjectName ? (x.title + (x.desc ? ' — ' + x.desc : '')) : (x.details || x.desc || x.text || '')) +
       '</p>' + range + '</div>';
-  }).join('') : '<div class="notice-empty"><div class="bell">🗂️</div><div>সিলেবাস পাওয়া যায়নি</div></div>';
+  }).join('') : '<div class="notice-empty"><div class="bell"><span class="nqi nqi-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h6l2 2h10v11H3z"/></svg></span></div><div>সিলেবাস পাওয়া যায়নি</div></div>';
 
   /* পরীক্ষার নোটিশ — পরীক্ষা শেষ হলে স্বয়ংক্রিয়ভাবে সরে যায় */
   var examNotices = myActiveExams().map(function(e){
     var first = arr(e.subjects).slice().sort(function(a,b){ return (a.date||'') < (b.date||'') ? -1 : 1; })[0];
-    return '<div class="hw-item"><div class="hw-title" style="background:#f97316;">📢 ' + esc(e.examTypeName || 'পরীক্ষা') + ' — সময়সূচী প্রকাশিত</div>' +
-      '<div class="hw-body">🗓️ ' + bnDate(e.startDate) + ' থেকে ' + bnDate(e.endDate) + ' পর্যন্ত।' +
+    return '<div class="hw-item"><div class="hw-title" style="background:#f97316;"><span class="nqi nqi-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 001 1h3l7 4V6L7 10H4a1 1 0 00-1 1z"/><path d="M18 9a4 4 0 010 6"/></svg></span> ' + esc(e.examTypeName || 'পরীক্ষা') + ' — সময়সূচী প্রকাশিত</div>' +
+      '<div class="hw-body"><span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span> ' + bnDate(e.startDate) + ' থেকে ' + bnDate(e.endDate) + ' পর্যন্ত।' +
       (first ? ' প্রথম বিষয়: ' + esc(first.subjectName || '') + ' (' + bnDate(first.date) + ')।' : '') +
       ' বিস্তারিত সময়সূচী "রুটিন" ট্যাবে দেখুন।</div></div>';
   }).join('');
@@ -804,7 +805,7 @@ function renderHome(){
   var notices = arr(S.notices).filter(isPublished).slice(-6).reverse();
   document.getElementById('stuNotices').innerHTML = (examNotices + (notices.map(function(n){
     return '<div class="hw-item"><div class="hw-title">' + esc(n.title) + '</div><div class="hw-body">' + esc(n.desc || '') + '</div></div>';
-  }).join(''))) || '<div class="notice-empty"><div class="bell">🔕</div><div>কোন নোটিশ নেই</div></div>';
+  }).join(''))) || '<div class="notice-empty"><div class="bell"><span class="nqi nqi-muted"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 00-9.3-5"/><path d="M6 9v-1"/><path d="M3 17h18s-3-2-3-9"/><line x1="3" y1="3" x2="21" y2="21"/></svg></span></div><div>কোন নোটিশ নেই</div></div>';
 
   var pays = arr(S.payments).filter(function(p){ return ME && p.student === ME.name; });
   var today = bnDate(todayISO());
@@ -865,9 +866,9 @@ function renderRoutine(){
       return '<tr><td>' + bn(i+1) + '</td><td>' + esc(it.subjectName || it.subject || '-') + '</td><td>' + bnDate(it.date) + '</td><td>' +
         fmtTime(it.startTime) + ' – ' + fmtTime(it.endTime) + '</td><td>' + bn(it.fullMarks != null ? it.fullMarks : 100) + '</td></tr>';
     }).join('');
-    return '<div class="exam-banner"><div class="title">📅 ' + esc(e.examTypeName || 'পরীক্ষা') + ' — ' + esc(e.className || '') + '</div>' +
-      '<div class="sub"><span>📆 ' + bnDate(e.startDate) + ' থেকে ' + bnDate(e.endDate) + '</span>' +
-      '<span>📚 মোট পূর্ণমান: ' + bn(e.totalMarks || 0) + '</span></div></div>' +
+    return '<div class="exam-banner"><div class="title"><span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span> ' + esc(e.examTypeName || 'পরীক্ষা') + ' — ' + esc(e.className || '') + '</div>' +
+      '<div class="sub"><span><span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span> ' + bnDate(e.startDate) + ' থেকে ' + bnDate(e.endDate) + '</span>' +
+      '<span><span class="nqi nqi-maroon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3h4v18H4z"/><path d="M10 3h4v18h-4z"/><path d="M16.5 4l3.5 1-4 16-3.4-1z"/></svg></span> মোট পূর্ণমান: ' + bn(e.totalMarks || 0) + '</span></div></div>' +
       '<div class="table-scroll"><table class="exam-table"><thead><tr><th>#</th><th>বিষয়</th><th>তারিখ</th><th>সময়</th><th>পূর্ণমান</th></tr></thead><tbody>' +
       (rows || '<tr><td colspan="5">তথ্য নেই</td></tr>') + '</tbody></table></div>';
   }).join('');
@@ -876,13 +877,13 @@ function renderRoutine(){
     var rows = arr(e.items).map(function(it, i){
       return '<tr><td>' + bn(i+1) + '</td><td>' + esc(it.subject) + '</td><td>' + esc(it.date || '-') + '</td><td>' + esc(it.time || '-') + '</td><td>' + bn(it.fullMark || 100) + '</td><td>' + bn(it.passMark || 33) + '</td></tr>';
     }).join('');
-    return '<div class="exam-banner"><div class="title">📅 ' + esc(e.name || 'পরীক্ষা') + '</div>' +
-      '<div class="sub"><span>📆 ' + esc(e.from || '-') + ' থেকে ' + esc(e.to || '-') + '</span></div></div>' +
+    return '<div class="exam-banner"><div class="title"><span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span> ' + esc(e.name || 'পরীক্ষা') + '</div>' +
+      '<div class="sub"><span><span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span> ' + esc(e.from || '-') + ' থেকে ' + esc(e.to || '-') + '</span></div></div>' +
       '<div class="table-scroll"><table class="exam-table"><thead><tr><th>#</th><th>বিষয়</th><th>তারিখ</th><th>সময়</th><th>পূর্ণমান</th><th>পাস নম্বর</th></tr></thead><tbody>' +
       (rows || '<tr><td colspan="6">তথ্য নেই</td></tr>') + '</tbody></table></div>';
   }).join('');
 
-  document.getElementById('stuExamRoutine').innerHTML = (htmlNew + htmlOld) || empty('📅', 'পরীক্ষার সময়সূচী প্রকাশ করা হয়নি');
+  document.getElementById('stuExamRoutine').innerHTML = (htmlNew + htmlOld) || empty('<span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>', 'পরীক্ষার সময়সূচী প্রকাশ করা হয়নি');
 
   var routine = arr(S.dailyRoutines).find(function(r){ return r.className === cls; });
   var slots = arr(S.crTimeSlots);
@@ -891,11 +892,11 @@ function renderRoutine(){
     ? routine.items.map(function(it){
         var slot = slots.find(function(x){ return x.id === it.slotId; });
         var t = teachers.find(function(x){ return x.id === it.teacherId; });
-        return '<div class="routine-hour"><div class="routine-hour-head"><div class="label">⏳ ' + esc(slot ? slot.name || slot.label : 'ঘণ্টা') + '</div>' +
+        return '<div class="routine-hour"><div class="routine-hour-head"><div class="label"><span class="nqi nqi-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/></svg></span> ' + esc(slot ? slot.name || slot.label : 'ঘণ্টা') + '</div>' +
           '<div class="time-chip">' + esc(slot ? slot.label || '' : '') + '</div></div>' +
-          '<div class="subject-row"><div class="subj">📘 ' + esc(it.subject || '-') + '</div><div class="teacher">👩‍🏫 ' + esc(t ? t.name : '-') + '</div></div></div>';
+          '<div class="subject-row"><div class="subj"><span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h9a3 3 0 013 3v13a2.5 2.5 0 00-2.5-2.5H4z"/><path d="M20 4h-3a3 3 0 00-3 3v13a2.5 2.5 0 012.5-2.5H20z"/></svg></span> ' + esc(it.subject || '-') + '</div><div class="teacher"><span class="nqi nqi-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="3"/><path d="M5 21v-2a5 5 0 015-5h4a5 5 0 015 5v2"/></svg></span> ' + esc(t ? t.name : '-') + '</div></div></div>';
       }).join('')
-    : empty('📅', 'ক্লাস রুটিন পাওয়া যায়নি');
+    : empty('<span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>', 'ক্লাস রুটিন পাওয়া যায়নি');
 }
 
 /* ---------- হাজিরা (মাস ভিত্তিক) ---------- */
@@ -921,7 +922,7 @@ function renderAttendance(){
   if (!hist.length){
     if (sel) sel.innerHTML = '<option value="">মাস নেই</option>';
     if (summaryBox) summaryBox.innerHTML = '';
-    box.innerHTML = empty('📈', 'উপস্থিতির কোনো রেকর্ড নেই');
+    box.innerHTML = empty('<span class="nqi nqi-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg></span>', 'উপস্থিতির কোনো রেকর্ড নেই');
     return;
   }
 
@@ -959,14 +960,14 @@ function renderAttendance(){
   }
 
   box.innerHTML = rows.length
-    ? '<div style="font-size:12.5px;color:#6b7280;margin-bottom:8px;">🗓️ ' + monthLabel(current) + ' — মোট ' + bn(rows.length) + ' দিনের হাজিরা</div>' +
+    ? '<div style="font-size:12.5px;color:#6b7280;margin-bottom:8px;"><span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span> ' + monthLabel(current) + ' — মোট ' + bn(rows.length) + ' দিনের হাজিরা</div>' +
       '<table class="exam-table" style="width:100%"><thead><tr><th>#</th><th>তারিখ</th><th>বার</th><th>অবস্থা</th></tr></thead><tbody>' +
       rows.map(function(x, i){
         return '<tr><td>' + bn(i+1) + '</td><td>' + bnDate(x.date) + '</td><td>' + weekdayBn(x.date) + '</td>' +
           '<td><span style="color:' + (color[x.status] || '#374151') + ';font-weight:600;">' + (label[x.status] || esc(x.status)) + '</span></td></tr>';
       }).join('') +
       '</tbody></table>'
-    : empty('📈', monthLabel(current) + ' মাসে কোনো হাজিরা নেই');
+    : empty('<span class="nqi nqi-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 17 9 11 13 15 21 7"/><polyline points="15 7 21 7 21 13"/></svg></span>', monthLabel(current) + ' মাসে কোনো হাজিরা নেই');
 }
 
 /* ---------- ফলাফল ---------- */
@@ -977,7 +978,7 @@ function renderResult(){
         return '<div class="hw-item"><div class="hw-title">' + esc(r.exam || 'পরীক্ষা') + '</div>' +
           '<div class="hw-body">প্রাপ্ত নম্বর: ' + bn(r.total != null ? r.total : '-') + ' | গ্রেড: ' + esc(r.grade || '-') + ' | অবস্থান: ' + bn(r.position != null ? r.position : '-') + '</div></div>';
       }).join('')
-    : empty('📊', 'কোনো ফলাফল প্রকাশ করা হয়নি');
+    : empty('<span class="nqi nqi-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="20" x2="20" y2="20"/><rect x="6" y="11" width="3" height="6"/><rect x="11" y="7" width="3" height="10"/><rect x="16" y="13" width="3" height="4"/></svg></span>', 'কোনো ফলাফল প্রকাশ করা হয়নি');
 }
 
 /* ---------- পেমেন্ট (বিস্তারিত) ---------- */
@@ -1019,15 +1020,15 @@ function renderPayments(){
             '<strong style="color:#16a34a;">৳ ' + bn(r.amount) + '/-</strong>' +
           '</div>' +
           '<div style="font-size:12.5px;color:#6b7280;line-height:1.9;">' +
-            '📅 তারিখ: ' + esc(r.date || '-') +
-            (r.month ? ' &nbsp;|&nbsp; 🗓️ মাস: ' + esc(r.month) : '') +
-            (r.billNo != null ? '<br>🧾 বিল নং: ' + bn(r.billNo) : '') +
-            (r.method ? '<br>💳 পদ্ধতি: ' + esc(r.method) : '') +
-            '<br>👤 আদায়কারী আইডি: <strong style="color:#374151;">' + esc(r.by || '-') + '</strong>' +
-            (r.remark ? '<br>📝 মন্তব্য: ' + esc(r.remark) : '') +
+            '<span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span> তারিখ: ' + esc(r.date || '-') +
+            (r.month ? ' &nbsp;|&nbsp; <span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span> মাস: ' + esc(r.month) : '') +
+            (r.billNo != null ? '<br><span class="nqi nqi-maroon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2z"/><line x1="8" y1="8" x2="16" y2="8"/><line x1="8" y1="12" x2="14" y2="12"/></svg></span> বিল নং: ' + bn(r.billNo) : '') +
+            (r.method ? '<br><span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14"/><line x1="2" y1="10" x2="22" y2="10"/><line x1="6" y1="15" x2="10" y2="15"/></svg></span> পদ্ধতি: ' + esc(r.method) : '') +
+            '<br><span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span> আদায়কারী আইডি: <strong style="color:#374151;">' + esc(r.by || '-') + '</strong>' +
+            (r.remark ? '<br><span class="nqi nqi-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16v12l-4 4H4z"/><polyline points="20 16 16 16 16 20"/><line x1="8" y1="9" x2="16" y2="9"/></svg></span> মন্তব্য: ' + esc(r.remark) : '') +
           '</div></div>';
       }).join('')
-    : empty('💵', 'কোনো পেমেন্ট রেকর্ড নেই');
+    : empty('<span class="nqi nqi-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12"/><circle cx="12" cy="12" r="2.5"/></svg></span>', 'কোনো পেমেন্ট রেকর্ড নেই');
 
   var dues = ME ? arr(obj(S.studentDues)[ME.id]) : [];
   document.getElementById('stuDues').innerHTML = dues.length
@@ -1035,7 +1036,7 @@ function renderPayments(){
         return '<div style="display:flex;justify-content:space-between;border-bottom:1px solid #e5e7eb;padding:8px 0;font-size:14px;">' +
           '<span>' + esc(d.label) + ' <small style="color:#9ca3af">' + esc(d.month || '') + '</small></span><strong>৳ ' + bn(d.amount) + '</strong></div>';
       }).join('')
-    : empty('✅', 'কোনো বকেয়া নেই');
+    : empty('<span class="nqi nqi-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg></span>', 'কোনো বকেয়া নেই');
 }
 
 /* ---------- প্রোফাইল (দেখা ও এডিট) ও পাসওয়ার্ড ---------- */
@@ -1080,7 +1081,7 @@ function renderProfile(u){
   var photo = profileVal('photo');
   var rows = PROFILE_LOCKED.map(function(f){
     var v = f.key === 'id' ? (uid || profileVal('id')) : profileVal(f.key);
-    return v === '' ? '' : '<div><strong>' + f.label + ':</strong> ' + bn(esc(v)) + ' <span style="font-size:11px;color:#9ca3af;">🔒</span></div>';
+    return v === '' ? '' : '<div><strong>' + f.label + ':</strong> ' + bn(esc(v)) + ' <span style="font-size:11px;color:#9ca3af;"><span class="nqi nqi-muted"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11"/><path d="M8 10V7a4 4 0 018 0v3"/></svg></span></span></div>';
   }).join('');
   var info = PROFILE_FIELDS.map(function(f){
     var v = profileVal(f.key);
@@ -1090,7 +1091,7 @@ function renderProfile(u){
     '<div style="text-align:center;margin-bottom:10px;">' +
       (photo
         ? '<img src="' + esc(photo) + '" alt="ছবি" style="width:96px;height:96px;border-radius:50%;object-fit:cover;border:3px solid #e5e7eb;">'
-        : '<div style="width:96px;height:96px;border-radius:50%;background:#e5e7eb;display:inline-flex;align-items:center;justify-content:center;font-size:38px;">👤</div>') +
+        : '<div style="width:96px;height:96px;border-radius:50%;background:#e5e7eb;display:inline-flex;align-items:center;justify-content:center;font-size:38px;"><span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span></div>') +
     '</div>' + rows + info;
 }
 
@@ -1103,7 +1104,7 @@ function renderProfileForm(){
   }).join('');
   var locked = PROFILE_LOCKED.map(function(f){
     var v = profileVal(f.key);
-    return v === '' ? '' : '<div style="font-size:12.5px;color:#6b7280;">🔒 ' + f.label + ': <strong>' + bn(esc(v)) + '</strong></div>';
+    return v === '' ? '' : '<div style="font-size:12.5px;color:#6b7280;"><span class="nqi nqi-muted"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11"/><path d="M8 10V7a4 4 0 018 0v3"/></svg></span> ' + f.label + ': <strong>' + bn(esc(v)) + '</strong></div>';
   }).join('');
 
   document.getElementById('stuProfileForm').innerHTML =
@@ -1112,13 +1113,13 @@ function renderProfileForm(){
     '</div>' +
     '<div style="text-align:center;margin-bottom:12px;">' +
       '<img id="pfPhotoPreview" src="' + esc(photo) + '" alt="ছবি" style="width:96px;height:96px;border-radius:50%;object-fit:cover;border:3px solid #e5e7eb;' + (photo ? '' : 'display:none;') + '">' +
-      '<div id="pfPhotoEmpty" style="width:96px;height:96px;border-radius:50%;background:#e5e7eb;display:' + (photo ? 'none' : 'inline-flex') + ';align-items:center;justify-content:center;font-size:38px;">👤</div>' +
+      '<div id="pfPhotoEmpty" style="width:96px;height:96px;border-radius:50%;background:#e5e7eb;display:' + (photo ? 'none' : 'inline-flex') + ';align-items:center;justify-content:center;font-size:38px;"><span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></span></div>' +
       '<div style="margin-top:8px;"><input type="file" id="pfPhotoInput" accept="image/*" onchange="uploadProfilePhoto(this)" style="font-size:12.5px;"></div>' +
       '<div id="pfPhotoStatus" style="font-size:12px;color:#6b7280;margin-top:4px;"></div>' +
     '</div>' +
     fields +
     '<div style="display:flex;gap:8px;">' +
-      '<button type="button" onclick="saveProfile()" style="flex:1;background:#16a34a;color:#fff;padding:10px;border:none;border-radius:8px;font-weight:600;cursor:pointer;">💾 সংরক্ষণ করুন</button>' +
+      '<button type="button" onclick="saveProfile()" style="flex:1;background:#16a34a;color:#fff;padding:10px;border:none;border-radius:8px;font-weight:600;cursor:pointer;"><span class="nqi nqi-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></span> সংরক্ষণ করুন</button>' +
       '<button type="button" onclick="toggleProfileEdit(false)" style="flex:1;background:#e5e7eb;color:#374151;padding:10px;border:none;border-radius:8px;font-weight:600;cursor:pointer;">বাতিল</button>' +
     '</div>';
 }
@@ -1136,11 +1137,11 @@ function toggleProfileEdit(force){
     renderProfileForm();
     form.style.display = 'block';
     view.style.display = 'none';
-    btn.textContent = '✖ বন্ধ করুন';
+ btn.innerHTML = '<span class="nqi nqi-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></span> বন্ধ করুন';
   } else {
     form.style.display = 'none';
     view.style.display = 'block';
-    btn.textContent = '✏️ এডিট';
+ btn.innerHTML = '<span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg></span> এডিট';
   }
 }
 
@@ -1159,7 +1160,7 @@ function uploadProfilePhoto(input){
       var img = document.getElementById('pfPhotoPreview');
       img.src = d.url; img.style.display = 'inline-block';
       document.getElementById('pfPhotoEmpty').style.display = 'none';
-      status.textContent = 'ছবি আপলোড হয়েছে ✔';
+ status.innerHTML = 'ছবি আপলোড হয়েছে <span class="nqi nqi-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 10 18 20 6"/></svg></span>';
     })
     .catch(function(e){
       // ক্লাউড আপলোড ব্যর্থ হলে ছবিটি সরাসরি (base64) সংরক্ষণ করা হবে
@@ -1169,7 +1170,7 @@ function uploadProfilePhoto(input){
         var img = document.getElementById('pfPhotoPreview');
         img.src = reader.result; img.style.display = 'inline-block';
         document.getElementById('pfPhotoEmpty').style.display = 'none';
-        status.textContent = 'ছবি যুক্ত হয়েছে ✔';
+ status.innerHTML = 'ছবি যুক্ত হয়েছে <span class="nqi nqi-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 10 18 20 6"/></svg></span>';
       };
       reader.onerror = function(){ status.textContent = e.message || 'ছবি আপলোড ব্যর্থ'; };
       reader.readAsDataURL(file);
@@ -1223,7 +1224,7 @@ function loadStudentInbox(){
       var isReply = !!m.replyTo;
       return '<div style="border-bottom:1px solid #e5e7eb;padding:12px 0;font-size:14px;' + (m.read ? '' : 'background:#f0fdf4;') + '">' +
         '<div style="display:flex;justify-content:space-between;margin-bottom:4px;">' +
-        '<strong style="color:#1f2937;">' + (isReply ? '↩️ ' : '') + esc((m.fromUserId && m.fromUserId.name) || 'অজানা') +
+        '<strong style="color:#1f2937;">' + (isReply ? '<span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 00-4-4H4"/></svg></span> ' : '') + esc((m.fromUserId && m.fromUserId.name) || 'অজানা') +
         ((m.fromUserId && m.fromUserId.role) ? ' <span style="font-weight:400;color:#6b7280;font-size:12px;">(' + esc(m.fromUserId.role) + ')</span>' : '') + '</strong>' +
         '<span style="color:#9ca3af;font-size:12px;">' + new Date(m.createdAt).toLocaleDateString('bn-BD') + '</span></div>' +
         (m.subject ? '<div style="color:#6b7280;font-size:13px;margin-bottom:4px;"><strong>বিষয়:</strong> ' + esc(m.subject) + '</div>' : '') +
