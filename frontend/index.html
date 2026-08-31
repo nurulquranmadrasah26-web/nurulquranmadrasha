@@ -170,7 +170,7 @@
     .nav-links-mobile-actions{display:flex;}
   }
 
-  /* ---- Hero banner (single wide photo, like reference) ---- */
+  /* ---- Hero banner (image slider) ---- */
   .hero-banner{
     width:100%;
     aspect-ratio:16/6.2;
@@ -180,11 +180,29 @@
     position:relative;
     border-bottom:1px solid var(--card-border);
   }
-  .hero-banner img{width:100%;height:100%;object-fit:cover;object-position:center 38%;filter:saturate(1.05) contrast(1.03);}
-  .hero-banner::after{
-    content:"";position:absolute;inset:0;
-    background:linear-gradient(180deg, rgba(8,8,10,.05) 0%, rgba(8,8,10,.15) 55%, rgba(8,8,10,.85) 100%);
+  .hero-slide{
+    position:absolute;inset:0;
+    opacity:0;
+    transition:opacity 1s ease;
+    pointer-events:none;
   }
+  .hero-slide.active{opacity:1;pointer-events:auto;}
+  .hero-slide img{width:100%;height:100%;object-fit:cover;object-position:center 38%;filter:saturate(1.05) contrast(1.03);}
+  .hero-banner::after{
+    content:"";position:absolute;inset:0;z-index:2;
+    background:linear-gradient(180deg, rgba(8,8,10,.05) 0%, rgba(8,8,10,.15) 55%, rgba(8,8,10,.85) 100%);
+    pointer-events:none;
+  }
+  .hero-dots{
+    position:absolute;left:0;right:0;bottom:16px;z-index:3;
+    display:flex;justify-content:center;gap:9px;
+  }
+  .hero-dot{
+    width:9px;height:9px;border-radius:50%;
+    background:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.6);
+    cursor:pointer;transition:all .25s ease;padding:0;
+  }
+  .hero-dot.active{background:var(--grad-warm);border-color:transparent;width:22px;border-radius:5px;box-shadow:var(--glow-sm);}
 
   /* ---- Why section ---- */
   .why{padding:72px 0 64px;}
@@ -394,10 +412,22 @@
   </div>
 </header>
 
-<!-- ================= HERO BANNER ================= -->
+<!-- ================= HERO BANNER (SLIDER) ================= -->
 <div class="hero-banner" id="home">
-  <img src="https://images.pexels.com/photos/31367502/pexels-photo-31367502.jpeg?auto=compress&cs=tinysrgb&w=1920"
-       alt="মেডিক বায়োলজি শিক্ষার্থীদের অনুষ্ঠান" loading="eager">
+  <div class="hero-slide active">
+    <img src="assets/hero-madrasah-class.jpg" alt="মাদরাসার শিক্ষার্থীরা কুরআন তিলাওয়াত করছে" loading="eager">
+  </div>
+  <div class="hero-slide">
+    <img src="https://islamicvoice.com/wp-content/uploads/2021/07/1-20.jpg" alt="মাদরাসা শিক্ষা কার্যক্রম" loading="lazy">
+  </div>
+  <div class="hero-slide">
+    <img src="https://cdn.britannica.com/48/144348-050-FBB629CB/Madrasah-Jami-Masjid-Shrirangapattana-India-Karnataka.jpg" alt="মাদরাসা ভবন" loading="lazy">
+  </div>
+  <div class="hero-dots" id="heroDots">
+    <button class="hero-dot active" data-slide="0" aria-label="স্লাইড ১"></button>
+    <button class="hero-dot" data-slide="1" aria-label="স্লাইড ২"></button>
+    <button class="hero-dot" data-slide="2" aria-label="স্লাইড ৩"></button>
+  </div>
 </div>
 
 <!-- ================= WHY MEDIC BIOLOGY ================= -->
@@ -524,20 +554,15 @@
 <div class="modal-overlay" id="loginModalOverlay">
   <div class="modal-box">
     <button type="button" class="modal-close" id="loginModalClose">&times;</button>
-    <div class="modal-title">
-      <div class="brand-mark">ন</div>
-      <h3>শিক্ষার্থী লগইন</h3>
-      <p>আপনার আইডি ও পাসওয়ার্ড দিয়ে লগইন করুন</p>
-    </div>
     <form id="loginForm">
       <div class="m-field-group">
-        <label for="loginUserId">আইডি</label>
-        <input type="text" id="loginUserId" class="m-field" placeholder="আপনার স্টুডেন্ট আইডি">
+        <label for="loginUserId">ব্যবহারকারীর আইডি</label>
+        <input type="text" id="loginUserId" class="m-field" placeholder="আপনার ব্যবহারকারীর আইডি">
       </div>
       <div class="m-field-group">
         <label for="loginPassword">পাসওয়ার্ড</label>
         <div class="m-pass-wrap">
-          <input type="password" id="loginPassword" class="m-field" placeholder="পাসওয়ার্ড লিখুন" style="padding-right:42px;">
+          <input type="password" id="loginPassword" class="m-field" placeholder="আপনার পাসওয়ার্ড" style="padding-right:42px;">
           <button type="button" class="m-eye-btn" id="loginEyeBtn">
             <svg id="eyeIconShow" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
             <svg id="eyeIconHide" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><path d="M17.94 17.94A10.94 10.94 0 0112 20c-7 0-11-7-11-7a21.6 21.6 0 015.06-6.06M9.9 4.24A10.94 10.94 0 0112 4c7 0 11 7 11 7a21.6 21.6 0 01-2.16 3.19M14.12 14.12a3 3 0 11-4.24-4.24"/><path d="M1 1l22 22"/></svg>
@@ -545,17 +570,41 @@
         </div>
       </div>
       <div class="m-row-between">
-        <label class="m-remember"><input type="checkbox" id="loginRemember"> মনে রাখুন</label>
-        <a href="#" class="m-forgot">পাসওয়ার্ড ভুলে গেছেন?</a>
+        <label class="m-remember"><input type="checkbox" id="loginRemember"> আমাকে মনে রাখুন</label>
       </div>
       <div class="m-error" id="loginError"></div>
       <button type="submit" class="btn btn-grad m-submit" id="loginSubmitBtn">লগইন করুন</button>
     </form>
-    <p class="m-footer-text">অ্যাকাউন্ট নেই? ভর্তি হতে <a href="#contact" class="m-forgot" id="loginGoAdmit">যোগাযোগ করুন</a></p>
   </div>
 </div>
 
 <script>
+  // ---- Hero banner slider ----
+  (function(){
+    const slides = document.querySelectorAll('.hero-banner .hero-slide');
+    const dots = document.querySelectorAll('.hero-banner .hero-dot');
+    let current = 0;
+    let timer = null;
+    function goTo(idx){
+      slides[current].classList.remove('active');
+      dots[current].classList.remove('active');
+      current = (idx + slides.length) % slides.length;
+      slides[current].classList.add('active');
+      dots[current].classList.add('active');
+    }
+    function startAuto(){
+      timer = setInterval(()=> goTo(current + 1), 5000);
+    }
+    function resetAuto(){
+      clearInterval(timer);
+      startAuto();
+    }
+    dots.forEach((dot, i)=>{
+      dot.addEventListener('click', ()=>{ goTo(i); resetAuto(); });
+    });
+    if(slides.length > 1) startAuto();
+  })();
+
   // mobile nav toggle
   const navLinksEl = document.getElementById('navLinks');
   document.getElementById('navBurger').addEventListener('click', ()=>{
