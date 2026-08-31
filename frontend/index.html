@@ -2,11 +2,11 @@
 <html lang="bn">
 <head>
   <link rel="manifest" href="./manifest.json">
-  <meta name="theme-color" content="#050505">
+  <meta name="theme-color" content="#08080a">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="নুরুল কোরআন">
+  <meta name="apple-mobile-web-app-title" content="নূরুল কোরআন">
   <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png">
   <link rel="icon" type="image/png" sizes="64x64" href="./icons/favicon.png">
@@ -50,6 +50,9 @@
   gtag('config', 'G-VMG18Q7QRG');
 </script>
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;600;700;800&family=Baloo+Da+2:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
   @font-face {
     font-family: 'Kalpurush';
@@ -57,723 +60,369 @@
     font-weight: normal; font-style: normal; font-display: swap;
   }
   :root{
-    --bg:#050505;
-    --bg-soft:#0d0d0d;
-    --card:#0a0a0a;
-    --card-2:#0c0c0c;
-    --ink:#f5f5f5;
-    --muted:#c7c7c7;
-    --muted-2:#9a9a9a;
-    --gold:#FFD700;
-    --gold-2:#F5C400;
-    --gold-3:#D4AF37;
-    --gold-dark:#a9821a;
-    --gold-soft:rgba(255,215,0,.12);
-    --line:rgba(255,215,0,.28);
-    --line-strong:rgba(255,215,0,.55);
+    --bg:#08080a;
+    --bg-soft:#0e0e11;
+    --card:#111114;
+    --card-border:rgba(236,26,110,.35);
+    --card-border-strong:rgba(236,26,110,.7);
+    --ink:#f5f5f7;
+    --muted:#b7b7c0;
+    --muted-2:#8c8c96;
+    --pink:#ff2d78;
+    --pink-2:#ec1263;
+    --orange:#ff8a2b;
+    --gold:#ffcf4d;
+    --grad-warm:linear-gradient(90deg,var(--orange),var(--pink));
+    --grad-warm-v:linear-gradient(160deg,var(--orange),var(--pink-2));
+    --glow-sm:0 0 10px rgba(236,18,99,.28), 0 0 22px rgba(236,18,99,.10);
+    --glow-md:0 0 16px rgba(236,18,99,.4), 0 0 34px rgba(236,18,99,.16);
+    --glow-strong:0 0 22px rgba(236,18,99,.55), 0 0 48px rgba(236,18,99,.22);
     --radius:14px;
-    --glow-sm:0 0 8px rgba(255,215,0,.35), 0 0 20px rgba(255,215,0,.12);
-    --glow-md:0 0 14px rgba(255,215,0,.4), 0 0 30px rgba(255,215,0,.16);
-    --glow-strong:0 0 18px rgba(255,215,0,.55), 0 0 44px rgba(255,215,0,.22);
-    --shadow:var(--glow-sm);
   }
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
   body{
     margin:0;
     font-family:'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;
-    color:var(--ink);
     background:var(--bg);
+    color:var(--ink);
     line-height:1.7;
   }
-  h1,h2,h3,h4{
-    font-family:'Kalpurush', 'Baloo Da 2', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;
-    margin:0;
-    line-height:1.3;
-  }
+  h1,h2,h3,h4{font-family:'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;margin:0;line-height:1.35;}
   p{margin:0;}
   a{text-decoration:none;color:inherit;}
   ul{margin:0;padding:0;list-style:none;}
   img{max-width:100%;display:block;}
-  .container{
-    width:100%;
-    max-width:1220px;
-    margin:0 auto;
-    padding:0 24px;
-  }
-  /* gold horizontal section separators */
+  .container{width:100%;max-width:1200px;margin:0 auto;padding:0 24px;}
   section{position:relative;}
-  section:not(.hero)::before{
-    content:"";
-    position:absolute;top:0;left:0;right:0;
-    height:1px;
-    background:linear-gradient(90deg, transparent, rgba(255,215,0,.7), transparent);
-    box-shadow:0 0 10px rgba(255,215,0,.35);
+  section:not(.hero-banner)::before{
+    content:"";position:absolute;top:0;left:0;right:0;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(236,18,99,.55),transparent);
   }
-  .eyebrow{
-    display:inline-flex;
-    align-items:center;
-    gap:8px;
-    color:var(--gold);
-    font-weight:700;
-    letter-spacing:.03em;
-    font-size:.95rem;
-    margin-bottom:10px;
+  .heading{
+    display:flex;align-items:center;gap:12px;
+    margin-bottom:34px;
   }
-  .eyebrow::before{
-    content:"";
-    width:22px;height:2px;
-    background:var(--gold);
-    display:inline-block;
-    border-radius:2px;
-    box-shadow:0 0 6px rgba(255,215,0,.6);
-  }
-  .section-head{
-    text-align:center;
-    max-width:640px;
-    margin:0 auto 48px;
-  }
-  .section-head h2{
-    font-size:clamp(1.7rem,3vw,2.3rem);
-    color:var(--gold);
-    margin-bottom:14px;
-    text-shadow:0 0 18px rgba(255,215,0,.18);
-  }
-  .section-head .underline{
-    width:64px;height:4px;background:linear-gradient(90deg,var(--gold-dark),var(--gold));
-    border-radius:4px;margin:14px auto 18px;
-    box-shadow:0 0 10px rgba(255,215,0,.5);
-  }
-  .section-head p{color:var(--muted);font-size:1.02rem;}
-  .btn{
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
-    padding:13px 26px;
-    border-radius:10px;
-    font-weight:600;
-    font-size:.98rem;
-    cursor:pointer;
-    border:1.5px solid transparent;
-    transition:all .25s ease;
-    white-space:nowrap;
-  }
-  .btn-primary{background:linear-gradient(135deg,var(--gold-2),var(--gold));color:#211a02;box-shadow:var(--glow-sm);}
-  .btn-primary:hover{background:linear-gradient(135deg,var(--gold),var(--gold-2));transform:translateY(-2px);box-shadow:var(--glow-md);}
-  .btn-gold{background:linear-gradient(135deg,var(--gold-2),var(--gold));color:#211a02;box-shadow:var(--glow-sm);}
-  .btn-gold:hover{background:linear-gradient(135deg,var(--gold),var(--gold-2));transform:translateY(-2px);box-shadow:var(--glow-md);}
-  .btn-outline{background:transparent;border-color:rgba(255,215,0,.55);color:#fff;}
-  .btn-outline:hover{background:rgba(255,215,0,.1);border-color:var(--gold);box-shadow:var(--glow-sm);}
-  .btn-white{background:#fff;color:#141414;}
-  .btn-white:hover{background:var(--gold);color:#211a02;transform:translateY(-2px);box-shadow:var(--glow-md);}
-  .btn-line{background:transparent;border-color:var(--line-strong);color:var(--gold);}
-  .btn-line:hover{background:var(--gold);color:#211a02;box-shadow:var(--glow-sm);}
+  .heading .bar{width:5px;height:26px;border-radius:3px;background:var(--grad-warm-v);box-shadow:var(--glow-sm);flex:none;}
+  .heading h2{font-size:clamp(1.4rem,2.6vw,1.8rem);color:var(--gold);font-weight:700;}
 
-  /* ---------- Header ---------- */
-  header{
-    position:sticky;top:0;z-index:100;
-    background:rgba(5,5,5,.92);
-    backdrop-filter:blur(8px);
-    -webkit-backdrop-filter:blur(8px);
-    border-bottom:1px solid var(--line);
-    box-shadow:0 4px 24px rgba(0,0,0,.5);
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:8px;
+    padding:12px 24px;border-radius:9px;font-weight:600;font-size:.95rem;
+    cursor:pointer;border:1.5px solid transparent;transition:all .25s ease;white-space:nowrap;
+  }
+  .btn-grad{background:var(--grad-warm);color:#1a0509;box-shadow:var(--glow-sm);}
+  .btn-grad:hover{transform:translateY(-2px);box-shadow:var(--glow-md);}
+  .btn-outline{background:transparent;border-color:var(--card-border-strong);color:#fff;}
+  .btn-outline:hover{background:rgba(236,18,99,.1);box-shadow:var(--glow-sm);}
+
+  /* ---------- Top navbar ---------- */
+  header.topnav{
+    position:sticky;top:0;z-index:200;
+    background:#000;
+    border-bottom:1px solid rgba(236,18,99,.25);
   }
   .nav-wrap{
-    display:flex;align-items:center;justify-content:space-between;
-    padding:14px 24px;
-    max-width:1220px;margin:0 auto;
-    gap:20px;
+    max-width:1300px;margin:0 auto;padding:12px 24px;
+    display:flex;align-items:center;justify-content:space-between;gap:24px;
+  }
+  .nav-logo{display:flex;align-items:center;gap:10px;position:relative;}
+  .nav-logo-img{width:42px;height:42px;object-fit:contain;flex:none;filter:drop-shadow(0 0 6px rgba(236,18,99,.35));}
+  .nav-logo-text{
+    font-family:'Baloo Da 2',sans-serif;font-weight:800;font-size:1.7rem;letter-spacing:.01em;
+    display:flex;align-items:baseline;white-space:nowrap;
+  }
+  .nav-logo-text .c1{color:#fff;}
+  .nav-logo-text .c2{color:#ffd21a;}
+  .nav-logo-text .big-b{
+    font-size:1.35em;color:#ff2d55;-webkit-text-stroke:1px #ff8a2b;
+    margin:0 1px;
+  }
+  .nav-links{display:flex;align-items:center;gap:26px;flex-wrap:wrap;}
+  .nav-links a{
+    color:#ffd21a;font-weight:700;font-size:1rem;transition:opacity .2s;
+  }
+  .nav-links a:hover{opacity:.75;}
+  .nav-buttons{display:flex;align-items:center;gap:10px;}
+  .nav-btn{
+    padding:9px 20px;border-radius:7px;font-weight:700;font-size:.92rem;white-space:nowrap;
+    transition:transform .2s ease, box-shadow .2s ease;
+  }
+  .nav-btn:hover{transform:translateY(-1px);}
+  .nav-btn-admit{background:linear-gradient(90deg,#ffb020,#ff2d78);color:#1a0509;box-shadow:var(--glow-sm);}
+  .nav-btn-login{background:#ff2d55;color:#fff;box-shadow:0 0 10px rgba(255,45,85,.35);}
+  .nav-burger{
+    display:none;flex-direction:column;gap:5px;background:none;border:1px solid rgba(236,18,99,.4);
+    border-radius:8px;width:40px;height:40px;align-items:center;justify-content:center;cursor:pointer;
+  }
+  .nav-burger span{width:20px;height:2px;background:#ffd21a;border-radius:2px;}
+  .nav-links-mobile-actions{display:none;gap:10px;margin-top:6px;}
+  @media (max-width:980px){
+    .nav-links{
+      position:absolute;top:100%;left:0;right:0;background:#000;
+      flex-direction:column;align-items:flex-start;gap:16px;padding:20px 24px;
+      border-bottom:1px solid rgba(236,18,99,.25);
+      display:none;
+    }
+    .nav-links.open{display:flex;}
+    .nav-burger{display:flex;}
+    .nav-buttons{display:none;}
+    .nav-links-mobile-actions{display:flex;}
+  }
+
+  /* ---- Hero banner (single wide photo, like reference) ---- */
+  .hero-banner{
+    width:100%;
+    aspect-ratio:16/6.2;
+    min-height:220px;
+    max-height:520px;
+    overflow:hidden;
+    position:relative;
+    border-bottom:1px solid var(--card-border);
+  }
+  .hero-banner img{width:100%;height:100%;object-fit:cover;object-position:center 38%;filter:saturate(1.05) contrast(1.03);}
+  .hero-banner::after{
+    content:"";position:absolute;inset:0;
+    background:linear-gradient(180deg, rgba(8,8,10,.05) 0%, rgba(8,8,10,.15) 55%, rgba(8,8,10,.85) 100%);
+  }
+
+  /* ---- Why section ---- */
+  .why{padding:72px 0 64px;}
+  .why-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:44px;align-items:start;}
+  .check-list li{
+    display:flex;gap:10px;align-items:flex-start;color:var(--ink);
+    margin-bottom:13px;font-size:1rem;
+  }
+  .check-list li svg{flex:none;width:19px;height:19px;margin-top:3px;color:var(--pink);filter:drop-shadow(0 0 4px rgba(236,18,99,.6));}
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .stat-card{
+    background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);
+    padding:22px 20px;box-shadow:var(--glow-sm);
+    transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+  }
+  .stat-card:hover{transform:translateY(-3px);box-shadow:var(--glow-md);border-color:var(--card-border-strong);}
+  .stat-card .num{
+    font-family:'Baloo Da 2',sans-serif;font-weight:800;font-size:2.1rem;
+    background:var(--grad-warm);-webkit-background-clip:text;background-clip:text;color:transparent;
+    margin-bottom:4px;
+  }
+  .stat-card .label{color:var(--muted);font-size:.92rem;font-weight:500;}
+  .stat-card.wide{grid-column:1 / -1;}
+
+  /* ---- Courses ---- */
+  .courses{background:var(--bg-soft);padding:72px 0;}
+  .course-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:26px;}
+  .course-card{
+    background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);
+    padding:28px 26px;box-shadow:var(--glow-sm);
+    transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+  }
+  .course-card:hover{transform:translateY(-5px);box-shadow:var(--glow-strong);border-color:var(--card-border-strong);}
+  .course-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;}
+  .course-tag{
+    font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:lowercase;
+    color:var(--pink);border:1px solid var(--card-border-strong);border-radius:6px;padding:3px 10px;
+  }
+  .course-fee{font-weight:700;color:var(--gold);font-size:.95rem;}
+  .course-card h3{color:#fff;font-size:1.35rem;margin-bottom:10px;}
+  .course-card p{color:var(--muted);font-size:.96rem;}
+
+  /* ---- Schedule ---- */
+  .schedule{padding:76px 0;}
+  .table-wrap{
+    border:1px solid var(--card-border);border-radius:var(--radius);overflow:hidden;
+    box-shadow:var(--glow-sm);
+  }
+  table{width:100%;border-collapse:collapse;}
+  thead th{
+    background:var(--grad-warm);color:#1a0509;text-align:left;
+    padding:15px 22px;font-weight:700;font-size:.98rem;
+  }
+  tbody td{
+    padding:15px 22px;border-top:1px solid rgba(236,18,99,.16);
+    color:var(--ink);font-size:.96rem;
+  }
+  tbody tr:nth-child(odd){background:rgba(236,18,99,.03);}
+  tbody tr:hover{background:rgba(236,18,99,.09);}
+  td.batch{color:var(--gold);font-weight:600;}
+
+  /* ---- Testimonials ---- */
+  .testi{background:var(--bg-soft);padding:76px 0;}
+  .testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+  .testi-card{
+    background:var(--card);border:1px solid var(--card-border);border-radius:var(--radius);
+    padding:26px 24px;box-shadow:var(--glow-sm);
+    transition:transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+  }
+  .testi-card:hover{transform:translateY(-4px);box-shadow:var(--glow-md);border-color:var(--card-border-strong);}
+  .testi-card .quote{color:var(--ink);font-size:.97rem;margin-bottom:18px;display:block;}
+  .testi-card .author{font-weight:700;color:var(--pink);display:block;}
+  .testi-card .role{color:var(--muted-2);font-size:.86rem;}
+
+  /* ---- Contact / Footer ---- */
+  footer{background:#050506;border-top:1px solid var(--card-border);}
+  .contact-wrap{padding:70px 0 40px;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;}
+  .contact-info h3{color:var(--gold);font-size:1.25rem;margin-bottom:18px;}
+  .info-line{display:flex;gap:12px;margin-bottom:14px;color:var(--muted);align-items:flex-start;}
+  .info-line svg{flex:none;width:19px;height:19px;color:var(--pink);margin-top:3px;}
+  .map-frame{border:1px solid var(--card-border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--glow-sm);height:280px;}
+  .map-frame iframe{width:100%;height:100%;border:0;filter:grayscale(.25) invert(.92) contrast(.92);}
+
+  .footer-bottom-nav{
+    border-top:1px solid rgba(236,18,99,.18);
+    padding:22px 0;
+    display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;
   }
   .brand{display:flex;align-items:center;gap:10px;}
-  .brand-mark{width:44px;height:44px;flex:none;object-fit:contain;filter:drop-shadow(0 0 6px rgba(255,215,0,.35));}
-  .brand-name{
-    font-family:'Baloo Da 2',sans-serif;
-    font-weight:700;
-    font-size:1.28rem;
-    color:var(--gold);
-    letter-spacing:.01em;
-    text-shadow:0 0 14px rgba(255,215,0,.25);
-  }
-  nav.main-nav{display:flex;gap:30px;}
-  nav.main-nav a{
-    font-weight:500;color:var(--ink);font-size:.98rem;
-    position:relative;padding:4px 0;
-    transition:color .2s;
-  }
-  nav.main-nav a::after{
-    content:"";position:absolute;left:0;bottom:-3px;
-    width:0;height:2px;background:var(--gold);
-    box-shadow:0 0 8px rgba(255,215,0,.7);
-    transition:width .25s;
-  }
-  nav.main-nav a:hover{color:var(--gold);}
-  nav.main-nav a:hover::after{width:100%;}
-  .nav-actions{display:flex;align-items:center;gap:10px;}
-  .nav-actions .btn{padding:11px 20px;font-size:.92rem;}
-  .burger{
-    display:none;flex-direction:column;gap:5px;align-items:center;justify-content:center;
-    width:42px;height:42px;
-    background:none;border:1.5px solid var(--line);border-radius:9px;
-    cursor:pointer;padding:6px;
-  }
-  .burger span{width:20px;height:2.2px;background:var(--gold);border-radius:2px;}
-
-  /* ---------- Hero ---------- */
-  .hero{
-    position:relative;
-    background:
-      radial-gradient(circle at 50% 0%, rgba(255,215,0,.10), transparent 55%),
-      linear-gradient(180deg,#0a0a0a,#050505 60%);
-    color:#fff;
-    overflow:hidden;
-    min-height:480px;
-    display:flex;
-    align-items:center;
-    border-bottom:1px solid var(--line);
-  }
-  .hero::before{
-    content:"";
-    position:absolute;
-    top:-20%;left:50%;
-    transform:translateX(-50%);
-    width:140%;height:140%;
-    background:radial-gradient(circle at 50% 0%, rgba(255,215,0,.10), transparent 60%);
-    pointer-events:none;
-  }
-  .hero-slides{position:relative;width:100%;padding:76px 0 96px;}
-  .hero-slide{
-    display:none;
-    text-align:center;
-    max-width:760px;margin:0 auto;
-    padding:0 24px;
-    animation:fadeIn .6s ease;
-  }
-  .hero-slide.active{display:block;}
-  @keyframes fadeIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
-  .hero-title{
-    font-size:clamp(1.7rem,4.2vw,2.9rem);
-    font-weight:700;
-    color:#fff;
-    margin-bottom:20px;
-    text-shadow:0 0 30px rgba(255,215,0,.15);
-  }
-  .hero-slide p.lead{
-    font-size:clamp(1rem,2vw,1.2rem);
-    font-weight:500;
-    margin-bottom:32px;
-    color:var(--muted);
-    max-width:600px;
-    margin-left:auto;margin-right:auto;
-  }
-  .hero-btns{display:flex;gap:16px;justify-content:center;flex-wrap:wrap;}
-  .hero-arrow{
-    position:absolute;top:50%;transform:translateY(-50%);
-    width:46px;height:46px;border-radius:50%;
-    background:rgba(255,215,0,.06);
-    border:1px solid var(--line);
-    color:#fff;font-size:1.3rem;
-    display:flex;align-items:center;justify-content:center;
-    cursor:pointer;z-index:5;transition:all .2s;
-  }
-  .hero-arrow:hover{background:rgba(255,215,0,.16);border-color:var(--gold);box-shadow:var(--glow-sm);}
-  .hero-arrow.prev{left:20px;}
-  .hero-arrow.next{right:20px;}
-  .hero-dots{
-    display:flex;gap:9px;justify-content:center;margin-top:44px;
-  }
-  .hero-dots button{
-    width:10px;height:10px;border-radius:50%;
-    background:rgba(255,215,0,.3);
-    border:none;cursor:pointer;transition:all .25s;
-  }
-  .hero-dots button.active{background:var(--gold);width:26px;border-radius:6px;box-shadow:0 0 8px rgba(255,215,0,.7);}
-
-  /* ---------- Stats ---------- */
-  .stats{
-    background:var(--bg-soft);
-    padding:56px 0;
-    margin-top:-1px;
-  }
-  .stats-grid{
-    display:grid;grid-template-columns:repeat(4,1fr);gap:20px;
-  }
-  .stat-card{
-    background:var(--card);border-radius:var(--radius);
-    padding:32px 20px;text-align:center;
-    box-shadow:var(--shadow);
-    border:1px solid var(--line);
-    transition:box-shadow .3s ease, transform .3s ease, border-color .3s ease;
-  }
-  .stat-card:hover{transform:translateY(-4px);box-shadow:var(--glow-md);border-color:var(--line-strong);}
-  .stat-card .num{
-    font-family:'Baloo Da 2',sans-serif;
-    font-size:2.6rem;font-weight:800;color:var(--gold);
-    margin-bottom:6px;
-    text-shadow:0 0 16px rgba(255,215,0,.25);
-  }
-  .stat-card .label{color:var(--muted);font-weight:500;}
-
-  /* ---------- About ---------- */
-  .about{padding:96px 0;}
-  .about-grid{
-    display:grid;grid-template-columns:1.05fr .95fr;
-    gap:64px;align-items:center;
-  }
-  .about-text p{color:var(--muted);margin-bottom:16px;}
-  .check-grid{
-    display:grid;grid-template-columns:1fr 1fr;
-    gap:12px 20px;margin-top:22px;
-  }
-  .check-item{
-    display:flex;align-items:center;gap:10px;
-    font-weight:500;color:var(--ink);
-  }
-  .check-item svg{flex:none;width:20px;height:20px;color:var(--gold);filter:drop-shadow(0 0 5px rgba(255,215,0,.5));}
-  .about-media{
-    background:var(--card);
-    border-radius:var(--radius);
-    box-shadow:var(--shadow);
-    border:1px solid var(--line);
-    padding:36px;
-    display:flex;align-items:center;justify-content:center;
-  }
-  .emblem{width:100%;max-width:340px;filter:drop-shadow(0 0 18px rgba(255,215,0,.18));}
-
-  /* ---------- Why choose ---------- */
-  .why{background:var(--bg-soft);padding:96px 0;}
-  .why-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;}
-  .why-card{
-    background:var(--card);border-radius:var(--radius);
-    padding:38px 28px;text-align:center;
-    border:1px solid var(--line);
-    box-shadow:var(--shadow);
-    transition:transform .3s ease, box-shadow .3s ease, border-color .3s ease;
-  }
-  .why-card:hover{transform:translateY(-6px);box-shadow:var(--glow-strong);border-color:var(--line-strong);}
-  .icon-circle{
-    width:70px;height:70px;border-radius:18px;
-    background:radial-gradient(circle at 30% 30%, rgba(255,215,0,.14), rgba(255,215,0,.02));
-    border:1px solid var(--line-strong);
-    display:flex;align-items:center;justify-content:center;
-    margin:0 auto 20px;
-    color:var(--gold);
+  .brand-mark{
+    width:38px;height:38px;border-radius:10px;flex:none;
+    background:var(--grad-warm-v);display:flex;align-items:center;justify-content:center;
+    font-family:'Baloo Da 2',sans-serif;font-weight:800;color:#1a0509;font-size:1.15rem;
     box-shadow:var(--glow-sm);
   }
-  .icon-circle svg{width:32px;height:32px;}
-  .why-card h3{color:#fff;font-size:1.18rem;margin-bottom:12px;}
-  .why-card p{color:var(--muted);font-size:.96rem;}
-
-  /* ---------- Courses ---------- */
-  .courses{padding:96px 0;}
-  .course-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;}
-  .course-card{
-    border:1px solid var(--line);
-    border-radius:var(--radius);
-    padding:32px 26px;
-    background:var(--card);
-    box-shadow:var(--shadow);
-    transition:transform .3s ease, box-shadow .3s ease, border-color .3s ease;
-  }
-  .course-card:hover{transform:translateY(-6px);box-shadow:var(--glow-strong);border-color:var(--line-strong);}
-  .course-card h3{color:var(--gold);font-size:1.2rem;margin-bottom:12px;}
-  .course-card p{color:var(--muted);margin-bottom:22px;min-height:70px;}
-
-  /* ---------- Teachers ---------- */
-  .teachers{background:var(--bg-soft);padding:96px 0;}
-  .teacher-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;}
-  .teacher-card{
-    background:var(--card);border-radius:var(--radius);
-    padding:30px 26px;border:1px solid var(--line);
-    box-shadow:var(--shadow);
-    transition:box-shadow .3s ease, border-color .3s ease, transform .3s ease;
-  }
-  .teacher-card:hover{transform:translateY(-4px);box-shadow:var(--glow-md);border-color:var(--line-strong);}
-  .teacher-avatar{
-    width:64px;height:64px;border-radius:50%;
-    background:linear-gradient(150deg,var(--gold-2),var(--gold-dark));
-    display:flex;align-items:center;justify-content:center;
-    color:#201802;font-weight:700;font-size:1.3rem;
-    margin-bottom:16px;
-    font-family:'Baloo Da 2',sans-serif;
-    box-shadow:var(--glow-sm);
-  }
-  .teacher-card h3{color:#fff;font-size:1.15rem;margin-bottom:4px;}
-  .teacher-role{color:var(--gold);font-weight:600;font-size:.9rem;margin-bottom:14px;display:block;}
-  .teacher-card p.bio{color:var(--muted);font-size:.94rem;margin-bottom:18px;}
-  .social-row{display:flex;gap:10px;}
-  .social-row a{
-    width:36px;height:36px;border-radius:50%;
-    background:transparent;color:var(--gold);
-    border:1px solid var(--line-strong);
-    display:flex;align-items:center;justify-content:center;
-    transition:all .2s;
-  }
-  .social-row a:hover{background:var(--gold);color:#201802;box-shadow:var(--glow-sm);}
-  .social-row svg{width:16px;height:16px;}
-
-  /* ---------- Testimonials ---------- */
-  .testi{padding:96px 0;}
-  .testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:26px;}
-  .testi-card{
-    background:var(--card);
-    border-radius:var(--radius);
-    padding:30px 26px;
-    border:1px solid var(--line);
-    box-shadow:var(--shadow);
-    position:relative;
-    transition:box-shadow .3s ease, border-color .3s ease, transform .3s ease;
-  }
-  .testi-card:hover{transform:translateY(-4px);box-shadow:var(--glow-md);border-color:var(--line-strong);}
-  .testi-card .quote-mark{
-    font-family:'Baloo Da 2',sans-serif;
-    font-size:2.6rem;color:var(--gold);
-    line-height:1;display:block;margin-bottom:6px;
-    text-shadow:0 0 14px rgba(255,215,0,.4);
-  }
-  .testi-card p.quote{color:var(--ink);margin-bottom:18px;font-size:.98rem;}
-  .testi-card .author{font-weight:700;color:var(--gold);}
-
-  /* ---------- CTA banner ---------- */
-  .cta-banner{
-    background:
-      radial-gradient(circle at 50% 0%, rgba(255,215,0,.10), transparent 60%),
-      linear-gradient(120deg,#0a0a0a,#050505);
-    color:#fff;text-align:center;
-    padding:80px 24px;
-    border-top:1px solid var(--line);
-    border-bottom:1px solid var(--line);
-  }
-  .cta-banner h2{font-size:clamp(1.6rem,3vw,2.2rem);margin-bottom:16px;color:#fff;text-shadow:0 0 20px rgba(255,215,0,.15);}
-  .cta-banner p{max-width:600px;margin:0 auto 30px;color:var(--muted);}
-  .cta-btns{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;}
-
-  /* ---------- Contact ---------- */
-  .contact{padding:96px 0;}
-  .contact-layout{
-    display:grid;grid-template-columns:1fr 1fr;gap:60px;
-  }
-  .contact-info h3{color:var(--gold);font-size:1.3rem;margin-bottom:16px;}
-  .contact-info p{color:var(--muted);margin-bottom:26px;}
-  .info-row{display:flex;gap:14px;align-items:flex-start;margin-bottom:20px;}
-  .info-row .ic{
-    width:42px;height:42px;border-radius:10px;flex:none;
-    background:var(--gold-soft);color:var(--gold);
-    border:1px solid var(--line-strong);
-    display:flex;align-items:center;justify-content:center;
-  }
-  .info-row .ic svg{width:20px;height:20px;}
-  .info-row strong{display:block;color:#fff;}
-  .info-row span{color:var(--muted);font-size:.94rem;}
-  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px;}
-  .field{
-    width:100%;padding:14px 16px;border-radius:10px;
-    border:1.5px solid var(--line);
-    font-family:inherit;font-size:.98rem;
-    background:var(--card);color:var(--ink);
-    transition:border-color .2s, box-shadow .2s;
-  }
-  .field::placeholder{color:var(--muted-2);}
-  .field:focus{outline:none;border-color:var(--gold);box-shadow:0 0 12px rgba(255,215,0,.25);}
-  textarea.field{min-height:140px;resize:vertical;margin-bottom:22px;}
-
-  /* ---------- Footer ---------- */
-  footer{background:#040404;color:var(--muted);border-top:1px solid var(--line);}
-  .footer-top{padding:72px 0 40px;}
-  .footer-grid{
-    display:grid;grid-template-columns:1.4fr 1fr 1fr 1.2fr;gap:40px;
-  }
-  .footer-brand{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
-  .footer-brand .brand-mark{width:36px;height:36px;object-fit:contain;}
-  .footer-brand span{
-    font-family:'Baloo Da 2',sans-serif;font-weight:700;
-    color:var(--gold);font-size:1.15rem;
-  }
-  .footer-grid p{color:var(--muted-2);font-size:.94rem;}
-  .footer-grid h4{color:var(--gold);font-size:1.02rem;margin-bottom:18px;padding-left:10px;border-left:3px solid var(--gold);}
-  .footer-grid ul li{margin-bottom:11px;}
-  .footer-grid ul li a{color:var(--muted);font-size:.94rem;transition:color .2s;}
-  .footer-grid ul li a:hover{color:var(--gold);}
-  .footer-social{display:flex;gap:10px;margin-top:20px;}
-  .footer-social a{
-    width:38px;height:38px;border-radius:50%;
-    background:transparent;color:var(--gold);
-    border:1px solid var(--line-strong);
-    display:flex;align-items:center;justify-content:center;
-    transition:all .2s;
-  }
-  .footer-social a:hover{background:var(--gold);color:#201802;box-shadow:var(--glow-sm);}
-  .footer-social svg{width:16px;height:16px;}
-  .foot-info-row{display:flex;gap:12px;margin-bottom:16px;align-items:flex-start;}
-  .foot-info-row svg{width:18px;height:18px;flex:none;margin-top:2px;color:var(--gold);}
-  .foot-info-row span{font-size:.92rem;color:var(--muted-2);}
-  .footer-bottom{
-    border-top:1px solid rgba(255,215,0,.12);
-    padding:22px 0;text-align:center;
-    color:var(--muted-2);font-size:.88rem;
-  }
-
-  /* ---------- Responsive ---------- */
-  @media (max-width:980px){
-    nav.main-nav{display:none;}
-    .nav-actions .btn{display:none;}
-    .burger{display:flex;}
-    .stats-grid{grid-template-columns:repeat(2,1fr);}
-    .about-grid,.contact-layout{grid-template-columns:1fr;gap:40px;}
-    .why-grid,.course-grid,.teacher-grid,.testi-grid{grid-template-columns:1fr;}
-    .footer-grid{grid-template-columns:1fr 1fr;}
-  }
-  @media (max-width:560px){
-    .stats-grid{grid-template-columns:1fr 1fr;}
-    .field-row{grid-template-columns:1fr;}
-    .footer-grid{grid-template-columns:1fr;}
-    .cta-btns,.hero-btns{flex-direction:column;align-items:stretch;}
-    .hero-arrow{width:38px;height:38px;}
-  }
+  .brand-name{font-family:'Baloo Da 2',sans-serif;font-weight:700;font-size:1.15rem;color:#fff;}
+  .brand-name span{color:var(--pink);}
+  .footer-nav{display:flex;gap:26px;flex-wrap:wrap;}
+  .footer-nav a{color:var(--muted);font-size:.94rem;transition:color .2s;}
+  .footer-nav a:hover{color:var(--pink);}
+  .copyright{text-align:center;color:var(--muted-2);font-size:.85rem;padding:18px 0;border-top:1px solid rgba(236,18,99,.1);}
 
   /* ---------- Login modal ---------- */
-  .login-modal-overlay{
-    position:fixed;inset:0;
-    background:rgba(0,0,0,.75);
-    backdrop-filter:blur(3px);
-    -webkit-backdrop-filter:blur(3px);
-    display:flex;align-items:center;justify-content:center;
-    padding:20px;
-    z-index:400;
-    opacity:0;pointer-events:none;
-    transition:opacity .25s ease;
+  .modal-overlay{
+    position:fixed;inset:0;z-index:500;
+    background:rgba(3,3,4,.72);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+    display:flex;align-items:center;justify-content:center;padding:20px;
+    opacity:0;pointer-events:none;transition:opacity .25s ease;
   }
-  .login-modal-overlay.open{opacity:1;pointer-events:auto;}
-  .login-modal{
-    background:var(--card);width:100%;max-width:420px;
-    border-radius:16px;overflow:hidden;
-    border:1px solid var(--line-strong);
-    box-shadow:0 24px 60px rgba(0,0,0,.6), var(--glow-md);
-    transform:translateY(16px);
-    transition:transform .25s ease;
+  .modal-overlay.open{opacity:1;pointer-events:auto;}
+  .modal-box{
+    width:100%;max-width:400px;background:var(--card);
+    border:1px solid var(--card-border-strong);border-radius:16px;
+    padding:34px 30px;box-shadow:var(--glow-strong);
+    transform:translateY(14px);transition:transform .25s ease;
+    position:relative;
   }
-  .login-modal-overlay.open .login-modal{transform:translateY(0);}
-  .login-modal-header{
-    background:linear-gradient(120deg,#0a0a0a,#111);
-    border-bottom:1px solid var(--line);
-    padding:18px 20px;
-    display:flex;justify-content:flex-end;align-items:center;
+  .modal-overlay.open .modal-box{transform:translateY(0);}
+  .modal-close{
+    position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:8px;
+    background:transparent;border:1px solid var(--card-border);color:var(--muted);
+    display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;
+    transition:all .2s;
   }
-  .login-modal-close{
-    background:none;border:none;color:var(--gold);
-    font-size:1.5rem;line-height:1;cursor:pointer;
-    width:32px;height:32px;border-radius:8px;
-    display:flex;align-items:center;justify-content:center;
-    transition:background .2s;
+  .modal-close:hover{color:var(--pink);border-color:var(--card-border-strong);}
+  .modal-title{text-align:center;margin-bottom:6px;}
+  .modal-title .brand-mark{
+    width:52px;height:52px;border-radius:14px;margin:0 auto 14px;
+    background:var(--grad-warm-v);display:flex;align-items:center;justify-content:center;
+    font-family:'Baloo Da 2',sans-serif;font-weight:800;color:#1a0509;font-size:1.5rem;
+    box-shadow:var(--glow-md);
   }
-  .login-modal-close:hover{background:rgba(255,215,0,.12);}
-  .login-modal-body{padding:30px 28px 32px;}
-  .login-field-label{display:block;font-weight:700;margin-bottom:9px;color:#fff;font-size:1.02rem;}
-  .login-input-wrap{position:relative;margin-bottom:22px;}
-  .login-input{
-    width:100%;padding:14px 16px;border-radius:10px;
-    border:1.5px solid var(--line);
-    font-family:inherit;font-size:.98rem;
-    background:#050505;color:var(--ink);transition:border-color .2s, box-shadow .2s;
+  .modal-title h3{color:#fff;font-size:1.3rem;margin-bottom:4px;}
+  .modal-title p{color:var(--muted-2);font-size:.88rem;margin-bottom:24px;}
+  .m-field-group{margin-bottom:16px;}
+  .m-field-group label{display:block;color:var(--muted);font-size:.86rem;margin-bottom:7px;font-weight:500;}
+  .m-field{
+    width:100%;padding:12px 14px;border-radius:9px;
+    border:1.5px solid var(--card-border);background:#0a0a0d;color:var(--ink);
+    font-family:inherit;font-size:.96rem;transition:border-color .2s, box-shadow .2s;
   }
-  .login-input::placeholder{color:var(--muted-2);}
-  .login-input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 12px rgba(255,215,0,.25);}
-  .login-input-wrap.has-eye .login-input{padding-right:56px;}
-  .login-eye-btn{
-    position:absolute;right:6px;top:50%;transform:translateY(-50%);
-    width:38px;height:38px;border-radius:8px;
-    border:1.5px solid var(--line);background:#050505;
-    display:flex;align-items:center;justify-content:center;
-    cursor:pointer;color:var(--gold);
+  .m-field::placeholder{color:var(--muted-2);}
+  .m-field:focus{outline:none;border-color:var(--pink);box-shadow:0 0 10px rgba(236,18,99,.3);}
+  .m-pass-wrap{position:relative;}
+  .m-eye-btn{
+    position:absolute;right:12px;top:50%;transform:translateY(-50%);
+    background:none;border:none;color:var(--muted-2);cursor:pointer;padding:4px;
+    display:flex;align-items:center;
   }
-  .login-remember{
-    display:flex;align-items:center;gap:9px;
-    margin-bottom:24px;font-size:.96rem;color:var(--ink);
-    cursor:pointer;
+  .m-eye-btn:hover{color:var(--pink);}
+  .m-row-between{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;font-size:.86rem;}
+  .m-remember{display:flex;align-items:center;gap:7px;color:var(--muted);}
+  .m-remember input{accent-color:var(--pink);}
+  .m-forgot{color:var(--pink);font-weight:500;}
+  .m-forgot:hover{text-decoration:underline;}
+  .m-error{
+    display:none;background:rgba(255,45,85,.12);border:1px solid rgba(255,45,85,.4);
+    color:#ff8fa8;font-size:.85rem;padding:9px 12px;border-radius:8px;margin-bottom:16px;
   }
-  .login-remember input{width:17px;height:17px;accent-color:var(--gold);}
-  .login-submit{width:100%;padding:15px;font-size:1.02rem;}
+  .m-submit{width:100%;justify-content:center;padding:13px;}
+  .m-footer-text{text-align:center;color:var(--muted-2);font-size:.85rem;margin-top:20px;}
 
-  /* mobile nav panel */
-  .mobile-nav{
-    position:fixed;inset:0 0 0 auto;
-    width:78%;max-width:320px;
-    background:#070707;
-    border-left:1px solid var(--line-strong);
-    box-shadow:-10px 0 30px rgba(0,0,0,.5);
-    transform:translateX(100%);
-    transition:transform .3s ease;
-    z-index:200;
-    padding:28px 26px;
+  /* ---- reveal ---- */
+  .reveal{opacity:0;transform:translateY(16px);transition:opacity .6s ease, transform .6s ease;}
+  .reveal.in{opacity:1;transform:translateY(0);}
+
+  @media (max-width:880px){
+    .why-grid,.contact-wrap{grid-template-columns:1fr;}
+    .course-grid{grid-template-columns:1fr;}
+    .testi-grid{grid-template-columns:1fr;}
+    .stat-grid{grid-template-columns:1fr 1fr;}
+    thead th, tbody td{padding:12px 14px;font-size:.88rem;}
+    .footer-bottom-nav{justify-content:center;text-align:center;}
+    .footer-nav{justify-content:center;}
   }
-  .mobile-nav.open{transform:translateX(0);}
-  .mobile-nav a{display:block;padding:12px 0;font-weight:600;color:var(--ink);border-bottom:1px solid var(--line);}
-  .mobile-nav a:hover{color:var(--gold);}
-  .mobile-nav .mobile-cta{margin-top:22px;display:flex;flex-direction:column;gap:12px;}
-  .mobile-nav .mobile-cta .btn{width:100%;}
-  .mobile-overlay{
-    position:fixed;inset:0;background:rgba(0,0,0,.6);
-    opacity:0;pointer-events:none;transition:opacity .3s;z-index:150;
+  @media (max-width:520px){
+    .table-wrap{overflow-x:auto;}
+    table{min-width:640px;}
   }
-  .mobile-overlay.open{opacity:1;pointer-events:auto;}
 </style>
 </head>
 <body>
 
-<!-- ================= HEADER ================= -->
-<header>
+<!-- ================= TOP NAVBAR ================= -->
+<header class="topnav">
   <div class="nav-wrap">
-    <a href="#home" class="brand">
-      <img class="brand-mark" src="assets/app-logo.png" alt="নুরুল কোরআন মাদরাসা লোগো">
-      <span class="brand-name">নুরুল কোরআন মাদরাসা</span>
+    <a href="#home" class="nav-logo">
+      <img class="nav-logo-img" src="assets/app-logo.png" alt="নূরুল কোরআন মাদরাসা লোগো">
+      <span class="nav-logo-text" style="font-size:1.28rem;color:#fff;">নূরুল কোরআন মাদরাসা</span>
     </a>
-
-    <nav class="main-nav">
+    <nav class="nav-links" id="navLinks">
       <a href="#home">হোম</a>
-      <a href="#about">আমাদের সম্পর্কে</a>
       <a href="#courses">কোর্সসমূহ</a>
-      <a href="#teachers">শিক্ষকবৃন্দ</a>
+      <a href="#schedule">সময়সূচি</a>
       <a href="#testimonials">মতামত</a>
       <a href="#contact">যোগাযোগ</a>
+      <div class="nav-links-mobile-actions">
+        <a href="#contact" class="nav-btn nav-btn-admit">এখনই ভর্তি হোন</a>
+        <button type="button" class="nav-btn nav-btn-login" id="loginTriggerMobile">লগইন</button>
+      </div>
     </nav>
-
-    <div class="nav-actions">
-      <a href="#contact" class="btn btn-primary">এখনই ভর্তি হোন</a>
-      <a href="#" class="btn btn-gold" id="desktopLoginBtn">লগইন</a>
-      <button class="burger" id="burgerBtn" aria-label="মেনু খুলুন">
-        <span></span><span></span><span></span>
-      </button>
+    <div class="nav-buttons">
+      <a href="#contact" class="nav-btn nav-btn-admit">এখনই ভর্তি হোন</a>
+      <button type="button" class="nav-btn nav-btn-login" id="loginTrigger">লগইন</button>
     </div>
+    <button class="nav-burger" id="navBurger" aria-label="Menu"><span></span><span></span><span></span></button>
   </div>
 </header>
 
-<div class="mobile-overlay" id="mobileOverlay"></div>
-<div class="mobile-nav" id="mobileNav">
-  <a href="#home">হোম</a>
-  <a href="#about">আমাদের সম্পর্কে</a>
-  <a href="#courses">কোর্সসমূহ</a>
-  <a href="#teachers">শিক্ষকবৃন্দ</a>
-  <a href="#testimonials">মতামত</a>
-  <a href="#contact">যোগাযোগ</a>
-  <div class="mobile-cta">
-    <a href="#contact" class="btn btn-primary">এখনই ভর্তি হোন</a>
-    <a href="#" class="btn btn-gold" id="mobileLoginBtn">লগইন</a>
-  </div>
+<!-- ================= HERO BANNER ================= -->
+<div class="hero-banner" id="home">
+  <img src="https://images.pexels.com/photos/31367502/pexels-photo-31367502.jpeg?auto=compress&cs=tinysrgb&w=1920"
+       alt="মেডিক বায়োলজি শিক্ষার্থীদের অনুষ্ঠান" loading="eager">
 </div>
 
-<!-- ================= HERO ================= -->
-<section class="hero" id="home">
-  <button class="hero-arrow prev" id="heroPrev">&#10094;</button>
-  <button class="hero-arrow next" id="heroNext">&#10095;</button>
-  <div class="hero-slides">
-    <div class="hero-slide active">
-      <h1 class="hero-title">আগামী প্রজন্মের জন্য<br>আধুনিক ইসলামিক শিক্ষা</h1>
-      <p class="lead">ঐতিহ্যবাহী ইসলামিক জ্ঞান ও আধুনিক শিক্ষার সমন্বয়ে সুশিক্ষিত মুসলিম ব্যক্তিত্ব গড়ে তোলা।</p>
-      <div class="hero-btns">
-        <a href="#about" class="btn btn-white">আরও জানুন</a>
-        <a href="#contact" class="btn btn-outline">আজই ভর্তি হোন</a>
-      </div>
+<!-- ================= WHY MEDIC BIOLOGY ================= -->
+<section class="why" id="why">
+  <div class="container why-grid">
+    <div class="reveal">
+      <div class="heading"><span class="bar"></span><h2>কেন নূরুল কোরআন মাদরাসা?</h2></div>
+      <ul class="check-list">
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg>যোগ্য হাফেজ ও কারী দ্বারা পাঠদান</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg>অত্যাধুনিক প্রযুক্তি সম্পন্ন ও মাল্টিমিডিয়া ক্লাসরুম</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg>সঠিক তাজবিদ সহ কুরআন তেলাওয়াত চর্চা</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg>নিয়মিত মুখস্থ যাচাই ও মূল্যায়ন পরীক্ষা</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg>ইসলামিক শিষ্টাচার ও চরিত্র গঠনে বিশেষ মনোযোগ</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg>আধুনিক একাডেমিক শিক্ষার সাথে সমন্বয়</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg>নিরাপদ, শৃঙ্খলাপূর্ণ ও পরিচ্ছন্ন পরিবেশ</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg>প্রতিদিনের অগ্রগতি অভিভাবকদের কাছে পৌঁছে দেওয়া</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg>একাধিক ব্যাচ থাকায় সুবিধামত সময়ে ভর্তি</li>
+      </ul>
     </div>
-    <div class="hero-slide">
-      <h1 class="hero-title">কুরআন হিফজ ও তাজবিদের<br>পূর্ণাঙ্গ প্রোগ্রাম</h1>
-      <p class="lead">যোগ্য হাফেজ ও কারীদের তত্ত্বাবধানে সঠিক তাজবিদ সহ সম্পূর্ণ কুরআন হিফজ ক্লাস।</p>
-      <div class="hero-btns">
-        <a href="#courses" class="btn btn-white">কোর্স দেখুন</a>
-        <a href="#teachers" class="btn btn-outline">শিক্ষকবৃন্দ</a>
-      </div>
-    </div>
-    <div class="hero-slide">
-      <h1 class="hero-title">অভিজ্ঞ শিক্ষকমণ্ডলীর<br>তত্ত্বাবধানে নিরাপদ পরিবেশ</h1>
-      <p class="lead">সুশৃঙ্খল ও নিরাপদ পরিবেশে একাডেমিক ও আধ্যাত্মিক বিকাশে শিক্ষার্থী গড়ে তোলা আমাদের লক্ষ্য।</p>
-      <div class="hero-btns">
-        <a href="#contact" class="btn btn-white">এখনই ভর্তি হোন</a>
-        <a href="#courses" class="btn btn-outline">কোর্সসমূহ</a>
-      </div>
-    </div>
-    <div class="hero-dots" id="heroDots"></div>
-  </div>
-</section>
-
-<!-- ================= STATS ================= -->
-<section class="stats">
-  <div class="container stats-grid">
-    <div class="stat-card"><div class="num" data-count="352">0</div><div class="label">সক্রিয় শিক্ষার্থী</div></div>
-    <div class="stat-card"><div class="num" data-count="31">0</div><div class="label">যোগ্য শিক্ষক</div></div>
-    <div class="stat-card"><div class="num" data-count="12">0</div><div class="label">বিভিন্ন কোর্স</div></div>
-    <div class="stat-card"><div class="num" data-count="15">0</div><div class="label">বছরের অভিজ্ঞতা</div></div>
-  </div>
-</section>
-
-<!-- ================= ABOUT ================= -->
-<section class="about" id="about">
-  <div class="container about-grid">
-    <div class="about-text">
-      <span class="eyebrow">আমাদের পরিচিতি</span>
-      <h2 style="font-size:clamp(1.6rem,3vw,2.15rem);color:var(--primary-dark);margin-bottom:20px;">আমাদের মাদরাসা সম্পর্কে</h2>
-      <p>নুরুল কোরআন মাদরাসা একটি আধুনিক মাদরাসা, প্রতিষ্ঠিত হয়েছে ইসলামিক শিক্ষা ও আধুনিক শিক্ষার সমন্বয়ে একটি ভারসাম্যপূর্ণ শিক্ষা প্রদানের লক্ষ্যে। আমাদের পাঠ্যক্রম এমনভাবে ডিজাইন করা হয়েছে যাতে শিক্ষার্থীরা তাদের ধর্ম সম্পর্কে জ্ঞান অর্জনের পাশাপাশি আধুনিক বিশ্বে সফল হওয়ার জন্য প্রস্তুত হয়।</p>
-      <p>আমরা শিক্ষার প্রতি একটি সামগ্রিক দৃষ্টিভঙ্গি অনুসরণ করি, চরিত্র গঠন, সমালোচনামূলক চিন্তাভাবনা এবং সম্প্রদায়ের সম্পৃক্ততার উপর ফোকাস করি। আমাদের অভিজ্ঞ শিক্ষকরা একটি পোষণমূলক পরিবেশ প্রদানের জন্য নিবেদিত, যেখানে শিক্ষার্থীরা একাডেমিক এবং আধ্যাত্মিকভাবে উন্নতি করতে পারে।</p>
-      <div class="check-grid">
-        <div class="check-item">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          যোগ্য ইসলামিক স্কলার
-        </div>
-        <div class="check-item">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          নিরাপদ শিক্ষার পরিবেশ
-        </div>
-        <div class="check-item">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          আধুনিক শিক্ষণ পদ্ধতি
-        </div>
-        <div class="check-item">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          সহ-শিক্ষাক্রমিক কার্যক্রম
-        </div>
-        <div class="check-item">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          ভারসাম্যপূর্ণ পাঠ্যক্রম
-        </div>
-        <div class="check-item">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          সম্প্রদায় ফোকাস
-        </div>
-      </div>
-    </div>
-    <div class="about-media">
-      <img class="emblem" src="assets/app-logo.png" alt="নুরুল কোরআন মাদরাসা লোগো">
-    </div>
-  </div>
-</section>
-
-<!-- ================= WHY CHOOSE ================= -->
-<section class="why">
-  <div class="container">
-    <div class="section-head">
-      <h2>কেন নুরুল কোরআন মাদরাসা বেছে নেবেন?</h2>
-      <div class="underline"></div>
-    </div>
-    <div class="why-grid">
-      <div class="why-card">
-        <div class="icon-circle">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M4 5c0-1 1-2 2-2h9a2 2 0 012 2v15l-6.5-3L4 20V5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
-        </div>
-        <h3>কুরআন শিক্ষা</h3>
-        <p>যোগ্য হাফেজ ও কারীদের তত্ত্বাবধানে পূর্ণাঙ্গ কুরআন হিফজ ও তাজবিদ ক্লাস।</p>
-      </div>
-      <div class="why-card">
-        <div class="icon-circle">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l9 5-9 5-9-5 9-5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M6 11v5c0 1.7 2.7 3 6 3s6-1.3 6-3v-5" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
-        </div>
-        <h3>একাডেমিক শ্রেষ্ঠত্ব</h3>
-        <p>ইসলামিক স্টাডিজের সাথে আধুনিক একাডেমিক বিষয়াবলির সংহতকরণের মাধ্যমে ভারসাম্যপূর্ণ শিক্ষা।</p>
-      </div>
-      <div class="why-card">
-        <div class="icon-circle">
-          <svg viewBox="0 0 24 24" fill="none"><circle cx="9" cy="8" r="3.2" stroke="currentColor" stroke-width="1.8"/><path d="M2.5 20c0-3.3 3-6 6.5-6s6.5 2.7 6.5 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="17" cy="9" r="2.6" stroke="currentColor" stroke-width="1.8"/><path d="M15 20c0-2.6 1-4.6 3.5-5.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-        </div>
-        <h3>চরিত্র গঠন</h3>
-        <p>শিক্ষার্থীদের মধ্যে ইসলামিক চরিত্র, নীতি ও নৈতিক মূল্যবোধ বিকাশের উপর ফোকাস।</p>
-      </div>
+    <div class="stat-grid reveal">
+      <div class="stat-card"><div class="num" data-count="352">0</div><div class="label">সক্রিয় শিক্ষার্থী</div></div>
+      <div class="stat-card"><div class="num" data-count="31">0</div><div class="label">যোগ্য শিক্ষক</div></div>
+      <div class="stat-card"><div class="num" data-count="12">0</div><div class="label">বিভিন্ন কোর্স</div></div>
+      <div class="stat-card"><div class="num" data-count="15">0</div><div class="label">বছরের অভিজ্ঞতা</div></div>
+      <div class="stat-card wide"><div class="num" data-count="100">0</div><div class="label">হিফজ সম্পন্নকারী শিক্ষার্থী</div></div>
     </div>
   </div>
 </section>
@@ -781,72 +430,42 @@
 <!-- ================= COURSES ================= -->
 <section class="courses" id="courses">
   <div class="container">
-    <div class="section-head">
-      <h2>আমাদের কোর্সসমূহ</h2>
-      <div class="underline"></div>
-    </div>
+    <div class="heading reveal"><span class="bar"></span><h2>আমাদের কোর্সসমূহ</h2></div>
     <div class="course-grid">
-      <div class="course-card">
+      <div class="course-card reveal">
+        <div class="course-top"><span class="course-tag">hifz</span><span class="course-fee">ভর্তি চলছে</span></div>
         <h3>কুরআন হিফজ</h3>
-        <p>সঠিক তাজবিদ ও তাফসির সহ সকল বয়সের শিক্ষার্থীদের জন্য সম্পূর্ণ হিফজ প্রোগ্রাম।</p>
-        <a href="#contact" class="btn btn-line">আরও জানুন</a>
+        <p>সঠিক তাজবিদ ও তাফসির সহ সকল বয়সের শিক্ষার্থীদের জন্য সম্পূর্ণ হিফজুল কুরআন প্রোগ্রাম।</p>
       </div>
-      <div class="course-card">
-        <h3>আরবি ভাষা</h3>
-        <p>কার্যকর যোগাযোগের জন্য প্রারম্ভিক থেকে উন্নত স্তর পর্যন্ত বিস্তৃত আরবি কোর্স।</p>
-        <a href="#contact" class="btn btn-line">আরও জানুন</a>
-      </div>
-      <div class="course-card">
-        <h3>ইসলামিক স্টাডিজ</h3>
-        <p>সকল বয়সের গ্রুপের জন্য আকিদা, ফিকহ, সীরাত ও ইসলামিক ইতিহাসের ব্যাপক অধ্যয়ন।</p>
-        <a href="#contact" class="btn btn-line">আরও জানুন</a>
+      <div class="course-card reveal">
+        <div class="course-top"><span class="course-tag">naz</span><span class="course-fee">ভর্তি চলছে</span></div>
+        <h3>নাজেরা ও নূরানী বিভাগ</h3>
+        <p>শুদ্ধভাবে কুরআন তেলাওয়াত ও আরবি বর্ণ পরিচিতি সহ ইসলামিক স্টাডিজের ভিত্তি গঠন।</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ================= TEACHERS ================= -->
-<section class="teachers" id="teachers">
+<!-- ================= SCHEDULE ================= -->
+<section class="schedule" id="schedule">
   <div class="container">
-    <div class="section-head">
-      <h2>আমাদের সেরা শিক্ষকবৃন্দ</h2>
-      <div class="underline"></div>
-      <p>আমাদের অভিজ্ঞ ও যোগ্য শিক্ষকবৃন্দ যারা ইসলামিক জ্ঞান ও আধুনিক শিক্ষায় শিক্ষার্থীদের গড়ে তুলছেন</p>
-    </div>
-    <div class="teacher-grid">
-      <div class="teacher-card">
-        <div class="teacher-avatar">আ.র</div>
-        <h3>মুফতি আব্দুর রহমান</h3>
-        <span class="teacher-role">ইসলামিক স্টাডিজ বিভাগ প্রধান</span>
-        <p class="bio">দারুল উলুম দেওবন্দ থেকে স্নাতকোত্তর, ১৫ বছরের শিক্ষকতা অভিজ্ঞতা। বিশেষজ্ঞতা: ফিকহ ও উসুলুল ফিকহ।</p>
-        <div class="social-row">
-          <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-7.5H16l.5-3H13.5V8.4c0-.87.24-1.46 1.5-1.46H16.6V4.35C16.3 4.31 15.3 4.22 14.1 4.22c-2.4 0-4.05 1.47-4.05 4.16v2.32H7.5v3h2.55V21h3.45z"/></svg></a>
-          <a href="#" aria-label="Twitter"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 5.9c-.7.3-1.5.5-2.3.6.8-.5 1.4-1.3 1.7-2.3-.8.5-1.7.8-2.6 1a4.1 4.1 0 00-7 3.7A11.6 11.6 0 013 4.9a4.1 4.1 0 001.3 5.5c-.6 0-1.2-.2-1.7-.5v.1c0 2 1.4 3.6 3.3 4a4.1 4.1 0 01-1.9.1 4.1 4.1 0 003.8 2.8A8.2 8.2 0 012 18.6a11.6 11.6 0 006.3 1.8c7.5 0 11.7-6.3 11.7-11.7v-.5c.8-.6 1.5-1.3 2-2.1z"/></svg></a>
-          <a href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.9 8.4H3.6V20h3.3V8.4zM5.3 3.6a1.9 1.9 0 100 3.8 1.9 1.9 0 000-3.8zM20.4 20h-3.3v-6.1c0-1.5-.5-2.5-1.8-2.5-1 0-1.6.7-1.9 1.3-.1.2-.1.6-.1.9V20H10s.1-10.6 0-11.6h3.3v1.6c.4-.7 1.2-1.7 3-1.7 2.2 0 3.9 1.4 3.9 4.5V20z"/></svg></a>
-        </div>
-      </div>
-      <div class="teacher-card">
-        <div class="teacher-avatar">হ.ই</div>
-        <h3>হাফেজ মোহাম্মদ ইব্রাহিম</h3>
-        <span class="teacher-role">কুরআন বিভাগ প্রধান</span>
-        <p class="bio">আল-আজহার বিশ্ববিদ্যালয় থেকে কুরআনিক স্টাডিজে স্নাতকোত্তর, ১০০+ শিক্ষার্থীকে কুরআন হিফজ করিয়েছেন।</p>
-        <div class="social-row">
-          <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-7.5H16l.5-3H13.5V8.4c0-.87.24-1.46 1.5-1.46H16.6V4.35C16.3 4.31 15.3 4.22 14.1 4.22c-2.4 0-4.05 1.47-4.05 4.16v2.32H7.5v3h2.55V21h3.45z"/></svg></a>
-          <a href="#" aria-label="Twitter"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 5.9c-.7.3-1.5.5-2.3.6.8-.5 1.4-1.3 1.7-2.3-.8.5-1.7.8-2.6 1a4.1 4.1 0 00-7 3.7A11.6 11.6 0 013 4.9a4.1 4.1 0 001.3 5.5c-.6 0-1.2-.2-1.7-.5v.1c0 2 1.4 3.6 3.3 4a4.1 4.1 0 01-1.9.1 4.1 4.1 0 003.8 2.8A8.2 8.2 0 012 18.6a11.6 11.6 0 006.3 1.8c7.5 0 11.7-6.3 11.7-11.7v-.5c.8-.6 1.5-1.3 2-2.1z"/></svg></a>
-          <a href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.9 8.4H3.6V20h3.3V8.4zM5.3 3.6a1.9 1.9 0 100 3.8 1.9 1.9 0 000-3.8zM20.4 20h-3.3v-6.1c0-1.5-.5-2.5-1.8-2.5-1 0-1.6.7-1.9 1.3-.1.2-.1.6-.1.9V20H10s.1-10.6 0-11.6h3.3v1.6c.4-.7 1.2-1.7 3-1.7 2.2 0 3.9 1.4 3.9 4.5V20z"/></svg></a>
-        </div>
-      </div>
-      <div class="teacher-card">
-        <div class="teacher-avatar">আ.হ</div>
-        <h3>ড. আহমেদ হাসান</h3>
-        <span class="teacher-role">আরবি ভাষা বিভাগ প্রধান</span>
-        <p class="bio">কায়রো বিশ্ববিদ্যালয় থেকে আরবি ভাষা ও সাহিত্যে পিএইচডি, ১২ বছরের শিক্ষকতা অভিজ্ঞতা। বিশেষজ্ঞতা: আরবি ব্যাকরণ।</p>
-        <div class="social-row">
-          <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-7.5H16l.5-3H13.5V8.4c0-.87.24-1.46 1.5-1.46H16.6V4.35C16.3 4.31 15.3 4.22 14.1 4.22c-2.4 0-4.05 1.47-4.05 4.16v2.32H7.5v3h2.55V21h3.45z"/></svg></a>
-          <a href="#" aria-label="Twitter"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 5.9c-.7.3-1.5.5-2.3.6.8-.5 1.4-1.3 1.7-2.3-.8.5-1.7.8-2.6 1a4.1 4.1 0 00-7 3.7A11.6 11.6 0 013 4.9a4.1 4.1 0 001.3 5.5c-.6 0-1.2-.2-1.7-.5v.1c0 2 1.4 3.6 3.3 4a4.1 4.1 0 01-1.9.1 4.1 4.1 0 003.8 2.8A8.2 8.2 0 012 18.6a11.6 11.6 0 006.3 1.8c7.5 0 11.7-6.3 11.7-11.7v-.5c.8-.6 1.5-1.3 2-2.1z"/></svg></a>
-          <a href="#" aria-label="LinkedIn"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6.9 8.4H3.6V20h3.3V8.4zM5.3 3.6a1.9 1.9 0 100 3.8 1.9 1.9 0 000-3.8zM20.4 20h-3.3v-6.1c0-1.5-.5-2.5-1.8-2.5-1 0-1.6.7-1.9 1.3-.1.2-.1.6-.1.9V20H10s.1-10.6 0-11.6h3.3v1.6c.4-.7 1.2-1.7 3-1.7 2.2 0 3.9 1.4 3.9 4.5V20z"/></svg></a>
-        </div>
-      </div>
+    <div class="heading reveal"><span class="bar"></span><h2>ক্লাস সময়সূচি</h2></div>
+    <div class="table-wrap reveal">
+      <table>
+        <thead>
+          <tr><th>বিভাগ</th><th>ব্যাচ</th><th>দিন</th><th>সময়</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>হিফজুল কুরআন</td><td class="batch">NQ 1A</td><td>শনিবার - সোমবার - বুধবার</td><td>ফজরের পর - ৮:০০</td></tr>
+          <tr><td>হিফজুল কুরআন</td><td class="batch">NQ 1B</td><td>রবিবার - মঙ্গলবার - বৃহস্পতিবার</td><td>ফজরের পর - ৮:০০</td></tr>
+          <tr><td>নাজেরা বিভাগ</td><td class="batch">NQ 2A</td><td>শনিবার - সোমবার - বুধবার</td><td>বিকাল ৪:০০ - ৫:৩০</td></tr>
+          <tr><td>নাজেরা বিভাগ</td><td class="batch">NQ 2B</td><td>রবিবার - মঙ্গলবার - বৃহস্পতিবার</td><td>বিকাল ৪:০০ - ৫:৩০</td></tr>
+          <tr><td>নূরানী বিভাগ</td><td class="batch">NQ 3A</td><td>শনি - রবি - সোম - মঙ্গল - বুধ</td><td>সকাল ৯:০০ - ১১:০০</td></tr>
+          <tr><td>আরবি ভাষা</td><td class="batch">NQ 4A</td><td>শনিবার - সোমবার - বুধবার</td><td>সন্ধ্যা ৬:০০ - ৭:০০</td></tr>
+          <tr><td>আরবি ভাষা</td><td class="batch">NQ 4B</td><td>রবিবার - মঙ্গলবার - বৃহস্পতিবার</td><td>সন্ধ্যা ৬:০০ - ৭:০০</td></tr>
+          <tr><td>ইসলামিক স্টাডিজ</td><td class="batch">NQ 5A</td><td>শুক্রবার</td><td>বাদ জুমা - ২:০০</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </section>
@@ -854,207 +473,149 @@
 <!-- ================= TESTIMONIALS ================= -->
 <section class="testi" id="testimonials">
   <div class="container">
-    <div class="section-head">
-      <h2>পিতামাতা ও শিক্ষার্থীদের মতামত</h2>
-      <div class="underline"></div>
-    </div>
+    <div class="heading reveal"><span class="bar"></span><h2>পিতামাতা ও শিক্ষার্থীদের মতামত</h2></div>
     <div class="testi-grid">
-      <div class="testi-card">
-        <span class="quote-mark">&#8220;</span>
-        <p class="quote">নুরুল কোরআন মাদরাসা আমাদের পরিবারের জন্য একটি আশীর্বাদ। আমার সন্তানরা শুধু তাদের কুরআন তিলাওয়াতেই উন্নতি করেনি, বরং শক্তিশালী ইসলামিক মূল্যবোধও বিকাশ করেছে।</p>
-        <span class="author">- আহমেদ রহমান</span>
+      <div class="testi-card reveal">
+        <span class="quote">"নুরুল কোরআন মাদরাসা আমাদের পরিবারের জন্য একটি আশীর্বাদ। আমার সন্তানরা শুধু তাদের কুরআন তিলাওয়াতেই উন্নতি করেনি, বরং শক্তিশালী ইসলামিক মূল্যবোধও বিকাশ করেছে।"</span>
+        <span class="author">আহমেদ রহমান</span><span class="role">অভিভাবক</span>
       </div>
-      <div class="testi-card">
-        <span class="quote-mark">&#8220;</span>
-        <p class="quote">শিক্ষকরা জ্ঞানী এবং যত্নশীল। তারা একটি পোষণমূলক পরিবেশ তৈরি করেন যেখানে শিশুরা ইসলাম সম্পর্কে শিখতে ভালোবাসে।</p>
-        <span class="author">- ফাতিমা খান</span>
+      <div class="testi-card reveal">
+        <span class="quote">"শিক্ষকরা জ্ঞানী এবং যত্নশীল। তারা একটি পোষণমূলক পরিবেশ তৈরি করেন যেখানে শিশুরা ইসলাম সম্পর্কে শিখতে ভালোবাসে।"</span>
+        <span class="author">ফাতিমা খান</span><span class="role">অভিভাবক</span>
       </div>
-      <div class="testi-card">
-        <span class="quote-mark">&#8220;</span>
-        <p class="quote">আমি প্রশংসা করি কিভাবে মাদরাসাটি ঐতিহ্যবাহী ইসলামিক শিক্ষাকে আধুনিক শিক্ষণ পদ্ধতির সাথে সামঞ্জস্য করে। আমার মেয়ে প্রতিদিন তার ক্লাসের জন্য উৎসাহিত হয়।</p>
-        <span class="author">- ইউসুফ আলী</span>
+      <div class="testi-card reveal">
+        <span class="quote">"আমি প্রশংসা করি কিভাবে মাদরাসাটি ঐতিহ্যবাহী ইসলামিক শিক্ষাকে আধুনিক শিক্ষণ পদ্ধতির সাথে সামঞ্জস্য করে। আমার মেয়ে প্রতিদিন তার ক্লাসের জন্য উৎসাহিত হয়।"</span>
+        <span class="author">ইউসুফ আলী</span><span class="role">অভিভাবক</span>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ================= CTA BANNER ================= -->
-<section class="cta-banner">
-  <h2>আজই আপনার সন্তানকে ভর্তি করুন</h2>
-  <p>আপনার সন্তানকে ইসলামিক জ্ঞানের পাশাপাশি আধুনিক শিক্ষার উপহার দিন। আসন্ন সেমিস্টারের জন্য সীমিত আসন উপলব্ধ।</p>
-  <div class="cta-btns">
-    <a href="#contact" class="btn btn-white">যোগাযোগ করুন</a>
-    <a href="#contact" class="btn btn-outline">এখনই আবেদন করুন</a>
-  </div>
-</section>
-
-<!-- ================= CONTACT ================= -->
-<section class="contact" id="contact">
-  <div class="container contact-layout">
-    <div class="contact-info">
-      <span class="eyebrow">যোগাযোগ</span>
-      <h3 style="font-size:clamp(1.5rem,3vw,2rem);">যোগাযোগ করুন</h3>
-      <p style="margin-top:14px;">যেকোনো জিজ্ঞাসা বা ভর্তি সংক্রান্ত তথ্যের জন্য আমাদের সাথে যোগাযোগ করুন। আমরা আপনার বার্তার দ্রুত জবাব দেওয়ার চেষ্টা করব।</p>
-      <div class="info-row">
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none"><path d="M12 21s7-6.2 7-11.5A7 7 0 005 9.5C5 14.8 12 21 12 21z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="9.5" r="2.4" stroke="currentColor" stroke-width="1.8"/></svg></div>
-        <div><strong>ঠিকানা</strong><span>হরিপুর বোর্ডঘর, চাঁপাইনবাবগঞ্জ।</span></div>
+<!-- ================= CONTACT + FOOTER ================= -->
+<footer id="contact">
+  <div class="container contact-wrap">
+    <div class="contact-info reveal">
+      <h3>যোগাযোগের তথ্য</h3>
+      <div class="info-line">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s-7-6.1-7-11a7 7 0 0114 0c0 4.9-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+        <span>ঠিকানা: হরিপুর বোর্ডঘর, চাঁপাইনবাবগঞ্জ।</span>
       </div>
-      <div class="info-row">
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none"><path d="M4.5 5.5c0-.6.4-1 1-1h2.6c.5 0 .9.3 1 .8l.7 3a1 1 0 01-.3 1L8 10.7c1 2.1 2.7 3.8 4.8 4.8l1.4-1.5a1 1 0 011-.3l3 .7c.5.1.8.5.8 1v2.6c0 .6-.4 1-1 1C10.5 19 5 13.5 4.5 5.5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
-        <div><strong>ফোন</strong><span>+৮৮০১৭৭০-০১৩৩৩</span></div>
+      <div class="info-line">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72c.13.99.37 1.96.72 2.88a2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.2-1.29a2 2 0 012.11-.45c.92.35 1.89.59 2.88.72A2 2 0 0122 16.92z"/></svg>
+        <span>ফোন: +৮৮০১৭৭০-০১৩৩৩</span>
       </div>
-      <div class="info-row">
-        <div class="ic"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5.5" width="17" height="13" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M4 6.5l8 6 8-6" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg></div>
-        <div><strong>ইমেইল</strong><span>info@nqm.com</span></div>
+      <div class="info-line">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M22 6l-10 7L2 6"/></svg>
+        <span>ইমেইল: info@nqm.com</span>
+      </div>
+      <div style="margin-top:26px;">
+        <a href="#courses" class="btn btn-grad">কোর্স সমূহ দেখুন</a>
       </div>
     </div>
-
-    <form onsubmit="return handleContactSubmit(event)">
-      <div class="field-row">
-        <input id="ctName" class="field" type="text" placeholder="আপনার নাম" required>
-        <input id="ctEmail" class="field" type="email" placeholder="আপনার ইমেইল" required>
-      </div>
-      <div class="field-row">
-        <input id="ctPhone" class="field" type="tel" placeholder="আপনার মোবাইল নম্বর">
-        <input id="ctSubject" class="field" type="text" placeholder="বিষয়">
-      </div>
-      <textarea id="ctMessage" class="field" placeholder="আপনার বার্তা" required></textarea>
-      <button type="submit" class="btn btn-primary">বার্তা পাঠান</button>
-    </form>
-  </div>
-</section>
-
-<!-- ================= FOOTER ================= -->
-<footer>
-  <div class="footer-top container">
-    <div class="footer-grid">
-      <div>
-        <div class="footer-brand">
-          <img class="brand-mark" src="assets/app-logo.png" alt="নুরুল কোরআন মাদরাসা লোগো">
-          <span>নুরুল কোরআন মাদরাসা</span>
-        </div>
-        <p>১৫ বছরেরও বেশি সময় ধরে আধুনিক একাডেমিক শিক্ষার সাথে মানসম্মত ইসলামিক শিক্ষা প্রদান করা হচ্ছে।</p>
-        <div class="footer-social">
-          <a href="#" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-7.5H16l.5-3H13.5V8.4c0-.87.24-1.46 1.5-1.46H16.6V4.35C16.3 4.31 15.3 4.22 14.1 4.22c-2.4 0-4.05 1.47-4.05 4.16v2.32H7.5v3h2.55V21h3.45z"/></svg></a>
-          <a href="#" aria-label="Twitter"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 5.9c-.7.3-1.5.5-2.3.6.8-.5 1.4-1.3 1.7-2.3-.8.5-1.7.8-2.6 1a4.1 4.1 0 00-7 3.7A11.6 11.6 0 013 4.9a4.1 4.1 0 001.3 5.5c-.6 0-1.2-.2-1.7-.5v.1c0 2 1.4 3.6 3.3 4a4.1 4.1 0 01-1.9.1 4.1 4.1 0 003.8 2.8A8.2 8.2 0 012 18.6a11.6 11.6 0 006.3 1.8c7.5 0 11.7-6.3 11.7-11.7v-.5c.8-.6 1.5-1.3 2-2.1z"/></svg></a>
-          <a href="#" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="3.5" width="17" height="17" rx="5" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3.6" stroke="currentColor" stroke-width="1.8"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor"/></svg></a>
-          <a href="#" aria-label="YouTube"><svg viewBox="0 0 24 24" fill="none"><rect x="3" y="6" width="18" height="12" rx="3" stroke="currentColor" stroke-width="1.8"/><path d="M10.5 9.5l5 2.5-5 2.5z" fill="currentColor"/></svg></a>
-        </div>
-      </div>
-
-      <div>
-        <h4>দ্রুত লিংক</h4>
-        <ul>
-          <li><a href="#home">হোম</a></li>
-          <li><a href="#about">আমাদের সম্পর্কে</a></li>
-          <li><a href="#courses">কোর্সসমূহ</a></li>
-          <li><a href="#testimonials">মতামত</a></li>
-          <li><a href="#contact">যোগাযোগ</a></li>
-        </ul>
-      </div>
-
-      <div>
-        <h4>কোর্সসমূহ</h4>
-        <ul>
-          <li><a href="#courses">কুরআন হিফজ</a></li>
-          <li><a href="#courses">আরবি ভাষা</a></li>
-          <li><a href="#courses">ইসলামিক স্টাডিজ</a></li>
-          <li><a href="#courses">সাপ্তাহিক ক্লাস</a></li>
-          <li><a href="#courses">গ্রীষ্মকালীন প্রোগ্রাম</a></li>
-        </ul>
-      </div>
-
-      <div>
-        <h4>যোগাযোগের তথ্য</h4>
-        <div class="foot-info-row">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M12 21s7-6.2 7-11.5A7 7 0 005 9.5C5 14.8 12 21 12 21z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="9.5" r="2.4" stroke="currentColor" stroke-width="1.8"/></svg>
-          <span>হরিপুর বোর্ডঘর, চাঁপাইনবাবগঞ্জ।</span>
-        </div>
-        <div class="foot-info-row">
-          <svg viewBox="0 0 24 24" fill="none"><path d="M4.5 5.5c0-.6.4-1 1-1h2.6c.5 0 .9.3 1 .8l.7 3a1 1 0 01-.3 1L8 10.7c1 2.1 2.7 3.8 4.8 4.8l1.4-1.5a1 1 0 011-.3l3 .7c.5.1.8.5.8 1v2.6c0 .6-.4 1-1 1C10.5 19 5 13.5 4.5 5.5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
-          <span>+৮৮০১৭৭০-০১৩৩৩</span>
-        </div>
-        <div class="foot-info-row">
-          <svg viewBox="0 0 24 24" fill="none"><rect x="3.5" y="5.5" width="17" height="13" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M4 6.5l8 6 8-6" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
-          <span>info@nqm.com</span>
-        </div>
-      </div>
+    <div class="map-frame reveal">
+      <iframe src="https://www.google.com/maps?q=Chapainawabganj,Bangladesh&output=embed" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
     </div>
   </div>
-  <div class="footer-bottom">
-    &copy; ২০২৫ নুরুল কোরআন মাদরাসা। সকল অধিকার সংরক্ষিত।
-  </div>
+
+  <div class="copyright">© ২০২৫ নূরুল কোরআন মাদরাসা। সকল অধিকার সংরক্ষিত।</div>
 </footer>
 
-<div class="login-modal-overlay" id="loginModalOverlay">
-  <div class="login-modal">
-    <div class="login-modal-header">
-      <button class="login-modal-close" id="loginModalClose" aria-label="বন্ধ করুন">&times;</button>
+<!-- ================= LOGIN MODAL ================= -->
+<div class="modal-overlay" id="loginModalOverlay">
+  <div class="modal-box">
+    <button type="button" class="modal-close" id="loginModalClose">&times;</button>
+    <div class="modal-title">
+      <div class="brand-mark">ন</div>
+      <h3>শিক্ষার্থী লগইন</h3>
+      <p>আপনার আইডি ও পাসওয়ার্ড দিয়ে লগইন করুন</p>
     </div>
-    <div class="login-modal-body">
-      <form onsubmit="return handleLoginSubmit(event)">
-        <label class="login-field-label" for="loginUserId">ব্যবহারকারীর আইডি</label>
-        <div class="login-input-wrap">
-          <input class="login-input" type="text" id="loginUserId" placeholder="আপনার ব্যবহারকারীর আইডি" required>
-        </div>
-        <label class="login-field-label" for="loginPassword">পাসওয়ার্ড</label>
-        <div class="login-input-wrap has-eye">
-          <input class="login-input" type="password" id="loginPassword" placeholder="আপনার পাসওয়ার্ড" required>
-          <button type="button" class="login-eye-btn" id="loginEyeBtn" aria-label="পাসওয়ার্ড দেখান/লুকান">
-            <svg id="eyeIconShow" viewBox="0 0 24 24" width="18" height="18" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg>
-            <svg id="eyeIconHide" viewBox="0 0 24 24" width="18" height="18" fill="none" style="display:none;"><path d="M3 3l18 18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M9.9 5.1A10.4 10.4 0 0112 5c6.5 0 10 7 10 7a17.6 17.6 0 01-3.2 4.1M6.5 6.6C4 8.3 2 12 2 12s3.5 7 10 7c1.4 0 2.6-.3 3.7-.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M9.9 14.1A3 3 0 0112 9a3 3 0 012.9 2.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    <form id="loginForm">
+      <div class="m-field-group">
+        <label for="loginUserId">আইডি</label>
+        <input type="text" id="loginUserId" class="m-field" placeholder="আপনার স্টুডেন্ট আইডি">
+      </div>
+      <div class="m-field-group">
+        <label for="loginPassword">পাসওয়ার্ড</label>
+        <div class="m-pass-wrap">
+          <input type="password" id="loginPassword" class="m-field" placeholder="পাসওয়ার্ড লিখুন" style="padding-right:42px;">
+          <button type="button" class="m-eye-btn" id="loginEyeBtn">
+            <svg id="eyeIconShow" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg id="eyeIconHide" viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" style="display:none;"><path d="M17.94 17.94A10.94 10.94 0 0112 20c-7 0-11-7-11-7a21.6 21.6 0 015.06-6.06M9.9 4.24A10.94 10.94 0 0112 4c7 0 11 7 11 7a21.6 21.6 0 01-2.16 3.19M14.12 14.12a3 3 0 11-4.24-4.24"/><path d="M1 1l22 22"/></svg>
           </button>
         </div>
-        <label class="login-remember">
-          <input type="checkbox" id="loginRemember">
-          আমাকে মনে রাখুন
-        </label>
-        <div id="loginError" style="display:none;background:#fdecec;color:#b42318;border:1px solid #f5c2c0;padding:10px 14px;border-radius:10px;margin-bottom:16px;font-size:.92rem;"></div>
-        <button type="submit" id="loginSubmitBtn" class="btn btn-primary login-submit">লগইন করুন</button>
-      </form>
-    </div>
+      </div>
+      <div class="m-row-between">
+        <label class="m-remember"><input type="checkbox" id="loginRemember"> মনে রাখুন</label>
+        <a href="#" class="m-forgot">পাসওয়ার্ড ভুলে গেছেন?</a>
+      </div>
+      <div class="m-error" id="loginError"></div>
+      <button type="submit" class="btn btn-grad m-submit" id="loginSubmitBtn">লগইন করুন</button>
+    </form>
+    <p class="m-footer-text">অ্যাকাউন্ট নেই? ভর্তি হতে <a href="#contact" class="m-forgot" id="loginGoAdmit">যোগাযোগ করুন</a></p>
   </div>
 </div>
 
-<script src="config.js"></script>
 <script>
-  // ---- Mobile nav ----
-  const burger = document.getElementById('burgerBtn');
-  const mobileNav = document.getElementById('mobileNav');
-  const overlay = document.getElementById('mobileOverlay');
-  function closeMobileNav(){
-    mobileNav.classList.remove('open');
-    overlay.classList.remove('open');
-  }
-  burger.addEventListener('click', ()=>{
-    mobileNav.classList.add('open');
-    overlay.classList.add('open');
+  // mobile nav toggle
+  const navLinksEl = document.getElementById('navLinks');
+  document.getElementById('navBurger').addEventListener('click', ()=>{
+    navLinksEl.classList.toggle('open');
   });
-  overlay.addEventListener('click', closeMobileNav);
-  mobileNav.querySelectorAll('a').forEach(a=>a.addEventListener('click', closeMobileNav));
 
-  // ---- Hero carousel ----
-  const slides = document.querySelectorAll('.hero-slide');
-  const dotsWrap = document.getElementById('heroDots');
-  let current = 0;
-  slides.forEach((_, i)=>{
-    const dot = document.createElement('button');
-    if(i===0) dot.classList.add('active');
-    dot.addEventListener('click', ()=>goTo(i));
-    dotsWrap.appendChild(dot);
-  });
-  function goTo(i){
-    slides[current].classList.remove('active');
-    dotsWrap.children[current].classList.remove('active');
-    current = (i + slides.length) % slides.length;
-    slides[current].classList.add('active');
-    dotsWrap.children[current].classList.add('active');
+  // ---- Login modal ----
+  const loginOverlay = document.getElementById('loginModalOverlay');
+  function openLoginModal(e){
+    if(e) e.preventDefault();
+    navLinksEl.classList.remove('open');
+    loginOverlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
   }
-  document.getElementById('heroPrev').addEventListener('click', ()=>goTo(current-1));
-  document.getElementById('heroNext').addEventListener('click', ()=>goTo(current+1));
-  let autoSlide = setInterval(()=>goTo(current+1), 6000);
+  function closeLoginModal(){
+    loginOverlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  document.getElementById('loginTrigger').addEventListener('click', openLoginModal);
+  document.getElementById('loginTriggerMobile').addEventListener('click', openLoginModal);
+  document.getElementById('loginModalClose').addEventListener('click', closeLoginModal);
+  loginOverlay.addEventListener('click', (e)=>{ if(e.target === loginOverlay) closeLoginModal(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeLoginModal(); });
 
-  // ---- Stat counters ----
+  const loginEyeBtn = document.getElementById('loginEyeBtn');
+  const loginPassword = document.getElementById('loginPassword');
+  const eyeIconShow = document.getElementById('eyeIconShow');
+  const eyeIconHide = document.getElementById('eyeIconHide');
+  loginEyeBtn.addEventListener('click', ()=>{
+    const isPassword = loginPassword.type === 'password';
+    loginPassword.type = isPassword ? 'text' : 'password';
+    eyeIconShow.style.display = isPassword ? 'none' : 'block';
+    eyeIconHide.style.display = isPassword ? 'block' : 'none';
+  });
+
+  document.getElementById('loginForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    const errBox = document.getElementById('loginError');
+    const uid = document.getElementById('loginUserId').value.trim();
+    const pass = loginPassword.value;
+    if(!uid || !pass){
+      errBox.textContent = 'আইডি ও পাসওয়ার্ড দিন';
+      errBox.style.display = 'block';
+      return;
+    }
+    errBox.style.display = 'none';
+    const btn = document.getElementById('loginSubmitBtn');
+    const oldText = btn.textContent;
+    btn.textContent = 'লগইন হচ্ছে...';
+    btn.disabled = true;
+    // এই সাইটের জন্য এখনো কোনো ব্যাকএন্ড সংযুক্ত নেই — এখানে প্রকৃত অথেন্টিকেশন API যুক্ত করা যাবে।
+    setTimeout(()=>{
+      btn.textContent = oldText;
+      btn.disabled = false;
+      errBox.textContent = 'লগইন সিস্টেম শীঘ্রই চালু হবে। অনুগ্রহ করে যোগাযোগ করুন।';
+      errBox.style.display = 'block';
+    }, 700);
+  });
+
+  // stat counters
   const counters = document.querySelectorAll('.stat-card .num');
   const counterObserver = new IntersectionObserver((entries)=>{
     entries.forEach(entry=>{
@@ -1062,7 +623,7 @@
         const el = entry.target;
         const target = parseInt(el.dataset.count, 10);
         let cur = 0;
-        const step = Math.max(1, Math.round(target/60));
+        const step = Math.max(1, Math.round(target/50));
         const tick = ()=>{
           cur += step;
           if(cur >= target){ el.textContent = target; return; }
@@ -1076,172 +637,16 @@
   }, {threshold:0.5});
   counters.forEach(c=>counterObserver.observe(c));
 
-  // ---- Scroll reveal ----
-  const revealTargets = document.querySelectorAll('.why-card, .course-card, .teacher-card, .testi-card, .stat-card');
-  revealTargets.forEach(el=>{
-    el.style.opacity = 0;
-    el.style.transform = 'translateY(18px)';
-    el.style.transition = 'opacity .6s ease, transform .6s ease';
-  });
+  // scroll reveal
   const revealObserver = new IntersectionObserver((entries)=>{
     entries.forEach(entry=>{
       if(entry.isIntersecting){
-        entry.target.style.opacity = 1;
-        entry.target.style.transform = 'translateY(0)';
+        entry.target.classList.add('in');
         revealObserver.unobserve(entry.target);
       }
     });
-  }, {threshold:0.15});
-  revealTargets.forEach(el=>revealObserver.observe(el));
-
-  // ---- Contact form ----
-  // যোগাযোগ ফর্ম — বার্তা এখন সার্ভারে সংরক্ষিত হয় (আগে শুধু alert দেখাতো)
-  async function handleContactSubmit(e){
-    e.preventDefault();
-    const form = e.target;
-    const btn = form.querySelector('button[type=submit]');
-    const payload = {
-      name: (document.getElementById('ctName').value || '').trim(),
-      email: (document.getElementById('ctEmail').value || '').trim(),
-      phone: (document.getElementById('ctPhone').value || '').trim(),
-      subject: (document.getElementById('ctSubject').value || '').trim(),
-      message: (document.getElementById('ctMessage').value || '').trim()
-    };
-    if(!payload.name || !payload.message){ alert('নাম ও বার্তা লিখুন'); return false; }
-    const oldTxt = btn ? btn.textContent : '';
-    if(btn){ btn.disabled = true; btn.textContent = 'পাঠানো হচ্ছে...'; }
-    try{
-      const doFetch = (window.NQ_API && window.NQ_API.fetch)
-        ? (pth, o) => window.NQ_API.fetch(pth, o, { retries: 2, timeout: 60000 })
-        : (pth, o) => fetch(API + pth, o);
-      const res = await doFetch('/api/public/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const data = await res.json().catch(() => ({}));
-      if(!res.ok) throw new Error(data.message || 'পাঠানো যায়নি');
-      alert('আপনার বার্তা পাঠানো হয়েছে। ধন্যবাদ!');
-      form.reset();
-    }catch(err){
-      alert('বার্তা পাঠানো যায়নি: ' + (err.message || 'সংযোগ সমস্যা'));
-    }finally{
-      if(btn){ btn.disabled = false; btn.textContent = oldTxt; }
-    }
-    return false;
-  }
-
-  // ---- Login modal ----
-  const loginOverlay = document.getElementById('loginModalOverlay');
-  const desktopLoginBtn = document.getElementById('desktopLoginBtn');
-  const mobileLoginBtn = document.getElementById('mobileLoginBtn');
-  const loginModalClose = document.getElementById('loginModalClose');
-
-  function openLoginModal(e){
-    if(e) e.preventDefault();
-    closeMobileNav();
-    loginOverlay.classList.add('open');
-    document.body.style.overflow = 'hidden';
-  }
-  function closeLoginModal(){
-    loginOverlay.classList.remove('open');
-    document.body.style.overflow = '';
-  }
-  desktopLoginBtn.addEventListener('click', openLoginModal);
-  mobileLoginBtn.addEventListener('click', openLoginModal);
-  loginModalClose.addEventListener('click', closeLoginModal);
-  loginOverlay.addEventListener('click', (e)=>{
-    if(e.target === loginOverlay) closeLoginModal();
-  });
-  document.addEventListener('keydown', (e)=>{
-    if(e.key === 'Escape') closeLoginModal();
-  });
-
-  const loginEyeBtn = document.getElementById('loginEyeBtn');
-  const loginPassword = document.getElementById('loginPassword');
-  const eyeIconShow = document.getElementById('eyeIconShow');
-  const eyeIconHide = document.getElementById('eyeIconHide');
-  loginEyeBtn.addEventListener('click', ()=>{
-    const isPassword = loginPassword.type === 'password';
-    loginPassword.type = isPassword ? 'text' : 'password';
-    eyeIconShow.style.display = isPassword ? 'none' : 'block';
-    eyeIconHide.style.display = isPassword ? 'block' : 'none';
-  });
-
-  async function handleLoginSubmit(e){
-    e.preventDefault();
-    const btn = document.getElementById('loginSubmitBtn');
-    const errBox = document.getElementById('loginError');
-    const uid = document.getElementById('loginUserId').value.trim();
-    const password = document.getElementById('loginPassword').value;
-    const remember = document.getElementById('loginRemember').checked;
-
-    errBox.style.display = 'none';
-    if(!uid || !password){
-      errBox.textContent = 'আইডি ও পাসওয়ার্ড দিন';
-      errBox.style.display = 'block';
-      return false;
-    }
-
-    const API = (window.APP_CONFIG && window.APP_CONFIG.API_BASE) || '';
-    btn.disabled = true;
-    const oldText = btn.textContent;
-    btn.textContent = 'লগইন হচ্ছে...';
-
-    try{
-      // সার্ভার ঘুমিয়ে থাকলে ব্যবহারকারীকে জানানো হয় + স্বয়ংক্রিয় রিট্রাই
-      let wakeTimer = null;
-      if (window.NQ_API && !window.NQ_API.isWarm()) {
-        wakeTimer = setTimeout(()=>{ btn.textContent = 'সার্ভার চালু হচ্ছে...'; }, 1500);
-      }
-      const doFetch = (window.NQ_API && window.NQ_API.fetch)
-        ? (path, o) => window.NQ_API.fetch(path, o, { retries: 2, timeout: 60000 })
-        : (path, o) => fetch(API + path, o);
-      const res = await doFetch('/api/auth/login', {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ uid, password })
-      });
-      if (wakeTimer) clearTimeout(wakeTimer);
-      const data = await res.json().catch(()=>({}));
-
-      if(!res.ok){
-        errBox.textContent = data.message || 'লগইন ব্যর্থ হয়েছে';
-        errBox.style.display = 'block';
-        return false;
-      }
-
-      // টোকেন ও ইউজার সংরক্ষণ (এই ডোমেইনের জন্য, ব্যাকআপ হিসেবে)
-      const store = remember ? localStorage : sessionStorage;
-      store.setItem('nq_token', data.token);
-      store.setItem('nq_user', JSON.stringify(data.user));
-      // অন্য স্টোরেজ পরিষ্কার (দ্বৈততা এড়াতে)
-      (remember ? sessionStorage : localStorage).removeItem('nq_token');
-      (remember ? sessionStorage : localStorage).removeItem('nq_user');
-
-      // এডমিন প্যানেলে পাঠানো
-      // ফ্রন্টএন্ড ও এডমিন প্যানেল আলাদা ডোমেইনে ডিপ্লয় করা থাকলে localStorage
-      // একটি থেকে আরেকটিতে শেয়ার হয় না, তাই টোকেন URL হ্যাশের মাধ্যমে পাঠানো হচ্ছে।
-      // admin_panel/auth.js এই হ্যাশ পড়ে নিজের storage-এ সেভ করে নেবে এবং URL থেকে মুছে ফেলবে।
-      const adminUrl = (window.APP_CONFIG && window.APP_CONFIG.ADMIN_URL) || '../admin_panel/admin.html';
-      const handoff = '#nq_auth=' + encodeURIComponent(JSON.stringify({
-        token: data.token,
-        user: data.user,
-        remember: !!remember
-      }));
-      window.location.href = adminUrl + handoff;
-    }catch(err){
-      errBox.textContent = 'সার্ভারের সাথে সংযোগ করা যায়নি। পরে চেষ্টা করুন।';
-      errBox.style.display = 'block';
-    }finally{
-      btn.disabled = false;
-      btn.textContent = oldText;
-    }
-    return false;
-  }
-
+  }, {threshold:0.12});
+  document.querySelectorAll('.reveal').forEach(el=>revealObserver.observe(el));
 </script>
-<script src="pwa-install.js"></script>
-<script src="nq-en-digits.js"></script>
 </body>
 </html>
