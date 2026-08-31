@@ -180,6 +180,11 @@ const userSchema = new mongoose.Schema(
     photoUrl: { type: String, default: "" },
     active: { type: Boolean, default: true },
     protected: { type: Boolean, default: false }, // seed accounts cannot be deleted
+    // ব্যবহারকারী নিজে তার "আমার প্রোফাইল" পেজ থেকে যা যোগ/সম্পাদনা করতে পারে
+    fathersName: { type: String, default: "" },
+    email: { type: String, default: "" },
+    address: { type: String, default: "" },
+    permanentAddress: { type: String, default: "" },
   },
   { timestamps: true }
 );
@@ -806,9 +811,14 @@ app.post("/api/auth/login", async (req, res) => {
         id: user._id,
         name: user.name,
         uid: user.uid,
+        mobile: user.mobile,
         role: user.role,
         perms: permissionsForRole(user.role),
         photoUrl: user.photoUrl,
+        fathersName: user.fathersName,
+        email: user.email,
+        address: user.address,
+        permanentAddress: user.permanentAddress,
       },
     });
   } catch (e) {
@@ -825,10 +835,62 @@ app.get("/api/auth/me", auth, async (req, res) => {
     id: user._id,
     name: user.name,
     uid: user.uid,
+    mobile: user.mobile,
     role: user.role,
     perms: permissionsForRole(user.role),
     photoUrl: user.photoUrl,
+    fathersName: user.fathersName,
+    email: user.email,
+    address: user.address,
+    permanentAddress: user.permanentAddress,
   });
+});
+
+/* ------------------------------------------------------------------ */
+/*  Routes: update own profile (নিজের তথ্য/ছবি — "আমার প্রোফাইল" পেজ)   */
+/* ------------------------------------------------------------------ */
+app.put("/api/auth/profile", auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: "ব্যবহারকারী পাওয়া যায়নি" });
+
+    const { name, fathersName, mobile, email, address, permanentAddress, photoUrl } =
+      req.body || {};
+
+    if (name != null) {
+      const trimmed = String(name).trim();
+      if (!trimmed) return res.status(400).json({ message: "নাম খালি রাখা যাবে না" });
+      user.name = trimmed;
+    }
+    if (fathersName != null) user.fathersName = String(fathersName).trim();
+    if (mobile != null) user.mobile = String(mobile).trim();
+    if (email != null) user.email = String(email).trim();
+    if (address != null) user.address = String(address).trim();
+    if (permanentAddress != null) user.permanentAddress = String(permanentAddress).trim();
+    if (photoUrl != null) user.photoUrl = String(photoUrl).trim();
+
+    await user.save();
+
+    res.json({
+      ok: true,
+      user: {
+        id: user._id,
+        name: user.name,
+        uid: user.uid,
+        mobile: user.mobile,
+        role: user.role,
+        perms: permissionsForRole(user.role),
+        photoUrl: user.photoUrl,
+        fathersName: user.fathersName,
+        email: user.email,
+        address: user.address,
+        permanentAddress: user.permanentAddress,
+      },
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "প্রোফাইল সংরক্ষণ ব্যর্থ" });
+  }
 });
 
 /* ------------------------------------------------------------------ */

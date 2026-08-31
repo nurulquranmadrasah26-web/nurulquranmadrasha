@@ -4376,8 +4376,8 @@
       </div>
 
       <div class="form-row">
-        <label>লঙ্গীন আইডি</label>
-        <input id="profileUsername" type="text" placeholder="ব্যবহারকারী নাম" />
+        <label>লগইন আইডি</label>
+        <input id="profileUsername" type="text" placeholder="লগইন আইডি" readonly style="background:#f0f0f0;color:#666;cursor:not-allowed;" title="লগইন আইডি পরিবর্তন করতে হলে এডমিনের সাথে যোগাযোগ করুন" />
       </div>
 
       <div class="form-row">
@@ -14149,37 +14149,62 @@ function applyProfilePicEverywhere(picData) {
   });
 }
 
+/* ফর্মে প্রোফাইল তথ্য বসানো — সার্ভার থেকে পাওয়া ইউজার অবজেক্ট (বা localStorage ক্যাশ) */
+function fillProfileForm(profileData) {
+  profileData = profileData || {};
+  const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v || ''; };
+  setVal('profileName', profileData.name);
+  setVal('profileFathersName', profileData.fathersName);
+  setVal('profileUsername', profileData.uid || profileData.username);
+  setVal('profileEmail', profileData.email);
+  setVal('profileMobile', profileData.mobile);
+  setVal('profileAddress', profileData.address);
+  setVal('profilePermanentAddress', profileData.permanentAddress);
+  setProfilePicPreview(profileData.photoUrl || '');
+}
+
+function setProfilePicPreview(picData) {
+  const picImg = document.getElementById('profilePicPreview');
+  const picImg2 = document.getElementById('settingsPicPreview');
+  const placeholder1 = document.getElementById('profilePicPlaceholder');
+  const placeholder2 = document.getElementById('settingsPicPlaceholder');
+
+  if (picData) {
+    if (picImg) { picImg.src = picData; picImg.style.display = 'block'; }
+    if (picImg2) { picImg2.src = picData; picImg2.style.display = 'block'; }
+    if (placeholder1) placeholder1.style.display = 'none';
+    if (placeholder2) placeholder2.style.display = 'none';
+  } else {
+    if (picImg) { picImg.src = ''; picImg.style.display = 'none'; }
+    if (picImg2) { picImg2.src = ''; picImg2.style.display = 'none'; }
+    if (placeholder1) placeholder1.style.display = '';
+    if (placeholder2) placeholder2.style.display = '';
+  }
+  applyProfilePicEverywhere(picData || null);
+}
+
 function initializeUserProfile() {
   try {
-    const saved = localStorage.getItem(userProfileKey);
-    if (saved) {
-      const profileData = JSON.parse(saved);
-      document.getElementById('profileName').value = profileData.name || '';
-      document.getElementById('profileFathersName').value = profileData.fathersName || '';
-      document.getElementById('profileUsername').value = profileData.username || '';
-      document.getElementById('profileEmail').value = profileData.email || '';
-      document.getElementById('profileMobile').value = profileData.mobile || '';
-      document.getElementById('profileAddress').value = profileData.address || '';
-      document.getElementById('profilePermanentAddress').value = profileData.permanentAddress || '';
-    }
-    
-    const savedPic = localStorage.getItem(userProfilePicKey);
-    if (savedPic) {
-      const picImg = document.getElementById('profilePicPreview');
-      const picImg2 = document.getElementById('settingsPicPreview');
-      const placeholder1 = document.getElementById('profilePicPlaceholder');
-      const placeholder2 = document.getElementById('settingsPicPlaceholder');
-      
-      picImg.src = savedPic;
-      picImg.style.display = 'block';
-      picImg2.src = savedPic;
-      picImg2.style.display = 'block';
-      placeholder1.style.display = 'none';
-      placeholder2.style.display = 'none';
-    }
-    applyProfilePicEverywhere(savedPic || null);
+    // ১) দ্রুত প্রদর্শনের জন্য প্রথমে লগইনের সময় সেভ হওয়া ইউজার তথ্য দেখানো হচ্ছে
+    const cached = (window.NQAuth && NQAuth.user) || {};
+    const savedLocal = localStorage.getItem(userProfileKey);
+    const localExtra = savedLocal ? JSON.parse(savedLocal) : {};
+    fillProfileForm(Object.assign({}, localExtra, cached));
+
+    const savedPic = cached.photoUrl || localStorage.getItem(userProfilePicKey);
+    if (savedPic) setProfilePicPreview(savedPic);
 
     updateSettingsDisplay();
+
+    // ২) সার্ভার থেকে সবশেষ তথ্য এনে ফর্ম আপডেট করা হচ্ছে (একাধিক ডিভাইস/ব্রাউজারে সিঙ্ক থাকতে)
+    if (window.NQAuth && NQAuth.isLoggedIn()) {
+      NQAuth.getJSON('/api/auth/me').then(function (user) {
+        fillProfileForm(user);
+        updateSettingsDisplay();
+      }).catch(function (e) {
+        console.error('প্রোফাইল আনতে সমস্যা:', e);
+      });
+    }
   } catch (e) {
     console.error('প্রোফাইল লোড করতে সমস্যা:', e);
   }
@@ -14197,105 +14222,168 @@ function showUserSettings() {
 }
 
 function updateSettingsDisplay() {
-  const userName = document.getElementById('profileName').value || 'আমার নাম';
+  const userName = document.getElementById('profileName').value
+    || (window.NQAuth && NQAuth.user && NQAuth.user.name)
+    || 'আমার নাম';
   const userRole = document.querySelector('[data-user-role]')?.textContent || 'ব্যবহারকারী';
-  
+
   const settingsName = document.getElementById('settingsUserName');
   const settingsRole = document.getElementById('settingsUserRole');
-  
+
   if (settingsName) settingsName.textContent = userName;
   if (settingsRole) settingsRole.textContent = userRole;
+}
+
+/* বর্তমান সেশনে (localStorage/sessionStorage) সংরক্ষিত nq_user আপডেট করা —
+   যাতে হেডারের নাম/ছবি রিফ্রেশ ছাড়াই সাথে সাথে বদলে যায় */
+function updateSessionUser(patch) {
+  try {
+    const store = localStorage.getItem('nq_user') ? localStorage : sessionStorage;
+    const raw = store.getItem('nq_user');
+    if (!raw) return;
+    const user = Object.assign({}, JSON.parse(raw), patch);
+    store.setItem('nq_user', JSON.stringify(user));
+    if (window.NQAuth) NQAuth.user = user;
+
+    // হেডার/সাইডবারে নাম সাথে সাথে দেখানো
+    if (patch.name) {
+      document.querySelectorAll('[data-user-name]').forEach(el => { el.textContent = patch.name; });
+    }
+  } catch (e) {
+    console.error('সেশন তথ্য আপডেট করতে সমস্যা:', e);
+  }
 }
 
 function uploadProfilePic() {
   const input = document.getElementById('profilePicInput');
   const file = input.files[0];
-  
+
   if (!file) return;
-  
+
+  if (!window.NQAuth || !NQAuth.isLoggedIn()) {
+    showErrorPopup('আপলোডের জন্য লগইন প্রয়োজন');
+    return;
+  }
+
+  // আপলোড হওয়ার আগে সাথে সাথে প্রিভিউ দেখানো
   const reader = new FileReader();
-  reader.onload = function(e) {
-    const picData = e.target.result;
-    
-    // প্রোফাইল পেজে দেখান
-    const profilePicImg = document.getElementById('profilePicPreview');
-    const profilePicPlaceholder = document.getElementById('profilePicPlaceholder');
-    profilePicImg.src = picData;
-    profilePicImg.style.display = 'block';
-    profilePicPlaceholder.style.display = 'none';
-    
-    // সেটিং পেজে দেখান
-    const settingsPicImg = document.getElementById('settingsPicPreview');
-    const settingsPicPlaceholder = document.getElementById('settingsPicPlaceholder');
-    settingsPicImg.src = picData;
-    settingsPicImg.style.display = 'block';
-    settingsPicPlaceholder.style.display = 'none';
-    
-    // LocalStorage-এ সংরক্ষণ করুন
+  reader.onload = function (e) { setProfilePicPreview(e.target.result); };
+  reader.readAsDataURL(file);
+
+  (async () => {
     try {
-      localStorage.setItem(userProfilePicKey, picData);
-      applyProfilePicEverywhere(picData);
+      const fd = new FormData();
+      fd.append('image', file);
+      fd.append('folder', 'nurulquran/users');
+      const res = await NQAuth.authFetch('/api/upload', { method: 'POST', body: fd });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || 'ছবি আপলোড ব্যর্থ');
+
+      const photoUrl = data.url || '';
+      // সার্ভারে ব্যবহারকারীর প্রোফাইলে ছবির URL সংরক্ষণ
+      const result = await NQAuth.postJSON('/api/auth/profile', { photoUrl }, 'PUT');
+
+      setProfilePicPreview(photoUrl);
+      localStorage.setItem(userProfilePicKey, photoUrl);
+      updateSessionUser({ photoUrl });
       showToast('প্রোফাইল ছবি আপলোড হয়েছে');
     } catch (e) {
       console.error('ছবি সংরক্ষণ করতে সমস্যা:', e);
+      showErrorPopup('প্রোফাইল ছবি আপলোড করতে সমস্যা হয়েছে:', e.message);
     }
-  };
-  reader.readAsDataURL(file);
+  })();
 }
 
-function saveUserProfile() {
+async function saveUserProfile() {
+  const name = document.getElementById('profileName').value.trim();
+  if (!name) {
+    showErrorPopup('নাম খালি রাখা যাবে না');
+    return;
+  }
+
   const profileData = {
-    name: document.getElementById('profileName').value,
-    fathersName: document.getElementById('profileFathersName').value,
-    username: document.getElementById('profileUsername').value,
-    email: document.getElementById('profileEmail').value,
-    mobile: document.getElementById('profileMobile').value,
-    address: document.getElementById('profileAddress').value,
-    permanentAddress: document.getElementById('profilePermanentAddress').value,
-    savedAt: new Date().toLocaleString('bn-BD')
+    name,
+    fathersName: document.getElementById('profileFathersName').value.trim(),
+    email: document.getElementById('profileEmail').value.trim(),
+    mobile: document.getElementById('profileMobile').value.trim(),
+    address: document.getElementById('profileAddress').value.trim(),
+    permanentAddress: document.getElementById('profilePermanentAddress').value.trim()
   };
-  
+
+  const btn = document.querySelector('#page-userProfile button[onclick="saveUserProfile()"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'সংরক্ষণ হচ্ছে...'; }
+
   try {
-    localStorage.setItem(userProfileKey, JSON.stringify(profileData));
+    if (window.NQAuth && NQAuth.isLoggedIn()) {
+      await NQAuth.postJSON('/api/auth/profile', profileData, 'PUT');
+      updateSessionUser(profileData);
+    }
+    // অফলাইন/ব্যাকআপ ক্যাশ হিসেবে localStorage-এও রাখা হচ্ছে
+    localStorage.setItem(userProfileKey, JSON.stringify(Object.assign({
+      savedAt: new Date().toLocaleString('bn-BD')
+    }, profileData)));
+
     showToast('প্রোফাইল সংরক্ষিত হয়েছে');
     updateSettingsDisplay();
   } catch (e) {
+    console.error(e);
     showErrorPopup('প্রোফাইল সংরক্ষণ করতে সমস্যা হয়েছে:', e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'সংরক্ষণ করুন'; }
   }
 }
 
-function changePassword() {
+async function changePassword() {
   const currentPass = document.getElementById('settingsCurrentPassword').value;
   const newPass = document.getElementById('settingsNewPassword').value;
   const confirmPass = document.getElementById('settingsConfirmPassword').value;
-  
+
   if (!currentPass) {
     showErrorPopup('বর্তমান পাস্সওয়ার্ড দিন');
     return;
   }
-  
+
   if (!newPass) {
     showErrorPopup('নতুন পাস্সওয়ার্ড দিন');
     return;
   }
-  
+
   if (newPass !== confirmPass) {
     showErrorPopup('নতুন পাস্সওয়ার্ড মিলে না');
     return;
   }
-  
+
   if (newPass.length < 6) {
     showErrorPopup('পাস্সওয়ার্ড কমপক্ষে ৬ অক্ষর দীর্ঘ হতে হবে');
     return;
   }
-  
-  // এখানে সার্ভারে পাস্সওয়ার্ড পরিবর্তনের রিকোয়েস্ট পাঠান
-  showToast('পাস্সওয়ার্ড পরিবর্তনের অনুরোধ পাঠানো হয়েছে (সার্ভার ইন্টিগ্রেশন প্রয়োজন)');
-  
-  // ফর্ম পরিষ্কার করুন
-  document.getElementById('settingsCurrentPassword').value = '';
-  document.getElementById('settingsNewPassword').value = '';
-  document.getElementById('settingsConfirmPassword').value = '';
+
+  if (!window.NQAuth || !NQAuth.isLoggedIn()) {
+    showErrorPopup('পাসওয়ার্ড পরিবর্তনের জন্য লগইন প্রয়োজন');
+    return;
+  }
+
+  const btn = document.querySelector('#page-userSettings button[onclick="changePassword()"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'পাঠানো হচ্ছে...'; }
+
+  try {
+    await NQAuth.postJSON('/api/auth/change-password', {
+      currentPassword: currentPass,
+      newPassword: newPass
+    });
+
+    showToast('পাসওয়ার্ড সফলভাবে পরিবর্তন হয়েছে');
+
+    // ফর্ম পরিষ্কার করুন
+    document.getElementById('settingsCurrentPassword').value = '';
+    document.getElementById('settingsNewPassword').value = '';
+    document.getElementById('settingsConfirmPassword').value = '';
+  } catch (e) {
+    console.error(e);
+    showErrorPopup('পাসওয়ার্ড পরিবর্তন ব্যর্থ:', e.message);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'পাস্সওয়ার্ড পরিবর্তন করুন'; }
+  }
 }
 
 // পেজ লোড হওয়ার সময় ইনিশিয়ালাইজ করুন
