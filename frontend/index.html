@@ -648,11 +648,34 @@
     eyeIconHide.style.display = isPassword ? 'block' : 'none';
   });
 
+  // ---- প্রকৃত লগইন (ব্যাকএন্ড API) ----
+  const API_BASE = (window.APP_CONFIG && window.APP_CONFIG.API_BASE) || '';
+  const ADMIN_URL = (window.APP_CONFIG && window.APP_CONFIG.ADMIN_URL) || '../admin_panel/admin.html';
+
+  // রোল অনুযায়ী সঠিক প্যানেলের ঠিকানা তৈরি (admin.html / teacher.html / student.html)
+  function panelUrlForRole(role){
+    var r = String(role || '').toLowerCase().replace(/[\s_-]+/g, '');
+    var file = 'admin.html';
+    if (r === 'teacher' || r === 'shikkhok') file = 'teacher.html';
+    else if (r === 'student' || r === 'shikkharthi') file = 'student.html';
+    // ADMIN_URL এর শেষ অংশ বদলে দেওয়া
+    if (/admin\.html(\?.*)?$/i.test(ADMIN_URL)) return ADMIN_URL.replace(/admin\.html/i, file);
+    return ADMIN_URL.replace(/\/?$/, '/') + file;
+  }
+
+  function apiFetch(path, options, timeoutMs){
+    if (window.NQ_API && window.NQ_API.fetch) {
+      return window.NQ_API.fetch(path, options, { retries: 2, timeout: timeoutMs || 60000 });
+    }
+    return fetch(API_BASE + path, options);
+  }
+
   document.getElementById('loginForm').addEventListener('submit', function(e){
     e.preventDefault();
     const errBox = document.getElementById('loginError');
     const uid = document.getElementById('loginUserId').value.trim();
     const pass = loginPassword.value;
+    const remember = document.getElementById('loginRemember').checked;
     if(!uid || !pass){
       errBox.textContent = 'আইডি ও পাসওয়ার্ড দিন';
       errBox.style.display = 'block';
@@ -663,13 +686,42 @@
     const oldText = btn.textContent;
     btn.textContent = 'লগইন হচ্ছে...';
     btn.disabled = true;
-    // এই সাইটের জন্য এখনো কোনো ব্যাকএন্ড সংযুক্ত নেই — এখানে প্রকৃত অথেন্টিকেশন API যুক্ত করা যাবে।
-    setTimeout(()=>{
+
+    apiFetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ uid: uid, password: pass })
+    }).then(function(res){
+      return res.json().catch(function(){ return {}; }).then(function(data){
+        if(!res.ok) throw new Error(data.message || 'লগইন ব্যর্থ হয়েছে');
+        return data;
+      });
+    }).then(function(data){
+      if(!data.token || !data.user) throw new Error('সার্ভার থেকে সঠিক উত্তর পাওয়া যায়নি');
+
+      // একই ডোমেইনে হলে সরাসরি স্টোরেজে সেভ
+      try {
+        var store = remember ? localStorage : sessionStorage;
+        var other = remember ? sessionStorage : localStorage;
+        store.setItem('nq_token', data.token);
+        store.setItem('nq_user', JSON.stringify(data.user));
+        other.removeItem('nq_token');
+        other.removeItem('nq_user');
+      } catch (err) {}
+
+      var target = panelUrlForRole(data.user.role);
+      // ভিন্ন ডোমেইন হলে localStorage শেয়ার হয় না — তাই হ্যান্ডঅফ হ্যাশে টোকেন পাঠানো
+      var handoff = encodeURIComponent(JSON.stringify({
+        token: data.token, user: data.user, remember: remember
+      }));
+      btn.textContent = 'প্রবেশ করা হচ্ছে...';
+      window.location.href = target + '#nq_auth=' + handoff;
+    }).catch(function(err){
       btn.textContent = oldText;
       btn.disabled = false;
-      errBox.textContent = 'লগইন সিস্টেম শীঘ্রই চালু হবে। অনুগ্রহ করে যোগাযোগ করুন।';
+      errBox.textContent = err && err.message ? err.message : 'সার্ভারে সংযোগ করা যায়নি';
       errBox.style.display = 'block';
-    }, 700);
+    });
   });
 
   // stat counters

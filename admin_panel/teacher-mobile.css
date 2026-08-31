@@ -1,0 +1,205 @@
+/* ============================================================
+   নূরুল কুরআন মাদরাসা — শিক্ষক প্যানেল: মোবাইল-ফার্স্ট ডিজাইন লেয়ার
+   ------------------------------------------------------------
+   এই ফাইলটি teacher.html-এর মূল স্টাইলের পরে লোড হয় এবং শুধুমাত্র
+   দেখতে সুন্দর করার জন্য স্টাইল যোগ করে — কোনো কার্যকারিতা বদলায় না।
+   ============================================================ */
+
+:root{
+  --nq-brand:#0b3d24;
+  --nq-brand-2:#1fae64;
+  --nq-gold:#e8a83c;
+  --nq-ink:#16202c;
+  --nq-soft:#f4f6fa;
+  --nq-shadow:0 10px 26px rgba(16, 32, 44, .10);
+  --nq-shadow-sm:0 3px 10px rgba(16, 32, 44, .07);
+  --nq-radius:16px;
+}
+
+body{
+  background:
+    radial-gradient(1100px 420px at 100% -8%, rgba(31,174,100,.10), transparent 60%),
+    radial-gradient(900px 380px at -10% 0%, rgba(232,168,60,.12), transparent 60%),
+    var(--nq-soft);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust:100%;
+}
+
+/* ===== হেডার ===== */
+header.topbar{
+  background:linear-gradient(120deg, var(--nq-brand), #106b3d 58%, #157a46);
+  border-bottom:none;
+  color:#fff;
+  box-shadow:var(--nq-shadow-sm);
+  position:sticky; top:0; z-index:60;
+  padding-top:calc(12px + env(safe-area-inset-top));
+}
+header.topbar .brand .names .bn{color:#fff;letter-spacing:.2px;}
+header.topbar .brand .names .en{color:rgba(255,255,255,.72);}
+header.topbar .brand .logo{
+  box-shadow:0 0 0 2px rgba(255,255,255,.85), 0 0 0 4px rgba(255,255,255,.22);
+}
+header.topbar nav.mainnav a{color:rgba(255,255,255,.92);}
+header.topbar nav.mainnav a:hover{background:rgba(255,255,255,.14);}
+header.topbar nav.mainnav a .plusicon{color:var(--nq-gold);}
+header.topbar .topbar-right{color:#fff;}
+header.topbar .topbar-right span{color:#fff !important;}
+header.topbar .topbar-right span[data-user-role]{color:rgba(255,255,255,.75) !important;}
+header.topbar .bell{color:#fff;}
+header.topbar [data-logout]{
+  background:rgba(255,255,255,.16) !important;
+  color:#fff !important;
+  border:1px solid rgba(255,255,255,.28);
+  backdrop-filter:blur(4px);
+}
+
+/* ===== কার্ড / টাইল পালিশ ===== */
+.card{
+  border-radius:var(--nq-radius);
+  border:1px solid rgba(16,32,44,.06);
+  box-shadow:var(--nq-shadow-sm);
+}
+.tile{
+  border-radius:14px !important;
+  box-shadow:var(--nq-shadow-sm);
+  transition:transform .16s ease, box-shadow .16s ease;
+}
+.tile:active{transform:scale(.975);box-shadow:var(--nq-shadow);}
+.routine-head{border-radius:14px 14px 0 0;}
+.routine-body{border-radius:0 0 14px 14px;}
+
+/* ===== নিচের নেভিগেশন ===== */
+nav.bottomnav{
+  padding:8px 6px calc(10px + env(safe-area-inset-bottom));
+  background:rgba(255,255,255,.94);
+  backdrop-filter:blur(12px);
+  border-top:1px solid rgba(16,32,44,.07);
+  box-shadow:0 -8px 24px rgba(16,32,44,.10);
+}
+nav.bottomnav a{
+  gap:3px; padding:7px 2px; border-radius:14px;
+  color:#7b8595; font-weight:600; transition:color .16s ease, background .16s ease;
+}
+nav.bottomnav a .ic{font-size:20px; line-height:1;}
+nav.bottomnav a.active{
+  color:var(--nq-brand) !important;
+  background:linear-gradient(180deg, rgba(31,174,100,.14), rgba(31,174,100,.06));
+}
+
+/* ===== মোবাইল ড্রয়ার (সব মেনু) ===== */
+.nq-burger{
+  display:none;
+  width:42px;height:42px;border-radius:12px;
+  background:rgba(255,255,255,.18);
+  border:1px solid rgba(255,255,255,.3);
+  color:#fff;font-size:20px;line-height:1;
+  align-items:center;justify-content:center;
+}
+.nq-drawer-backdrop{
+  position:fixed;inset:0;background:rgba(9,20,14,.5);
+  backdrop-filter:blur(2px);
+  opacity:0;pointer-events:none;transition:opacity .22s ease;z-index:120;
+}
+.nq-drawer-backdrop.open{opacity:1;pointer-events:auto;}
+.nq-drawer{
+  position:fixed;left:0;right:0;bottom:0;z-index:130;
+  background:#fff;border-radius:22px 22px 0 0;
+  padding:10px 16px calc(20px + env(safe-area-inset-bottom));
+  transform:translateY(102%);transition:transform .28s cubic-bezier(.22,.8,.3,1);
+  max-height:82vh;overflow:auto;box-shadow:0 -14px 40px rgba(9,20,14,.28);
+}
+.nq-drawer.open{transform:translateY(0);}
+.nq-drawer .grab{width:44px;height:5px;border-radius:99px;background:#d8dee7;margin:6px auto 14px;}
+.nq-drawer h3{margin:0 0 12px;font-size:15px;color:#5c6674;font-weight:600;}
+.nq-drawer-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.nq-drawer-grid button{
+  background:var(--nq-soft);border:1px solid rgba(16,32,44,.06);
+  border-radius:14px;padding:14px 6px;display:flex;flex-direction:column;
+  align-items:center;gap:7px;font:600 12.5px inherit;color:var(--nq-ink);
+  min-height:82px;justify-content:center;text-align:center;
+}
+.nq-drawer-grid button:active{background:#e8efe9;transform:scale(.97);}
+.nq-drawer-grid button .ic{font-size:21px;}
+
+/* ============================================================
+   মোবাইল অপ্টিমাইজেশন
+   ============================================================ */
+@media(max-width:820px){
+  .nq-burger{display:flex;}
+
+  header.topbar{
+    padding:10px 14px;
+    padding-top:calc(10px + env(safe-area-inset-top));
+    flex-wrap:nowrap;
+    gap:10px;
+  }
+  header.topbar .brand{flex:1;min-width:0;}
+  header.topbar .brand .logo{width:40px;height:40px;font-size:18px;}
+  header.topbar .brand .names .bn{font-size:14px;}
+  header.topbar .brand .names .en{font-size:11px;}
+  header.topbar .topbar-right{gap:8px;align-items:center;}
+  header.topbar .topbar-right span[data-user-name]{
+    max-width:88px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px !important;
+  }
+  header.topbar .topbar-right span[data-user-role]{display:none;}
+  header.topbar [data-logout]{padding:8px 11px !important;font-size:12px !important;}
+
+  main{padding:12px 12px 0 !important;}
+  body{padding-bottom:96px;}
+
+  .card{padding:15px;border-radius:14px;margin-bottom:14px;}
+  .card h2{font-size:15.5px;margin-bottom:12px;}
+
+  /* টেবিল — মোবাইলে পাশাপাশি স্ক্রল */
+  .card table, main table{min-width:560px;}
+  .table-wrap, .card > table, main > table{display:block;}
+  .nq-scroll-x{
+    overflow-x:auto;-webkit-overflow-scrolling:touch;
+    border-radius:12px;border:1px solid rgba(16,32,44,.06);background:#fff;
+  }
+  .nq-scroll-x::-webkit-scrollbar{height:5px;}
+  .nq-scroll-x::-webkit-scrollbar-thumb{background:#cfd6e0;border-radius:99px;}
+
+  /* ইনপুট — iOS zoom বন্ধ করতে ১৬px */
+  input, select, textarea{font-size:16px !important;border-radius:11px !important;}
+  .adm-field input, .adm-field select{border-radius:11px !important;padding:11px 12px !important;}
+  button{border-radius:11px;}
+
+  /* ফর্ম ও কুইক-বাটন */
+  .form-field{margin-bottom:12px;}
+  .quicklinks{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch;}
+  .quicklinks button{flex:0 0 auto;padding:10px 14px;border-radius:999px;font-size:13px;}
+  .quicklinks button span.lbl{display:inline !important;}
+
+  .wizard-steps{overflow-x:auto;}
+  .wizard-step{flex:0 0 auto;min-width:130px;border-radius:10px;}
+
+  .tabbar{gap:10px;}
+  .tabbar button{padding:11px 8px;font-size:13.5px;}
+
+  footer.foot{font-size:12.5px;justify-content:center;text-align:center;}
+}
+
+@media(max-width:560px){
+  .tile{padding:14px 12px !important;font-size:13.5px !important;}
+  .tile .ic{font-size:20px;}
+  .nq-drawer-grid{grid-template-columns:repeat(3,1fr);}
+  nav.bottomnav a{font-size:11px;}
+}
+
+/* ===== মোবাইলে ড্যাশবোর্ড টাইল গ্রিড (২ কলাম, ঝকঝকে) ===== */
+@media(max-width:560px){
+  .tile-grid.row-2{grid-template-columns:1fr 1fr !important;}
+  .tile-grid.row-3{grid-template-columns:1fr 1fr !important;}
+  .tile-grid{gap:10px !important;margin-bottom:10px !important;}
+  .tile{
+    min-height:84px;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:6px;text-align:center;line-height:1.35;
+    font-size:13px !important;padding:12px 8px !important;
+  }
+  .tile.sm{font-size:12.5px !important;min-height:78px;}
+  .tile .ic{font-size:22px;}
+  .tile .checkline{font-size:20px;font-weight:700;}
+  .tile.t-absent{min-height:70px;font-size:14px !important;}
+  .block-title{font-size:14.5px;margin:14px 0 8px;}
+}

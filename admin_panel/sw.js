@@ -6,12 +6,14 @@
    • push ইভেন্টে নোটিফিকেশন দেখানো (বাড়ির কাজ, নোটিশ, ফি ইত্যাদি)
    ========================================================================== */
 
-var CACHE = 'nq-panel-v4';
+var CACHE = 'nq-panel-v5';
 var SHELL = [
   './',
   './admin.html',
   './student.html',
   './teacher.html',
+  './teacher-mobile.css',
+  './teacher-mobile.js',
   './config.js',
   './auth.js',
   './pwa-install.js',
