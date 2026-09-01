@@ -1240,6 +1240,31 @@ app.put("/api/store/:key", auth, canWriteStore, async (req, res) => {
 });
 
 /* ------------------------------------------------------------------ */
+/*  Public API: front-end website content                              */
+/*  অ্যাডমিনের website panel-এ সংরক্ষিত কনটেন্ট লগইন ছাড়াই প্রকাশ করে। */
+/* ------------------------------------------------------------------ */
+app.get("/api/public/site", async (_req, res) => {
+  try {
+    const [siteInfo, siteSlides, siteRules, siteProgs] = await Promise.all([
+      Store.findOne({ key: "siteInfo" }).lean(),
+      Store.findOne({ key: "siteSlides" }).lean(),
+      Store.findOne({ key: "siteRules" }).lean(),
+      Store.findOne({ key: "siteProgs" }).lean(),
+    ]);
+    res.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
+    res.json({
+      siteInfo: siteInfo ? siteInfo.data : {},
+      siteSlides: siteSlides ? siteSlides.data : [],
+      siteRules: siteRules ? siteRules.data : [],
+      siteProgs: siteProgs ? siteProgs.data : [],
+    });
+  } catch (e) {
+    console.error("Public site content load failed:", e);
+    res.status(500).json({ message: "ওয়েবসাইট তথ্য লোড করা যায়নি" });
+  }
+});
+
+/* ------------------------------------------------------------------ */
 /*  Public API: ওয়েবসাইটের যোগাযোগ ফর্ম (অথেন্টিকেশন ছাড়া)             */
 /* ------------------------------------------------------------------ */
 const contactHits = new Map(); // সরল রেট-লিমিট (প্রতি IP, ১০ মিনিটে ৫টি)
