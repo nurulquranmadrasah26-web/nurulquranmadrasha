@@ -1295,6 +1295,33 @@ app.post("/api/public/contact", async (req, res) => {
     }
 
     const doc = await ContactMessage.create({ name, email, phone, subject, message, ip });
+
+    // Super Admin ও Admin-দের notification পাঠানো
+    try {
+      const adminUsers = await User.find({
+        role: { $in: ["Super Admin", "Admin"] },
+        active: true,
+      }).select("_id").lean();
+
+      if (adminUsers.length > 0) {
+        const notifBody = `${name}${phone ? " | " + phone : ""}${email ? " | " + email : ""}\n${message.slice(0, 200)}${message.length > 200 ? "..." : ""}`;
+        await Notification.insertMany(
+          adminUsers.map((u) => ({
+            userId: u._id,
+            title: "📩 নতুন যোগাযোগ বার্তা",
+            body: notifBody,
+            url: "/admin.html#contact-messages",
+            type: "contact",
+            data: { contactMessageId: String(doc._id), name, phone, email },
+            read: false,
+          }))
+        );
+      }
+    } catch (notifErr) {
+      console.error("Contact notification error:", notifErr);
+      // Notification failure should not fail the whole request
+    }
+
     res.json({ ok: true, id: doc._id });
   } catch (e) {
     console.error(e);

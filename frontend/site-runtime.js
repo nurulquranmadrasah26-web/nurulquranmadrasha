@@ -166,6 +166,47 @@
     if (map) map.src = safeUrl(info.mapUrl, DEFAULT.mapUrl);
     setText('#contact .contact-info > div a.btn', info.contactButton); setText('#contact .copyright', info.footerText);
     renderHero(slides); renderExtras(info, rules, programs); renderContactForm(info);
+    // CMS থেকে নতুন elements inject হলে counter ও reveal observer পুনরায় চালু করা
+    reinitObservers();
+  }
+
+  function reinitObservers() {
+    // stat counter animation
+    var counters = document.querySelectorAll('.stat-card .num');
+    if (counters.length && 'IntersectionObserver' in window) {
+      var cObs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            var el = entry.target;
+            var target = parseInt(el.dataset.count, 10) || 0;
+            var cur = 0;
+            var step = Math.max(1, Math.round(target / 50));
+            function tick() {
+              cur += step;
+              if (cur >= target) { el.textContent = target; return; }
+              el.textContent = cur;
+              requestAnimationFrame(tick);
+            }
+            tick();
+            cObs.unobserve(el);
+          }
+        });
+      }, { threshold: 0.5 });
+      counters.forEach(function (c) { cObs.observe(c); });
+    }
+    // reveal animation
+    var reveals = document.querySelectorAll('.reveal:not(.in)');
+    if (reveals.length && 'IntersectionObserver' in window) {
+      var rObs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('in');
+            rObs.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.12 });
+      reveals.forEach(function (el) { rObs.observe(el); });
+    }
   }
 
   function load() {

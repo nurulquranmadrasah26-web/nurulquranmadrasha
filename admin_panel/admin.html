@@ -13744,14 +13744,20 @@ function nqSetNotifCount(n) {
   el.style.display = n > 0 ? '' : 'none';
 }
 
+let nqContactBadgeMessages = [];
+
 async function loadAdminMessages() {
   const list = document.getElementById('nqMsgList');
   if (!list || !window.NQAuth || !window.NQAuth.isLoggedIn()) return;
   list.innerHTML = '<div style="padding:18px;text-align:center;color:#888;">লোড হচ্ছে...</div>';
-  const msgResult = await window.NQAuth.getJSON('/api/messages/inbox').catch(() => ({ messages: [] }));
-  const approvalResult = await window.NQAuth.getJSON('/api/approval-requests').catch(() => ({ items: [] }));
+  const [msgResult, approvalResult, contactResult] = await Promise.all([
+    window.NQAuth.getJSON('/api/messages/inbox').catch(() => ({ messages: [] })),
+    window.NQAuth.getJSON('/api/approval-requests').catch(() => ({ items: [] })),
+    window.NQAuth.getJSON('/api/contact-messages').catch(() => ({ items: [] })),
+  ]);
   nqInboxMessages = (msgResult && msgResult.messages) || [];
   nqApprovalRequests = (approvalResult && approvalResult.items) || [];
+  nqContactBadgeMessages = ((contactResult && contactResult.items) || []).slice(0, 20);
   renderAdminMessages();
 }
 
@@ -13775,9 +13781,10 @@ function renderAdminMessages() {
   const list = document.getElementById('nqMsgList');
   if (!list) return;
   const pendingApprovals = nqApprovalRequests.filter(r => r.status === 'pending');
-  const unread = nqInboxMessages.filter(m => !m.read).length + pendingApprovals.length;
+  const unreadContact = (nqContactBadgeMessages || []).filter(m => !m.read).length;
+  const unread = nqInboxMessages.filter(m => !m.read).length + pendingApprovals.length + unreadContact;
   nqSetNotifCount(unread);
-  if (!nqInboxMessages.length && !nqApprovalRequests.length) {
+  if (!nqInboxMessages.length && !nqApprovalRequests.length && !(nqContactBadgeMessages && nqContactBadgeMessages.length)) {
     list.innerHTML = '<div style="padding:18px;text-align:center;color:#888;">কোনো বার্তা নেই</div>';
     return;
   }
@@ -13842,7 +13849,28 @@ function renderAdminMessages() {
         </div>
       </div>
     </div>`).join('');
-  list.innerHTML = approvalHtml + messagesHtml;
+  // যোগাযোগ বার্তা (contact form)
+  const contactHtml = (nqContactBadgeMessages && nqContactBadgeMessages.length)
+    ? nqContactBadgeMessages.map(m => `
+    <div class="nq-msg-item${m.read ? '' : ' unread'}" style="border-left:3px solid #2196f3;">
+      <div style="display:flex;justify-content:space-between;gap:8px;">
+        <span class="nq-msg-from">📩 ${nqMsgEsc(m.name || 'অজানা')}</span>
+        <span style="color:#9ca3af;font-size:11px;white-space:nowrap;">${m.createdAt ? new Date(m.createdAt).toLocaleString('bn-BD') : ''}</span>
+      </div>
+      <div class="nq-msg-meta">${m.phone ? '📞 ' + nqMsgEsc(m.phone) : ''}${m.email ? (m.phone ? ' | ' : '') + '✉️ ' + nqMsgEsc(m.email) : ''}</div>
+      <div class="nq-msg-body" style="white-space:pre-wrap;">${nqMsgEsc((m.message || '').slice(0, 180))}${(m.message || '').length > 180 ? '...' : ''}</div>
+      <div class="nq-msg-actions">
+        <button class="nq-msg-reply-btn" onclick="(function(){showPage('sitePanel',null);if(typeof initSitePanel==='function')initSitePanel();setTimeout(function(){var sp=document.getElementById('subpage-contact');if(sp){document.querySelectorAll('[id^=subpage-]').forEach(function(x){x.style.display='none';});sp.style.display='';loadContactMessages();}},400);toggleMsgPanel(null);})()" style="font-size:12px;">📋 সব বার্তা দেখুন</button>
+        ${m.read ? '' : `<button class="nq-msg-read-btn" onclick="markContactRead('${m._id}');nqContactBadgeMessages.find(x=>x._id==='${m._id}')&&(nqContactBadgeMessages.find(x=>x._id==='${m._id}').read=true);renderAdminMessages();" style="font-size:12px;">পড়া হয়েছে</button>`}
+      </div>
+    </div>`).join('')
+    : '';
+
+  const contactHeader = (nqContactBadgeMessages && nqContactBadgeMessages.length)
+    ? `<div style="padding:8px 14px 4px;font-size:12px;color:#2196f3;font-weight:600;border-top:1px solid #eee;margin-top:4px;">📩 ওয়েবসাইট যোগাযোগ বার্তা</div>`
+    : '';
+
+  list.innerHTML = approvalHtml + messagesHtml + contactHeader + contactHtml;
 }
 
 async function approveWorkflow(id) {
