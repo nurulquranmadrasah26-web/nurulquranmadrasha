@@ -101,12 +101,16 @@
   }
   function mergeDefaults() {
     siteInfo = Object.assign(clone(DEFAULT_SITE), siteInfo || {});
+    // Ensure all required arrays exist and have valid data
     siteInfo.whyItems = Array.isArray(siteInfo.whyItems) && siteInfo.whyItems.length ? siteInfo.whyItems : clone(DEFAULT_SITE.whyItems);
-    siteInfo.stats = Array.isArray(siteInfo.stats) && siteInfo.stats.length ? siteInfo.stats : clone(DEFAULT_SITE.stats);
-    siteInfo.courses = Array.isArray(siteInfo.courses) && siteInfo.courses.length ? siteInfo.courses : clone(DEFAULT_SITE.courses);
+    siteInfo.stats = Array.isArray(siteInfo.stats) && siteInfo.stats.length > 0 ? siteInfo.stats : clone(DEFAULT_SITE.stats);
+    siteInfo.courses = Array.isArray(siteInfo.courses) && siteInfo.courses.length > 0 && siteInfo.courses[0].title ? siteInfo.courses : clone(DEFAULT_SITE.courses);
     siteInfo.scheduleRows = Array.isArray(siteInfo.scheduleRows) && siteInfo.scheduleRows.length ? siteInfo.scheduleRows : clone(DEFAULT_SITE.scheduleRows);
-    siteInfo.testimonials = Array.isArray(siteInfo.testimonials) && siteInfo.testimonials.length ? siteInfo.testimonials : clone(DEFAULT_SITE.testimonials);
+    siteInfo.testimonials = Array.isArray(siteInfo.testimonials) && siteInfo.testimonials.length > 0 && siteInfo.testimonials[0].quote ? siteInfo.testimonials : clone(DEFAULT_SITE.testimonials);
     siteInfo.scheduleHeaders = Array.isArray(siteInfo.scheduleHeaders) && siteInfo.scheduleHeaders.length ? siteInfo.scheduleHeaders : clone(DEFAULT_SITE.scheduleHeaders);
+    // Ensure required strings exist
+    siteInfo.coursesTitle = siteInfo.coursesTitle || 'আমাদের কোর্ससমূহ';
+    siteInfo.testimonialsTitle = siteInfo.testimonialsTitle || 'পিতামাতা ও শিক্ষার্থীদের মতামত';
     siteSlides = (Array.isArray(siteSlides) && siteSlides.length ? siteSlides : [
       { id: 1, title: 'স্বাগতম নূরুল কোরআন মাদ্রাসায়', subtitle: 'কুরআন ও সুন্নাহ ভিত্তিক জ্ঞান বিতরণে নিরলস কাজ', image: '', alt: 'মাদরাসার শিক্ষা কার্যক্রম' },
     ]).map((slide, index) => Object.assign({ id: index + 1, title: '', subtitle: '', image: '', alt: 'মাদরাসার শিক্ষা কার্যক্রম', enabled: true }, slide));
@@ -183,29 +187,78 @@
     renderSiteCMS();
   };
   window.saveSiteInfo = function () {
-    mergeDefaults();
-    Object.assign(siteInfo, {
-      brandName: value('cmsBrandName'), logoUrl: value('cmsLogoUrl'), seoTitle: value('cmsSeoTitle'), seoDescription: value('cmsSeoDescription'),
-      navHome: value('cmsNavHome'), navCourses: value('cmsNavCourses'), navSchedule: value('cmsNavSchedule'),
-      navTestimonials: value('cmsNavTestimonials'), navContact: value('cmsNavContact'), navAdmission: value('cmsNavAdmission'),
-      whyTitle: value('cmsWhyTitle'), coursesTitle: value('cmsCoursesTitle'), testimonialsTitle: value('cmsTestimonialsTitle'),
-      whyItems: value('cmsWhyItems').split(/\r?\n/).map(function (x) { return x.trim(); }).filter(Boolean),
-      stats: parseRows(value('cmsStats'), 2).map(function (r) { return { count: Math.max(0, parseInt(r[0], 10) || 0), label: r[1] }; }),
-      courses: parseRows(value('cmsCourses'), 4).map(function (r) { return { tag: r[0], fee: r[1], title: r[2], description: r[3] }; }),
-      scheduleTitle: value('cmsScheduleTitle'), scheduleHeaders: value('cmsScheduleHeaders').split('|').map(function (x) { return x.trim(); }).filter(Boolean),
-      scheduleRows: parseRows(value('cmsScheduleRows'), 4),
-      testimonials: parseRows(value('cmsTestimonials'), 3).map(function (r) { return { quote: r[0], author: r[1], role: r[2] }; }),
-      intro: value('cmsIntro'), verse: value('cmsVerse'), verseSrc: value('cmsVerseSrc'), dirName: value('cmsDirName'),
-      dirTitle: value('cmsDirTitle'), dirMsg: value('cmsDirMsg'),
-      contactTitle: value('cmsContactTitle'), address: value('cmsAddress'), phone: value('cmsPhone'),
-      email: value('cmsEmail'), mapUrl: value('cmsMapUrl'), contactButton: value('cmsContactButton'), footerText: value('cmsFooterText'),
-      formTitle: value('cmsFormTitle'), formName: value('cmsFormName'), formEmail: value('cmsFormEmail'), formPhone: value('cmsFormPhone'),
-      formMessage: value('cmsFormMessage'), formSubmit: value('cmsFormSubmit'),
-    });
-    siteRules = parseRows(value('cmsRules'), 1).map(function (r, i) { return { id: i + 1, text: r[0] }; });
-    siteProgs = parseRows(value('cmsPrograms'), 2).map(function (r, i) { return { id: i + 1, name: r[0], note: r[1] }; });
-    if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
-    showToast('ওয়েবসাইটের সব তথ্য সফলভাবে সংরক্ষণ করা হয়েছে');
+    try {
+      // Parse courses safely
+      var courseLines = (value('cmsCourses') || '').split(/\r?\n/).filter(function (l) { return l.trim(); });
+      var courses = courseLines.map(function (line) {
+        var parts = line.split('|').map(function (p) { return p.trim(); });
+        return { tag: parts[0] || '', fee: parts[1] || '', title: parts[2] || '', description: parts[3] || '' };
+      });
+      
+      // Parse testimonials safely
+      var tLines = (value('cmsTestimonials') || '').split(/\r?\n/).filter(function (l) { return l.trim(); });
+      var testimonials = tLines.map(function (line) {
+        var parts = line.split('|').map(function (p) { return p.trim(); });
+        return { quote: parts[0] || '', author: parts[1] || '', role: parts[2] || '' };
+      });
+      
+      // Parse stats safely
+      var statLines = (value('cmsStats') || '').split(/\r?\n/).filter(function (l) { return l.trim(); });
+      var stats = statLines.map(function (line) {
+        var parts = line.split('|').map(function (p) { return p.trim(); });
+        return { count: Math.max(0, parseInt(parts[0], 10) || 0), label: parts[1] || '' };
+      });
+      
+      // Update siteInfo with all values
+      siteInfo.brandName = value('cmsBrandName');
+      siteInfo.logoUrl = value('cmsLogoUrl');
+      siteInfo.seoTitle = value('cmsSeoTitle');
+      siteInfo.seoDescription = value('cmsSeoDescription');
+      siteInfo.navHome = value('cmsNavHome');
+      siteInfo.navCourses = value('cmsNavCourses');
+      siteInfo.navSchedule = value('cmsNavSchedule');
+      siteInfo.navTestimonials = value('cmsNavTestimonials');
+      siteInfo.navContact = value('cmsNavContact');
+      siteInfo.navAdmission = value('cmsNavAdmission');
+      siteInfo.whyTitle = value('cmsWhyTitle');
+      siteInfo.coursesTitle = value('cmsCoursesTitle') || 'আমাদের কোর্সসমূহ';
+      siteInfo.testimonialsTitle = value('cmsTestimonialsTitle') || 'পিতামাতা ও শিক্ষার্থীদের মতামত';
+      siteInfo.whyItems = value('cmsWhyItems').split(/\r?\n/).map(function (x) { return x.trim(); }).filter(Boolean);
+      siteInfo.stats = stats.length > 0 ? stats : siteInfo.stats;
+      siteInfo.courses = courses.length > 0 ? courses : siteInfo.courses;
+      siteInfo.scheduleTitle = value('cmsScheduleTitle');
+      siteInfo.scheduleHeaders = value('cmsScheduleHeaders').split('|').map(function (x) { return x.trim(); }).filter(Boolean);
+      siteInfo.scheduleRows = parseRows(value('cmsScheduleRows'), 4);
+      siteInfo.testimonials = testimonials.length > 0 ? testimonials : siteInfo.testimonials;
+      siteInfo.intro = value('cmsIntro');
+      siteInfo.verse = value('cmsVerse');
+      siteInfo.verseSrc = value('cmsVerseSrc');
+      siteInfo.dirName = value('cmsDirName');
+      siteInfo.dirTitle = value('cmsDirTitle');
+      siteInfo.dirMsg = value('cmsDirMsg');
+      siteInfo.contactTitle = value('cmsContactTitle');
+      siteInfo.address = value('cmsAddress');
+      siteInfo.phone = value('cmsPhone');
+      siteInfo.email = value('cmsEmail');
+      siteInfo.mapUrl = value('cmsMapUrl');
+      siteInfo.contactButton = value('cmsContactButton');
+      siteInfo.footerText = value('cmsFooterText');
+      siteInfo.formTitle = value('cmsFormTitle');
+      siteInfo.formName = value('cmsFormName');
+      siteInfo.formEmail = value('cmsFormEmail');
+      siteInfo.formPhone = value('cmsFormPhone');
+      siteInfo.formMessage = value('cmsFormMessage');
+      siteInfo.formSubmit = value('cmsFormSubmit');
+      
+      siteRules = parseRows(value('cmsRules'), 1).map(function (r, i) { return { id: i + 1, text: r[0] }; });
+      siteProgs = parseRows(value('cmsPrograms'), 2).map(function (r, i) { return { id: i + 1, name: r[0], note: r[1] }; });
+      
+      if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
+      showToast('✓ সব ডেটা সফলভাবে সংরক্ষণ করা হয়েছে');
+    } catch (e) {
+      console.error('Save error:', e);
+      showToast('❌ ডেটা সংরক্ষণে সমস্যা হয়েছে: ' + e.message);
+    }
   };
 
   window.addSiteSlide = function () {
