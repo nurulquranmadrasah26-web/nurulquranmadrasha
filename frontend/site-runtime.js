@@ -166,6 +166,15 @@
     var el = document.querySelector(section + ' .heading h2');
     if (el) el.textContent = text || '';
   }
+  function revealRendered(container) {
+    if (!container) return;
+    // API response-এর পরে inject হওয়া card-গুলোকে observer callback-এর
+    // জন্য অপেক্ষা করিয়ে অদৃশ্য রাখা যাবে না। Observer পরে থাকলেও
+    // content সঙ্গে সঙ্গে দেখা যাবে।
+    container.querySelectorAll('.reveal').forEach(function (el) {
+      el.classList.add('in');
+    });
+  }
 
   function renderHero(slides) {
     var banner = document.getElementById('home');
@@ -252,12 +261,18 @@
     if (whyList) whyList.innerHTML = info.whyItems.map(function (item) { return '<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M5 13l4 4L19 7"/></svg>' + esc(item) + '</li>'; }).join('');
     var stats = document.querySelector('#why .stat-grid');
     if (stats) stats.innerHTML = info.stats.map(function (item, i) { return '<div class="stat-card' + (i === info.stats.length - 1 && i > 3 ? ' wide' : '') + '"><div class="num" data-count="' + (parseInt(item.count, 10) || 0) + '">' + (parseInt(item.count, 10) || 0) + '</div><div class="label">' + esc(item.label) + '</div></div>'; }).join('');
-    var courses = document.querySelector('#courses .course-grid');
-    if (courses) courses.innerHTML = info.courses.map(function (course) { return '<div class="course-card reveal"><div class="course-top"><span class="course-tag">' + esc(course.tag) + '</span><span class="course-fee">' + esc(course.fee) + '</span></div><h3>' + esc(course.title) + '</h3><p>' + esc(course.description) + '</p></div>'; }).join('');
+     var courses = document.querySelector('#courses .course-grid');
+     if (courses) {
+       courses.innerHTML = info.courses.map(function (course) { return '<div class="course-card reveal"><div class="course-top"><span class="course-tag">' + esc(course.tag) + '</span><span class="course-fee">' + esc(course.fee) + '</span></div><h3>' + esc(course.title) + '</h3><p>' + esc(course.description) + '</p></div>'; }).join('');
+       revealRendered(courses);
+     }
     var table = document.querySelector('#schedule table');
     if (table) table.innerHTML = '<thead><tr>' + info.scheduleHeaders.slice(0, 4).map(function (head) { return '<th>' + esc(head) + '</th>'; }).join('') + '</tr></thead><tbody>' + info.scheduleRows.map(function (row) { return '<tr>' + row.slice(0, 4).map(function (cell, i) { return '<td' + (i === 1 ? ' class="batch"' : '') + '>' + esc(cell) + '</td>'; }).join('') + '</tr>'; }).join('') + '</tbody>';
-    var testimonials = document.querySelector('#testimonials .testi-grid');
-    if (testimonials) testimonials.innerHTML = info.testimonials.map(function (item) { return '<div class="testi-card reveal"><span class="quote">“' + esc(item.quote) + '”</span><span class="author">' + esc(item.author) + '</span><span class="role">' + esc(item.role) + '</span></div>'; }).join('');
+     var testimonials = document.querySelector('#testimonials .testi-grid');
+     if (testimonials) {
+       testimonials.innerHTML = info.testimonials.map(function (item) { return '<div class="testi-card reveal"><span class="quote">“' + esc(item.quote) + '”</span><span class="author">' + esc(item.author) + '</span><span class="role">' + esc(item.role) + '</span></div>'; }).join('');
+       revealRendered(testimonials);
+     }
     setText('#contact .contact-info h3', info.contactTitle);
     var lines = document.querySelectorAll('#contact .contact-info .info-line span');
     if (lines[0]) lines[0].textContent = 'ঠিকানা: ' + info.address;
