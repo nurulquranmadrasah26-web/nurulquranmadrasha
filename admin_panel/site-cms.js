@@ -99,16 +99,56 @@
     const el = document.getElementById(id);
     if (el) el.value = val == null ? '' : val;
   }
+  function toEnglishDigits(value) {
+    return String(value == null ? '' : value)
+      .replace(/[০-৯]/g, function (digit) { return String('০১২৩৪৫৬৭৮৯'.indexOf(digit)); })
+      .replace(/[٠-٩]/g, function (digit) { return String('٠١٢٣٤٥٦٧٨٩'.indexOf(digit)); });
+  }
+  function normalizeStats(list) {
+    if (!Array.isArray(list)) return null;
+    const result = list.map(function (item) {
+      item = item || {};
+      const raw = toEnglishDigits(item.count).replace(/[^\d]/g, '');
+      return { count: raw === '' ? null : Math.max(0, parseInt(raw, 10)), label: String(item.label || '').trim() };
+    }).filter(function (item) { return item.count !== null && item.label; });
+    return result.length ? result : null;
+  }
+  function normalizeCourses(list) {
+    if (!Array.isArray(list)) return null;
+    const result = list.map(function (item) {
+      item = item || {};
+      return {
+        tag: String(item.tag || item.code || '').trim(),
+        fee: String(item.fee || item.status || '').trim(),
+        title: String(item.title || item.name || item.courseName || '').trim(),
+        description: String(item.description || item.desc || item.details || '').trim()
+      };
+    }).filter(function (item) { return item.title || item.description; });
+    return result.length ? result : null;
+  }
+  function normalizeTestimonials(list) {
+    if (!Array.isArray(list)) return null;
+    const result = list.map(function (item) {
+      item = item || {};
+      return {
+        quote: String(item.quote || item.message || item.text || '').trim(),
+        author: String(item.author || item.name || '').trim(),
+        role: String(item.role || item.relation || '').trim()
+      };
+    }).filter(function (item) { return item.quote; });
+    return result.length ? result : null;
+  }
   function mergeDefaults() {
     siteInfo = Object.assign(clone(DEFAULT_SITE), siteInfo || {});
     // Ensure all required arrays exist and have valid data
     siteInfo.whyItems = Array.isArray(siteInfo.whyItems) && siteInfo.whyItems.length ? siteInfo.whyItems : clone(DEFAULT_SITE.whyItems);
-    siteInfo.stats = Array.isArray(siteInfo.stats) && siteInfo.stats.length > 0 ? siteInfo.stats : clone(DEFAULT_SITE.stats);
-    siteInfo.courses = Array.isArray(siteInfo.courses) && siteInfo.courses.length > 0 && siteInfo.courses[0].title ? siteInfo.courses : clone(DEFAULT_SITE.courses);
+    siteInfo.stats = normalizeStats(siteInfo.stats) || clone(DEFAULT_SITE.stats);
+    siteInfo.courses = normalizeCourses(siteInfo.courses) || clone(DEFAULT_SITE.courses);
     siteInfo.scheduleRows = Array.isArray(siteInfo.scheduleRows) && siteInfo.scheduleRows.length ? siteInfo.scheduleRows : clone(DEFAULT_SITE.scheduleRows);
-    siteInfo.testimonials = Array.isArray(siteInfo.testimonials) && siteInfo.testimonials.length > 0 && siteInfo.testimonials[0].quote ? siteInfo.testimonials : clone(DEFAULT_SITE.testimonials);
+    siteInfo.testimonials = normalizeTestimonials(siteInfo.testimonials) || clone(DEFAULT_SITE.testimonials);
     siteInfo.scheduleHeaders = Array.isArray(siteInfo.scheduleHeaders) && siteInfo.scheduleHeaders.length ? siteInfo.scheduleHeaders : clone(DEFAULT_SITE.scheduleHeaders);
     // Ensure required strings exist
+    siteInfo.coursesTitle = String(siteInfo.coursesTitle || '').trim() || 'আমাদের কোর্সসমূহ';
     siteInfo.coursesTitle = siteInfo.coursesTitle || 'আমাদের কোর্ससমূহ';
     siteInfo.testimonialsTitle = siteInfo.testimonialsTitle || 'পিতামাতা ও শিক্ষার্থীদের মতামত';
     siteSlides = (Array.isArray(siteSlides) && siteSlides.length ? siteSlides : [
@@ -133,6 +173,64 @@
   function lines(list) {
     return (list || []).map(function (item) { return Array.isArray(item) ? item.join('|') : item; }).join('\n');
   }
+  function structuredEditor(kind, list) {
+    const rows = Array.isArray(list) ? list : [];
+    const labels = {
+      stats: ['সংখ্যা', 'লেবেল'],
+      courses: ['ট্যাগ', 'ভর্তি স্ট্যাটাস', 'কোর্সের নাম', 'বিবরণ'],
+      testimonials: ['মতামত', 'নাম', 'পরিচয়']
+    };
+    const fields = labels[kind];
+    return '<div class="nq-structured-editor nq-editor-' + kind + '">' +
+      rows.map(function (item, index) {
+        item = item || {};
+        const values = kind === 'stats'
+          ? [item.count, item.label]
+          : kind === 'courses'
+            ? [item.tag, item.fee, item.title, item.description]
+            : [item.quote, item.author, item.role];
+        const fnName = 'removeSite' + kind.charAt(0).toUpperCase() + kind.slice(1);
+        return '<div class="nq-structured-row" data-cms-' + kind + '-row data-index="' + index + '">' +
+          values.map(function (val, fieldIndex) {
+            const isLong = (kind === 'courses' && fieldIndex === 3) || (kind === 'testimonials' && fieldIndex === 0);
+            return '<label>' + fields[fieldIndex] +
+              (isLong
+                ? '<textarea data-field="' + fieldIndex + '" rows="2">' + esc(val) + '</textarea>'
+                : '<input data-field="' + fieldIndex + '" value="' + esc(val) + '"' + (kind === 'stats' && fieldIndex === 0 ? ' inputmode="numeric"' : '') + '>') +
+              '</label>';
+          }).join('') +
+          '<button type="button" class="ci-btn ci-del-a" title="এই সারি মুছুন" onclick="' + fnName + '(' + index + ')">মুছুন</button>' +
+        '</div>';
+      }).join('') +
+      '<button type="button" class="add-btn nq-add-row" onclick="addSite' + kind.charAt(0).toUpperCase() + kind.slice(1) + '()">+ নতুন ' +
+      (kind === 'stats' ? 'পরিসংখ্যান' : kind === 'courses' ? 'কোর্স' : 'মতামত') + ' যোগ করুন</button>' +
+      '<small class="nq-editor-help">' +
+      (kind === 'stats' ? 'সংখ্যার ঘরে বাংলা বা ইংরেজি অঙ্ক লিখতে পারবেন।' : kind === 'courses' ? 'প্রতিটি কোর্সের তথ্য আলাদা ঘরে লিখুন।' : 'প্রতিটি মতামত আলাদা সারিতে লিখুন।') +
+      '</small></div>';
+  }
+  function syncStructuredEditors() {
+    function rows(selector, mapper) {
+      return Array.from(document.querySelectorAll(selector)).map(function (row) {
+        return mapper(function (index) {
+          const el = row.querySelector('[data-field="' + index + '"]');
+          return el ? el.value.trim() : '';
+        });
+      });
+    }
+    const stats = rows('[data-cms-stats-row]', function (get) {
+      const raw = toEnglishDigits(get(0)).replace(/[^\d]/g, '');
+      return { count: raw === '' ? 0 : Math.max(0, parseInt(raw, 10)), label: get(1) };
+    }).filter(function (item) { return item.label || item.count; });
+    const courses = rows('[data-cms-courses-row]', function (get) {
+      return { tag: get(0), fee: get(1), title: get(2), description: get(3) };
+    }).filter(function (item) { return item.title || item.description; });
+    const testimonials = rows('[data-cms-testimonials-row]', function (get) {
+      return { quote: get(0), author: get(1), role: get(2) };
+    }).filter(function (item) { return item.quote; });
+    if (stats.length) siteInfo.stats = stats;
+    if (courses.length) siteInfo.courses = courses;
+    if (testimonials.length) siteInfo.testimonials = testimonials;
+  }
   function slideRows() {
     return siteSlides.map(function (slide, index) {
       return '<div class="nq-slide-row" data-index="' + index + '">' +
@@ -149,6 +247,9 @@
   }
 
   function renderSiteCMS() {
+    if (document.querySelector('[data-cms-stats-row], [data-cms-courses-row], [data-cms-testimonials-row]')) {
+      syncStructuredEditors();
+    }
     mergeDefaults();
     const el = document.getElementById('sp-siteList');
     if (!el) return;
@@ -164,10 +265,10 @@
         field('যোগাযোগ মেনু', 'cmsNavContact', siteInfo.navContact) + field('ভর্তি বাটন', 'cmsNavAdmission', siteInfo.navAdmission) + '</div>') +
       section('🖼 হিরো / ক্যারোসেল স্লাইড', '<div id="nqCmsSlideList">' + slideRows() + '</div><button class="add-btn" style="background:#43a047;" onclick="addSiteSlide()">+ নতুন স্লাইড যোগ করুন</button>') +
       section('✅ কেন আমাদের বেছে নেবেন', field('শিরোনাম', 'cmsWhyTitle', siteInfo.whyTitle) + field('বুলেট তালিকা (প্রতি লাইনে একটি)', 'cmsWhyItems', siteInfo.whyItems.join('\n'), 'textarea')) +
-      section('📊 পরিসংখ্যান', field('পরিসংখ্যান (প্রতি লাইনে: সংখ্যা|লেবেল)', 'cmsStats', lines(siteInfo.stats), 'textarea')) +
-      section('🎓 কোর্সসমূহ', field('সেকশনের শিরোনাম', 'cmsCoursesTitle', siteInfo.coursesTitle) + field('কোর্স তালিকা (প্রতি লাইনে: ট্যাগ|ভর্তি স্ট্যাটাস|শিরোনাম|বিবরণ)', 'cmsCourses', lines(siteInfo.courses.map(function (c) { return [c.tag, c.fee, c.title, c.description]; })), 'textarea')) +
+       section('📊 পরিসংখ্যান', '<p class="nq-editor-note">প্রতিটি সংখ্যার জন্য আলাদা সারি ব্যবহার করুন।</p>' + structuredEditor('stats', siteInfo.stats)) +
+       section('🎓 কোর্সসমূহ', field('সেকশনের শিরোনাম', 'cmsCoursesTitle', siteInfo.coursesTitle) + structuredEditor('courses', siteInfo.courses)) +
       section('🗓 ক্লাস সময়সূচি', field('সেকশনের শিরোনাম', 'cmsScheduleTitle', siteInfo.scheduleTitle) + field('কলামের নাম (৪টি, | দিয়ে আলাদা)', 'cmsScheduleHeaders', siteInfo.scheduleHeaders.join('|')) + field('সারির তথ্য (প্রতি লাইনে: বিভাগ|ব্যাচ|দিন|সময়)', 'cmsScheduleRows', lines(siteInfo.scheduleRows), 'textarea')) +
-      section('💬 অভিভাবক ও শিক্ষার্থীদের মতামত', field('সেকশনের শিরোনাম', 'cmsTestimonialsTitle', siteInfo.testimonialsTitle) + field('মতামত (প্রতি লাইনে: মতামত|নাম|পরিচয়)', 'cmsTestimonials', lines(siteInfo.testimonials.map(function (t) { return [t.quote, t.author, t.role]; })), 'textarea')) +
+       section('💬 অভিভাবক ও শিক্ষার্থীদের মতামত', field('সেকশনের শিরোনাম', 'cmsTestimonialsTitle', siteInfo.testimonialsTitle) + structuredEditor('testimonials', siteInfo.testimonials)) +
       section('ℹ️ পরিচিতি ও পরিচালকের বাণী', field('প্রতিষ্ঠানের পরিচিতি', 'cmsIntro', siteInfo.intro, 'textarea') + field('আয়াত / উক্তি', 'cmsVerse', siteInfo.verse) + field('সূত্র', 'cmsVerseSrc', siteInfo.verseSrc) + '<div class="nq-cms-grid">' + field('পরিচালকের নাম', 'cmsDirName', siteInfo.dirName) + field('পদবী', 'cmsDirTitle', siteInfo.dirTitle) + '</div>' + field('পরিচালকের বাণী', 'cmsDirMsg', siteInfo.dirMsg, 'textarea') + '<div class="form-row"><label>পরিচালকের ছবি আপলোড</label><input type="file" accept="image/*" onchange="uploadSiteDirector(this)"></div>') +
       section('📚 ভর্তি তথ্য', field('ভর্তি নির্দেশিকা (প্রতি লাইনে একটি)', 'cmsRules', siteRules.map(function (r) { return r.text; }).join('\n'), 'textarea') + field('শাখা / বিভাগ (প্রতি লাইনে: নাম|বিবরণ)', 'cmsPrograms', lines(siteProgs.map(function (p) { return [p.name, p.note]; })), 'textarea')) +
       section('📍 যোগাযোগ, ম্যাপ ও ফুটার', '<div class="nq-cms-grid">' + field('যোগাযোগ শিরোনাম', 'cmsContactTitle', siteInfo.contactTitle) + field('ঠিকানা', 'cmsAddress', siteInfo.address) + field('ফোন', 'cmsPhone', siteInfo.phone) + field('ইমেইল', 'cmsEmail', siteInfo.email) + field('Google Map embed URL', 'cmsMapUrl', siteInfo.mapUrl) + field('যোগাযোগের বাটন', 'cmsContactButton', siteInfo.contactButton) + '</div>' + field('ফুটার কপিরাইট লেখা', 'cmsFooterText', siteInfo.footerText) + '<div class="nq-cms-grid">' + field('যোগাযোগ ফর্মের শিরোনাম', 'cmsFormTitle', siteInfo.formTitle) + field('নাম ফিল্ডের লেখা', 'cmsFormName', siteInfo.formName) + field('ইমেইল ফিল্ডের লেখা', 'cmsFormEmail', siteInfo.formEmail) + field('মোবাইল ফিল্ডের লেখা', 'cmsFormPhone', siteInfo.formPhone) + field('বার্তা ফিল্ডের লেখা', 'cmsFormMessage', siteInfo.formMessage) + field('সাবমিট বাটন', 'cmsFormSubmit', siteInfo.formSubmit) + '</div>') +
@@ -188,6 +289,7 @@
   };
   window.saveSiteInfo = function () {
     try {
+      syncStructuredEditors();
       // Parse courses safely
       var courseLines = (value('cmsCourses') || '').split(/\r?\n/).filter(function (l) { return l.trim(); });
       var courses = courseLines.map(function (line) {
@@ -261,6 +363,30 @@
     }
   };
 
+  function updateStructuredRow(kind, index, field, value) {
+    const list = kind === 'stats' ? siteInfo.stats : kind === 'courses' ? siteInfo.courses : siteInfo.testimonials;
+    if (list[index]) list[index][field] = value;
+  }
+  function addStructuredRow(kind, item) {
+    syncStructuredEditors();
+    const list = kind === 'stats' ? siteInfo.stats : kind === 'courses' ? siteInfo.courses : siteInfo.testimonials;
+    list.push(item);
+    renderSiteCMS();
+  }
+  function removeStructuredRow(kind, index) {
+    syncStructuredEditors();
+    const list = kind === 'stats' ? siteInfo.stats : kind === 'courses' ? siteInfo.courses : siteInfo.testimonials;
+    if (list.length > 1) list.splice(index, 1);
+    else list[0] = kind === 'stats' ? { count: 0, label: '' } : kind === 'courses' ? { tag: '', fee: '', title: '', description: '' } : { quote: '', author: '', role: '' };
+    renderSiteCMS();
+  }
+  window.addSiteStat = function () { addStructuredRow('stats', { count: 0, label: '' }); };
+  window.removeSiteStat = function (index) { removeStructuredRow('stats', index); };
+  window.addSiteCourse = function () { addStructuredRow('courses', { tag: '', fee: 'ভর্তি চলছে', title: '', description: '' }); };
+  window.removeSiteCourse = function (index) { removeStructuredRow('courses', index); };
+  window.addSiteTestimonial = function () { addStructuredRow('testimonials', { quote: '', author: '', role: '' }); };
+  window.removeSiteTestimonial = function (index) { removeStructuredRow('testimonials', index); };
+
   window.addSiteSlide = function () {
     const id = siteSlides.reduce(function (max, item) { return Math.max(max, Number(item.id) || 0); }, 0) + 1;
     siteSlides.push({ id: id, title: '', subtitle: '', image: '', alt: 'মাদরাসার শিক্ষা কার্যক্রম', enabled: true });
@@ -303,6 +429,6 @@
   };
 
   const style = document.createElement('style');
-  style.textContent = '.nq-cms-intro{display:flex;flex-direction:column;gap:4px;background:#e8f5e9;border-left:4px solid #43a047;padding:14px 16px;border-radius:8px;margin:14px 0;color:#1b5e20}.nq-cms-intro span{font-size:13px;color:#47704a}.nq-cms-card{margin-top:16px}.nq-cms-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}.nq-cms-save{width:100%;background:#1565c0;margin:18px 0 30px}.nq-slide-row{display:flex;align-items:flex-start;gap:10px;border:1px solid #e5e7eb;border-radius:9px;padding:10px;margin-bottom:9px}.nq-slide-preview{width:94px;height:68px;display:flex;align-items:center;justify-content:center;background:#f3f4f6;border-radius:6px;overflow:hidden;font-size:24px;flex:none}.nq-slide-preview img{width:100%;height:100%;object-fit:cover}.nq-slide-fields{display:flex;flex-direction:column;gap:6px;flex:1}.nq-file-label{font-size:12px;color:#1565c0}.nq-file-label input{margin-left:8px}@media(max-width:650px){.nq-cms-grid{grid-template-columns:1fr}.nq-slide-row{flex-wrap:wrap}.nq-slide-fields{min-width:calc(100% - 105px)}}';
+  style.textContent = '.nq-cms-intro{display:flex;flex-direction:column;gap:4px;background:#e8f5e9;border-left:4px solid #43a047;padding:14px 16px;border-radius:8px;margin:14px 0;color:#1b5e20}.nq-cms-intro span{font-size:13px;color:#47704a}.nq-cms-card{margin-top:16px}.nq-cms-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}.nq-cms-save{width:100%;background:#1565c0;margin:18px 0 30px}.nq-slide-row{display:flex;align-items:flex-start;gap:10px;border:1px solid #e5e7eb;border-radius:9px;padding:10px;margin-bottom:9px}.nq-slide-preview{width:94px;height:68px;display:flex;align-items:center;justify-content:center;background:#f3f4f6;border-radius:6px;overflow:hidden;font-size:24px;flex:none}.nq-slide-preview img{width:100%;height:100%;object-fit:cover}.nq-slide-fields{display:flex;flex-direction:column;gap:6px;flex:1}.nq-file-label{font-size:12px;color:#1565c0}.nq-file-label input{margin-left:8px}.nq-editor-note{margin:0 0 10px;color:#667085;font-size:13px}.nq-structured-editor{display:grid;gap:10px}.nq-structured-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;align-items:end;border:1px solid #e5e7eb;border-radius:9px;padding:10px;background:#fafafa}.nq-editor-courses .nq-structured-row{grid-template-columns:repeat(2,minmax(0,1fr))}.nq-editor-testimonials .nq-structured-row{grid-template-columns:1fr 1fr 1fr}.nq-structured-row label{display:flex;flex-direction:column;gap:4px;color:#475467;font-size:12px;font-weight:600}.nq-structured-row input,.nq-structured-row textarea{width:100%;box-sizing:border-box}.nq-structured-row textarea{resize:vertical}.nq-structured-row button{justify-self:start}.nq-add-row{justify-self:start;background:#43a047}.nq-editor-help{color:#667085;font-size:12px}@media(max-width:650px){.nq-cms-grid{grid-template-columns:1fr}.nq-slide-row{flex-wrap:wrap}.nq-slide-fields{min-width:calc(100% - 105px)}.nq-structured-row,.nq-editor-courses .nq-structured-row,.nq-editor-testimonials .nq-structured-row{grid-template-columns:1fr}}';
   document.head.appendChild(style);
 })();

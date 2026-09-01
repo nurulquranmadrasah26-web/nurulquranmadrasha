@@ -740,36 +740,47 @@
 
   // stat counters
   const counters = document.querySelectorAll('.stat-card .num');
-  const counterObserver = new IntersectionObserver((entries)=>{
-    entries.forEach(entry=>{
-      if(entry.isIntersecting){
-        const el = entry.target;
-        const target = parseInt(el.dataset.count, 10);
-        let cur = 0;
-        const step = Math.max(1, Math.round(target/50));
-        const tick = ()=>{
-          cur += step;
-          if(cur >= target){ el.textContent = target; return; }
-          el.textContent = cur;
-          requestAnimationFrame(tick);
-        };
-        tick();
-        counterObserver.unobserve(el);
-      }
-    });
-  }, {threshold:0.5});
-  counters.forEach(c=>counterObserver.observe(c));
+  function showCounter(el){
+    const target = parseInt(String(el.dataset.count || '').replace(/[০-৯]/g, d => '০১২৩৪৫৬৭৮৯'.indexOf(d)), 10) || 0;
+    let cur = 0;
+    const step = Math.max(1, Math.round(target/50));
+    const frame = window.requestAnimationFrame || (fn => window.setTimeout(fn, 16));
+    const tick = ()=>{
+      cur += step;
+      if(cur >= target){ el.textContent = target; return; }
+      el.textContent = cur;
+      frame(tick);
+    };
+    tick();
+  }
+  if ('IntersectionObserver' in window) {
+    const counterObserver = new IntersectionObserver((entries)=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting){
+          showCounter(entry.target);
+          counterObserver.unobserve(entry.target);
+        }
+      });
+    }, {threshold:0.1});
+    counters.forEach(c=>counterObserver.observe(c));
+  } else {
+    counters.forEach(showCounter);
+  }
 
   // scroll reveal
-  const revealObserver = new IntersectionObserver((entries)=>{
-    entries.forEach(entry=>{
-      if(entry.isIntersecting){
-        entry.target.classList.add('in');
-        revealObserver.unobserve(entry.target);
-      }
-    });
-  }, {threshold:0.12});
-  document.querySelectorAll('.reveal').forEach(el=>revealObserver.observe(el));
+  if ('IntersectionObserver' in window) {
+    const revealObserver = new IntersectionObserver((entries)=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting){
+          entry.target.classList.add('in');
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, {threshold:0.12});
+    document.querySelectorAll('.reveal').forEach(el=>revealObserver.observe(el));
+  } else {
+    document.querySelectorAll('.reveal').forEach(el=>el.classList.add('in'));
+  }
 </script>
 <script src="site-runtime.js"></script>
 </body>

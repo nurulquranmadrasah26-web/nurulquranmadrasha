@@ -44,15 +44,62 @@
   function esc(value) {
     return String(value == null ? '' : value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
+  function toEnglishDigits(value) {
+    return String(value == null ? '' : value)
+      .replace(/[০-৯]/g, function (digit) { return String('০১২৩৪৫৬৭৮৯'.indexOf(digit)); })
+      .replace(/[٠-٩]/g, function (digit) { return String('٠١٢٣٤٥٦٧٨٩'.indexOf(digit)); });
+  }
   function safeUrl(value, fallback) {
     var url = String(value || '').trim();
     return /^(https?:\/\/|\/|\.\/|data:image\/)/i.test(url) ? url : (fallback || '');
   }
+  function validStats(value) {
+    if (!Array.isArray(value)) return null;
+    var list = value.map(function (item) {
+      item = item || {};
+      var rawCount = toEnglishDigits(item.count).replace(/[^\d]/g, '');
+      return { count: rawCount === '' ? null : Math.max(0, parseInt(rawCount, 10)), label: String(item.label || '').trim() };
+    }).filter(function (item) { return item.count !== null && item.label; });
+    return list.length ? list : null;
+  }
+  function validCourses(value) {
+    if (!Array.isArray(value)) return null;
+    var list = value.map(function (item) {
+      item = item || {};
+      return {
+        tag: String(item.tag || item.code || '').trim(),
+        fee: String(item.fee || item.status || '').trim(),
+        title: String(item.title || item.name || item.courseName || '').trim(),
+        description: String(item.description || item.desc || item.details || '').trim()
+      };
+    }).filter(function (item) { return item.title || item.description; });
+    return list.length ? list : null;
+  }
+  function validTestimonials(value) {
+    if (!Array.isArray(value)) return null;
+    var list = value.map(function (item) {
+      item = item || {};
+      return {
+        quote: String(item.quote || item.message || item.text || '').trim(),
+        author: String(item.author || item.name || '').trim(),
+        role: String(item.role || item.relation || '').trim()
+      };
+    }).filter(function (item) { return item.quote; });
+    return list.length ? list : null;
+  }
   function merged(info) {
     var out = Object.assign({}, DEFAULT, info || {});
-    ['whyItems', 'stats', 'courses', 'scheduleRows', 'testimonials', 'scheduleHeaders'].forEach(function (key) {
+    var normalizedStats = validStats(out.stats);
+    var normalizedCourses = validCourses(out.courses);
+    var normalizedTestimonials = validTestimonials(out.testimonials);
+    out.stats = normalizedStats || JSON.parse(JSON.stringify(DEFAULT.stats));
+    out.courses = normalizedCourses || JSON.parse(JSON.stringify(DEFAULT.courses));
+    out.testimonials = normalizedTestimonials || JSON.parse(JSON.stringify(DEFAULT.testimonials));
+    ['whyItems', 'scheduleRows', 'scheduleHeaders'].forEach(function (key) {
       if (!Array.isArray(out[key]) || !out[key].length) out[key] = JSON.parse(JSON.stringify(DEFAULT[key]));
     });
+    if (!String(out.coursesTitle || '').trim()) out.coursesTitle = DEFAULT.coursesTitle;
+    if (!String(out.testimonialsTitle || '').trim()) out.testimonialsTitle = DEFAULT.testimonialsTitle;
     return out;
   }
   function setText(selector, text) {
@@ -170,29 +217,39 @@
     reinitObservers();
   }
 
+  function animateCounter(el) {
+    if (!el || el.dataset.counterDone === 'true') return;
+    el.dataset.counterDone = 'true';
+    var target = parseInt(toEnglishDigits(el.dataset.count), 10) || 0;
+    var cur = 0;
+    var step = Math.max(1, Math.round(target / 50));
+    var frame = window.requestAnimationFrame || function (callback) { return window.setTimeout(callback, 16); };
+    function tick() {
+      cur += step;
+      if (cur >= target) { el.textContent = target; return; }
+      el.textContent = cur;
+      frame(tick);
+    }
+    el.textContent = target === 0 ? '0' : '0';
+    tick();
+  }
   function reinitObservers() {
-    // stat counter animation
+    // Render-এর পরে নতুন করে তৈরি হওয়া counter-গুলোও চালু হবে। পুরনো
+    // inline observer-এর উপর নির্ভর করা হয় না, তাই API response এলেও সংখ্যা
+    // আর ০-তে আটকে থাকে না।
     var counters = document.querySelectorAll('.stat-card .num');
     if (counters.length && 'IntersectionObserver' in window) {
       var cObs = new IntersectionObserver(function (entries) {
         entries.forEach(function (entry) {
           if (entry.isIntersecting) {
-            var el = entry.target;
-            var target = parseInt(el.dataset.count, 10) || 0;
-            var cur = 0;
-            var step = Math.max(1, Math.round(target / 50));
-            function tick() {
-              cur += step;
-              if (cur >= target) { el.textContent = target; return; }
-              el.textContent = cur;
-              requestAnimationFrame(tick);
-            }
-            tick();
-            cObs.unobserve(el);
+            animateCounter(entry.target);
+            cObs.unobserve(entry.target);
           }
         });
-      }, { threshold: 0.5 });
+      }, { threshold: 0.1 });
       counters.forEach(function (c) { cObs.observe(c); });
+    } else {
+      counters.forEach(animateCounter);
     }
     // reveal animation
     var reveals = document.querySelectorAll('.reveal:not(.in)');
@@ -206,6 +263,8 @@
         });
       }, { threshold: 0.12 });
       reveals.forEach(function (el) { rObs.observe(el); });
+    } else {
+      reveals.forEach(function (el) { el.classList.add('in'); });
     }
   }
 
