@@ -16,7 +16,7 @@
   var DEFAULT = {
     brandName: 'নূরুল কোরআন মাদরাসা', seoTitle: 'নুরুল কোরআন মাদরাসা | কুরআন ও আধুনিক শিক্ষার সমন্বয়',
     seoDescription: 'নূরুল কোরআন মাদরাসা — হিফজুল কুরআন, নাজেরা ও আধুনিক নূরানি বিভাগে কুরআন-সুন্নাহ ভিত্তিক মানসম্মত শিক্ষা।',
-    logoUrl: './icons/icon-192.png',
+    logoUrl: './assets/receipt-header.png',
     navHome: 'হোম', navCourses: 'কোর্সসমূহ', navSchedule: 'সময়সূচি',
     navTestimonials: 'মতামত', navContact: 'যোগাযোগ', navAdmission: 'এখনই ভর্তি হোন',
     whyTitle: 'কেন নূরুল কোরআন মাদরাসা?', coursesTitle: 'আমাদের কোর্সসমূহ', testimonialsTitle: 'পিতামাতা ও শিক্ষার্থীদের মতামত',

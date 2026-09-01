@@ -10,7 +10,7 @@
 
   const DEFAULT_SITE = {
     brandName: 'নূরুল কোরআন মাদরাসা',
-    logoUrl: './icons/icon-192.png',
+    logoUrl: './assets/receipt-header.png',
     seoTitle: 'নুরুল কোরআন মাদরাসা | কুরআন ও আধুনিক শিক্ষার সমন্বয়',
     seoDescription: 'নূরুল কোরআন মাদরাসা — হিফজুল কুরআন, নাজেরা ও আধুনিক নূরানি বিভাগে কুরআন-সুন্নাহ ভিত্তিক মানসম্মত শিক্ষা।',
     navHome: 'হোম',
