@@ -53,39 +53,91 @@
     var url = String(value || '').trim();
     return /^(https?:\/\/|\/|\.\/|data:image\/)/i.test(url) ? url : (fallback || '');
   }
+  function delimitedRows(value) {
+    var rows = Array.isArray(value) ? value : [String(value == null ? '' : value)];
+    return rows.reduce(function (out, item) {
+      if (Array.isArray(item)) {
+        if (item.some(function (part) { return String(part == null ? '' : part).trim(); })) {
+          out.push(item.map(function (part) { return String(part == null ? '' : part).trim(); }));
+        }
+        return out;
+      }
+      if (item && typeof item === 'object') {
+        out.push(item);
+        return out;
+      }
+      // পুরোনো CMS-এ একই লাইনে "2026hifz" জোড়া লেগে গেলে পরের
+      // কোর্সটিকেও আলাদা রেকর্ড হিসেবে উদ্ধার করি।
+      String(item == null ? '' : item)
+        .replace(/(\d{4})(?=(?:hifz|naz)\s*\|)/gi, '$1\n')
+        .split(/\r?\n/)
+        .forEach(function (line) {
+          if (line.trim()) out.push(line.split('|').map(function (part) { return part.trim(); }));
+        });
+      return out;
+    }, []);
+  }
+  function partsOf(item) {
+    return Array.isArray(item) ? item : null;
+  }
   function validStats(value) {
-    if (!Array.isArray(value)) return null;
-    var list = value.map(function (item) {
+    var rows = delimitedRows(value);
+    if (!rows.length) return null;
+    var list = rows.map(function (item) {
       item = item || {};
-      var rawCount = toEnglishDigits(item.count).replace(/[^\d]/g, '');
-      return { count: rawCount === '' ? null : Math.max(0, parseInt(rawCount, 10)), label: String(item.label || '').trim() };
+      var parts = partsOf(item);
+      var count = parts ? parts[0] : item.count;
+      var label = parts ? (parts[1] || '') : item.label;
+      var rawCount = toEnglishDigits(count).replace(/[^\d]/g, '');
+      return { count: rawCount === '' ? null : Math.max(0, parseInt(rawCount, 10)), label: String(label || '').trim() };
     }).filter(function (item) { return item.count !== null && item.label; });
     return list.length ? list : null;
   }
   function validCourses(value) {
-    if (!Array.isArray(value)) return null;
-    var list = value.map(function (item) {
+    var rows = delimitedRows(value);
+    if (!rows.length) return null;
+    var list = rows.map(function (item) {
       item = item || {};
+      var parts = partsOf(item);
       return {
-        tag: String(item.tag || item.code || '').trim(),
-        fee: String(item.fee || item.status || '').trim(),
-        title: String(item.title || item.name || item.courseName || '').trim(),
-        description: String(item.description || item.desc || item.details || '').trim()
+        tag: String(parts ? (parts[0] || '') : (item.tag || item.code || '')).trim(),
+        fee: String(parts ? (parts[1] || '') : (item.fee || item.status || '')).trim(),
+        title: String(parts ? (parts[2] || '') : (item.title || item.name || item.courseName || '')).trim(),
+        description: String(parts ? parts.slice(3).join(' | ') : (item.description || item.desc || item.details || '')).trim()
       };
     }).filter(function (item) { return item.title || item.description; });
     return list.length ? list : null;
   }
   function validTestimonials(value) {
-    if (!Array.isArray(value)) return null;
-    var list = value.map(function (item) {
+    var rows = delimitedRows(value);
+    if (!rows.length) return null;
+    var list = rows.map(function (item) {
       item = item || {};
+      var parts = partsOf(item);
       return {
-        quote: String(item.quote || item.message || item.text || '').trim(),
-        author: String(item.author || item.name || '').trim(),
-        role: String(item.role || item.relation || '').trim()
+        quote: String(parts ? (parts[0] || '') : (item.quote || item.message || item.text || '')).trim(),
+        author: String(parts ? (parts[1] || '') : (item.author || item.name || '')).trim(),
+        role: String(parts ? (parts[2] || '') : (item.role || item.relation || '')).trim()
       };
     }).filter(function (item) { return item.quote; });
     return list.length ? list : null;
+  }
+  function validRules(value) {
+    return delimitedRows(value).map(function (item, index) {
+      var parts = partsOf(item);
+      var text = parts ? parts.join(' | ') : item.text;
+      return { id: item.id || index + 1, text: String(text || '').trim() };
+    }).filter(function (item) { return item.text; });
+  }
+  function validPrograms(value) {
+    return delimitedRows(value).map(function (item, index) {
+      var parts = partsOf(item);
+      return {
+        id: item.id || index + 1,
+        name: String(parts ? (parts[0] || '') : (item.name || item.title || '')).trim(),
+        note: String(parts ? parts.slice(1).join(' | ') : (item.note || item.description || '')).trim()
+      };
+    }).filter(function (item) { return item.name || item.note; });
   }
   function merged(info) {
     var out = Object.assign({}, DEFAULT, info || {});
@@ -181,6 +233,8 @@
 
   function render(info, slides, rules, programs) {
     info = merged(info);
+    rules = validRules(rules);
+    programs = validPrograms(programs);
     document.title = info.seoTitle || (info.brandName + ' | কুরআন ও আধুনিক শিক্ষার সমন্বয়');
     var description = document.querySelector('meta[name="description"]');
     if (description && info.seoDescription) description.setAttribute('content', info.seoDescription);

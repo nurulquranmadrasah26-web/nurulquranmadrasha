@@ -71,8 +71,11 @@
     /* ---------- তালিকা ---------- */
     list: function () {
       return A().getJSON('/api/notifications').then(function (res) {
-        NQNotify.items = (res && res.items) || [];
-        NQNotify.unread = NQNotify.items.filter(function (n) { return !n.read; }).length;
+        // দেখা হয়ে যাওয়া notification history-তে থাকতে পারে, কিন্তু bell
+        // তালিকায় কেবল unread item দেখাব—দেখা হয়েছে চাপলে সেটি সঙ্গে সঙ্গে
+        // notification list থেকে সরে যাবে।
+        NQNotify.items = ((res && res.items) || []).filter(function (n) { return !n.read; });
+        NQNotify.unread = NQNotify.items.length;
         return NQNotify.items;
       });
     },
@@ -131,10 +134,16 @@
             el.addEventListener('click', function () {
               var id = el.getAttribute('data-nid');
               var url = el.getAttribute('data-url');
-              NQNotify.markRead(id).catch(function () {});
+              // আগে UI থেকে সরিয়ে দিই, তারপর সার্ভারে read হিসেবে সংরক্ষণ করি।
+              // এতে network response আসতে দেরি হলেও notification আবার দেখা যায় না।
+              NQNotify.items = NQNotify.items.filter(function (item) { return String(item.id) !== String(id); });
+              NQNotify.unread = NQNotify.items.length;
+              render();
+              NQNotify.markRead(id).then(function () {
+                return NQNotify.list();
+              }).then(render).catch(function () {});
               if (url) { location.hash = url.indexOf('#') === 0 ? url : ('#' + url.split('#')[1] || ''); }
               document.getElementById('nqBellPanel').style.display = 'none';
-              NQNotify.list().then(render).catch(function () {});
               if (typeof window.nqOnNotificationOpen === 'function') window.nqOnNotificationOpen(url);
             });
           });

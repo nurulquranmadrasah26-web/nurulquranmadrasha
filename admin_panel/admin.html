@@ -13755,9 +13755,11 @@ async function loadAdminMessages() {
     window.NQAuth.getJSON('/api/approval-requests').catch(() => ({ items: [] })),
     window.NQAuth.getJSON('/api/contact-messages').catch(() => ({ items: [] })),
   ]);
-  nqInboxMessages = (msgResult && msgResult.messages) || [];
+  // Notification panel-এ কেবল unread item থাকবে। পূর্ণ মেসেজ তালিকা
+  // আলাদা "গৃহীত মেসেজ" পেজে আগের মতোই থাকবে।
+  nqInboxMessages = ((msgResult && msgResult.messages) || []).filter(m => !m.read);
   nqApprovalRequests = (approvalResult && approvalResult.items) || [];
-  nqContactBadgeMessages = ((contactResult && contactResult.items) || []).slice(0, 20);
+  nqContactBadgeMessages = ((contactResult && contactResult.items) || []).filter(m => !m.read).slice(0, 20);
   renderAdminMessages();
 }
 
@@ -13815,8 +13817,10 @@ function renderAdminMessages() {
       ? `<div class="nq-msg-actions">
            <button class="nq-msg-reply-btn" onclick="approveWorkflow('${r._id}')">✅ অনুমোদন</button>
            <button class="nq-msg-del-btn" onclick="rejectWorkflow('${r._id}')">❌ প্রত্যাখ্যান</button>
+           <button class="nq-msg-read-btn" onclick="markApprovalRead('${r._id}')">পড়া হয়েছে</button>
          </div>`
-      : `<div style="margin-top:7px;color:#6b7280;font-size:12px;">সিদ্ধান্ত: ${nqMsgEsc(r.decisionNote || status)}</div>`;
+      : `<div style="margin-top:7px;color:#6b7280;font-size:12px;">সিদ্ধান্ত: ${nqMsgEsc(r.decisionNote || status)}</div>
+         <div class="nq-msg-actions"><button class="nq-msg-read-btn" onclick="markApprovalRead('${r._id}')">পড়া হয়েছে</button></div>`;
     return `<div class="nq-msg-item${r.status === 'pending' ? ' unread' : ''}">
       <div style="display:flex;justify-content:space-between;gap:8px;">
         <span class="nq-msg-from">🔔 ${nqMsgEsc(label)}</span>
@@ -13861,7 +13865,7 @@ function renderAdminMessages() {
       <div class="nq-msg-body" style="white-space:pre-wrap;">${nqMsgEsc((m.message || '').slice(0, 180))}${(m.message || '').length > 180 ? '...' : ''}</div>
       <div class="nq-msg-actions">
         <button class="nq-msg-reply-btn" onclick="(function(){showPage('sitePanel',null);if(typeof initSitePanel==='function')initSitePanel();setTimeout(function(){var sp=document.getElementById('subpage-contact');if(sp){document.querySelectorAll('[id^=subpage-]').forEach(function(x){x.style.display='none';});sp.style.display='';loadContactMessages();}},400);toggleMsgPanel(null);})()" style="font-size:12px;">📋 সব বার্তা দেখুন</button>
-        ${m.read ? '' : `<button class="nq-msg-read-btn" onclick="markContactRead('${m._id}');nqContactBadgeMessages.find(x=>x._id==='${m._id}')&&(nqContactBadgeMessages.find(x=>x._id==='${m._id}').read=true);renderAdminMessages();" style="font-size:12px;">পড়া হয়েছে</button>`}
+        <button class="nq-msg-read-btn" onclick="markContactBadgeRead('${m._id}')" style="font-size:12px;">পড়া হয়েছে</button>
       </div>
     </div>`).join('')
     : '';
@@ -13918,7 +13922,24 @@ async function sendAdminReply(id) {
 async function markMsgRead(id) {
   try {
     await window.NQAuth.postJSON('/api/messages/' + id + '/read', {}, 'PATCH');
-    const m = nqInboxMessages.find(x => x._id === id);
+    nqInboxMessages = nqInboxMessages.filter(x => x._id !== id);
+    renderAdminMessages();
+  } catch (e) { showToast('আপডেট করা যায়নি'); }
+}
+
+async function markApprovalRead(id) {
+  try {
+    await window.NQAuth.postJSON('/api/approval-requests/' + id + '/read', {}, 'PATCH');
+    nqApprovalRequests = nqApprovalRequests.filter(x => x._id !== id);
+    renderAdminMessages();
+  } catch (e) { showToast('আপডেট করা যায়নি'); }
+}
+
+async function markContactBadgeRead(id) {
+  try {
+    await window.NQAuth.postJSON('/api/contact-messages/' + id + '/read', {}, 'PATCH');
+    nqContactBadgeMessages = nqContactBadgeMessages.filter(x => x._id !== id);
+    const m = (typeof contactMessages !== 'undefined' ? contactMessages : []).find(x => x._id === id);
     if (m) m.read = true;
     renderAdminMessages();
   } catch (e) { showToast('আপডেট করা যায়নি'); }

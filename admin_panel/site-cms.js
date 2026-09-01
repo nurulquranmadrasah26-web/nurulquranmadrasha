@@ -104,38 +104,86 @@
       .replace(/[০-৯]/g, function (digit) { return String('০১২৩৪৫৬৭৮৯'.indexOf(digit)); })
       .replace(/[٠-٩]/g, function (digit) { return String('٠١٢٣٤٥٦٧٨٩'.indexOf(digit)); });
   }
+  function delimitedRows(value) {
+    var rows = Array.isArray(value) ? value : [String(value == null ? '' : value)];
+    return rows.reduce(function (out, item) {
+      if (Array.isArray(item)) {
+        if (item.some(function (part) { return String(part == null ? '' : part).trim(); })) {
+          out.push(item.map(function (part) { return String(part == null ? '' : part).trim(); }));
+        }
+        return out;
+      }
+      if (item && typeof item === 'object') {
+        out.push(item);
+        return out;
+      }
+      String(item == null ? '' : item)
+        .replace(/(\d{4})(?=(?:hifz|naz)\s*\|)/gi, '$1\n')
+        .split(/\r?\n/)
+        .forEach(function (line) {
+          if (line.trim()) out.push(line.split('|').map(function (part) { return part.trim(); }));
+        });
+      return out;
+    }, []);
+  }
   function normalizeStats(list) {
-    if (!Array.isArray(list)) return null;
-    const result = list.map(function (item) {
+    const rows = delimitedRows(list);
+    if (!rows.length) return null;
+    const result = rows.map(function (item) {
       item = item || {};
-      const raw = toEnglishDigits(item.count).replace(/[^\d]/g, '');
-      return { count: raw === '' ? null : Math.max(0, parseInt(raw, 10)), label: String(item.label || '').trim() };
+      const parts = Array.isArray(item) ? item : null;
+      const raw = toEnglishDigits(parts ? parts[0] : item.count).replace(/[^\d]/g, '');
+      return { count: raw === '' ? null : Math.max(0, parseInt(raw, 10)), label: String(parts ? (parts[1] || '') : item.label || '').trim() };
     }).filter(function (item) { return item.count !== null && item.label; });
     return result.length ? result : null;
   }
   function normalizeCourses(list) {
-    if (!Array.isArray(list)) return null;
-    const result = list.map(function (item) {
+    const rows = delimitedRows(list);
+    if (!rows.length) return null;
+    const result = rows.map(function (item) {
       item = item || {};
+      const parts = Array.isArray(item) ? item : null;
       return {
-        tag: String(item.tag || item.code || '').trim(),
-        fee: String(item.fee || item.status || '').trim(),
-        title: String(item.title || item.name || item.courseName || '').trim(),
-        description: String(item.description || item.desc || item.details || '').trim()
+        tag: String(parts ? (parts[0] || '') : item.tag || item.code || '').trim(),
+        fee: String(parts ? (parts[1] || '') : item.fee || item.status || '').trim(),
+        title: String(parts ? (parts[2] || '') : item.title || item.name || item.courseName || '').trim(),
+        description: String(parts ? parts.slice(3).join(' | ') : item.description || item.desc || item.details || '').trim()
       };
     }).filter(function (item) { return item.title || item.description; });
     return result.length ? result : null;
   }
   function normalizeTestimonials(list) {
-    if (!Array.isArray(list)) return null;
-    const result = list.map(function (item) {
+    const rows = delimitedRows(list);
+    if (!rows.length) return null;
+    const result = rows.map(function (item) {
       item = item || {};
+      const parts = Array.isArray(item) ? item : null;
       return {
-        quote: String(item.quote || item.message || item.text || '').trim(),
-        author: String(item.author || item.name || '').trim(),
-        role: String(item.role || item.relation || '').trim()
+        quote: String(parts ? (parts[0] || '') : item.quote || item.message || item.text || '').trim(),
+        author: String(parts ? (parts[1] || '') : item.author || item.name || '').trim(),
+        role: String(parts ? (parts[2] || '') : item.role || item.relation || '').trim()
       };
     }).filter(function (item) { return item.quote; });
+    return result.length ? result : null;
+  }
+  function normalizeRules(list) {
+    const rows = delimitedRows(list);
+    const result = rows.map(function (item, index) {
+      const parts = Array.isArray(item) ? item : null;
+      return { id: item.id || index + 1, text: String(parts ? parts.join(' | ') : item.text || '').trim() };
+    }).filter(function (item) { return item.text; });
+    return result.length ? result : null;
+  }
+  function normalizePrograms(list) {
+    const rows = delimitedRows(list);
+    const result = rows.map(function (item, index) {
+      const parts = Array.isArray(item) ? item : null;
+      return {
+        id: item.id || index + 1,
+        name: String(parts ? (parts[0] || '') : item.name || item.title || '').trim(),
+        note: String(parts ? parts.slice(1).join(' | ') : item.note || item.description || '').trim()
+      };
+    }).filter(function (item) { return item.name || item.note; });
     return result.length ? result : null;
   }
   function mergeDefaults() {
@@ -154,8 +202,8 @@
     siteSlides = (Array.isArray(siteSlides) && siteSlides.length ? siteSlides : [
       { id: 1, title: 'স্বাগতম নূরুল কোরআন মাদ্রাসায়', subtitle: 'কুরআন ও সুন্নাহ ভিত্তিক জ্ঞান বিতরণে নিরলস কাজ', image: '', alt: 'মাদরাসার শিক্ষা কার্যক্রম' },
     ]).map((slide, index) => Object.assign({ id: index + 1, title: '', subtitle: '', image: '', alt: 'মাদরাসার শিক্ষা কার্যক্রম', enabled: true }, slide));
-    siteRules = Array.isArray(siteRules) && siteRules.length ? siteRules : [{ id: 1, text: 'ভর্তি ফরম সঠিকভাবে পূরণ করে প্রয়োজনীয় কাগজপত্রসহ জমা দিতে হবে।' }];
-    siteProgs = Array.isArray(siteProgs) && siteProgs.length ? siteProgs : clone([
+    siteRules = normalizeRules(siteRules) || [{ id: 1, text: 'ভর্তি ফরম সঠিকভাবে পূরণ করে প্রয়োজনীয় কাগজপত্রসহ জমা দিতে হবে।' }];
+    siteProgs = normalizePrograms(siteProgs) || clone([
       { id: 1, name: 'নূরানি বিভাগ', note: 'প্লে থেকে পঞ্চম শ্রেণী পর্যন্ত' },
       { id: 2, name: 'বালিকা শাখা (আবাসিক)', note: 'হিফজুল কুরআন ও কিতাব বিভাগ' },
     ]);

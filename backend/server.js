@@ -1892,6 +1892,9 @@ const approvalRequestSchema = new mongoose.Schema(
     },
     title: { type: String, required: true },
     payload: { type: mongoose.Schema.Types.Mixed, default: {} },
+    // Super Admin যে approval notification দেখে ফেলেছেন, তার user id এখানে থাকে।
+    // Approval record মুছে না গিয়েও notification panel থেকে সরানো যায়।
+    readBy: { type: [mongoose.Schema.Types.ObjectId], ref: "User", default: [] },
     status: {
       type: String,
       enum: ["pending", "approved", "rejected"],
@@ -2457,8 +2460,22 @@ app.get("/api/approval-requests/mine", auth, async (req, res) => {
 app.get("/api/approval-requests", auth, async (req, res) => {
   if (req.user.role !== "Super Admin")
     return res.status(403).json({ message: "শুধু সুপার এডমিন approval requests দেখতে পারবেন" });
-  const items = await ApprovalRequest.find().sort({ createdAt: -1 }).limit(100).lean();
+  // যেগুলো Super Admin ইতিমধ্যে "দেখা হয়েছে" করেছেন, সেগুলো notification
+  // panel-এ আর ফেরত পাঠানো হবে না।
+  const items = await ApprovalRequest.find({ readBy: { $ne: req.user.id } })
+    .sort({ createdAt: -1 }).limit(100).lean();
   res.json({ ok: true, items });
+});
+
+app.patch("/api/approval-requests/:id/read", auth, async (req, res) => {
+  if (req.user.role !== "Super Admin")
+    return res.status(403).json({ message: "শুধু সুপার এডমিন notification পড়া চিহ্নিত করতে পারবেন" });
+  const result = await ApprovalRequest.updateOne(
+    { _id: req.params.id },
+    { $addToSet: { readBy: req.user.id } }
+  );
+  if (!result.matchedCount) return res.status(404).json({ message: "আবেদন পাওয়া যায়নি" });
+  res.json({ ok: true });
 });
 
 app.put("/api/approval-requests/:id", auth, async (req, res) => {
@@ -2495,6 +2512,8 @@ app.post("/api/approval-requests/:id/approve", auth, async (req, res) => {
     request.decisionNote = String(req.body && req.body.note || "").slice(0, 500);
     request.decidedBy = req.user.id;
     request.decidedAt = new Date();
+    if (!Array.isArray(request.readBy)) request.readBy = [];
+    if (!request.readBy.some((id) => String(id) === String(req.user.id))) request.readBy.push(req.user.id);
     await request.save();
     const users = request.kind === "admission" ? [] : await workflowStudentUsers(request.payload);
     await notifyWorkflowStudents(request, users);
@@ -2517,6 +2536,8 @@ app.post("/api/approval-requests/:id/reject", auth, async (req, res) => {
     request.decisionNote = String(req.body && req.body.note || "").slice(0, 500);
     request.decidedBy = req.user.id;
     request.decidedAt = new Date();
+    if (!Array.isArray(request.readBy)) request.readBy = [];
+    if (!request.readBy.some((id) => String(id) === String(req.user.id))) request.readBy.push(req.user.id);
     await request.save();
     await Notification.create({
       userId: request.submittedBy,
