@@ -142,7 +142,7 @@
     var ogDescription = document.querySelector('meta[property="og:description"]');
     if (ogDescription && info.seoDescription) ogDescription.setAttribute('content', info.seoDescription);
     var logo = document.querySelector('.nav-logo img');
-    if (logo) { logo.src = safeUrl(info.logoUrl, './assets/receipt-header.png'); logo.alt = info.brandName; }
+    if (logo) { logo.src = safeUrl(info.logoUrl, './icons/icon-192.png'); logo.alt = info.brandName; }
     setText('.nav-links a[href="#home"]', info.navHome); setText('.nav-links a[href="#courses"]', info.navCourses);
     setText('.nav-links a[href="#schedule"]', info.navSchedule); setText('.nav-links a[href="#testimonials"]', info.navTestimonials);
     setText('.nav-links a[href="#contact"]', info.navContact); setText('.nav-btn-admit', info.navAdmission);
