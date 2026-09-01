@@ -124,11 +124,11 @@
     border-bottom:1px solid rgba(236,18,99,.25);
   }
   .nav-wrap{
-    max-width:1300px;margin:0 auto;padding:12px 24px;
+    max-width:1300px;margin:0 auto;padding:8px 24px;
     display:flex;align-items:center;justify-content:space-between;gap:24px;
   }
-  .nav-logo{display:flex;align-items:center;gap:10px;position:relative;height:60px;}
-  .nav-logo img{height:100%;width:auto;object-fit:contain;}
+  .nav-logo{display:flex;align-items:center;gap:10px;position:relative;height:55px;}
+  .nav-logo img{height:100%;width:auto;object-fit:contain;max-width:400px;}
   .nav-logo-text{
     font-family:'Baloo Da 2',sans-serif;font-weight:800;font-size:1.7rem;letter-spacing:.01em;
     display:flex;align-items:baseline;white-space:nowrap;
@@ -384,8 +384,22 @@
     .footer-nav{justify-content:center;}
   }
   @media (max-width:520px){
-    .table-wrap{overflow-x:auto;}
+    .nav-wrap{padding:8px 12px;gap:8px;}
+    .nav-logo{height:45px;}
+    .nav-logo img{height:100%;width:auto;}
+    .nav-logo-text{font-size:1rem;display:none;}
+    .nav-links{display:none;}
+    .nav-buttons{display:none;}
+    .nav-links-mobile-actions{display:flex !important;align-items:center;gap:8px;}
+    .nav-burger{display:flex;}
     table{min-width:640px;}
+    .table-wrap{overflow-x:auto;}
+  }
+  @media (max-width:380px){
+    .nav-wrap{padding:6px 10px;}
+    .nav-logo{height:40px;}
+    .nav-burger{width:36px;height:36px;}
+    .nav-burger span{width:18px;}
   }
   form, #loginForm{font-family:'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;}
 </style>
@@ -396,7 +410,7 @@
 <header class="topnav">
   <div class="nav-wrap">
     <a href="#home" class="nav-logo">
-      <img src="./assets/receipt-header.png" alt="নূরুল কোরআন মাদরাসা লোগো" style="height: 50px; width: auto; object-fit: contain;">
+      <img src="./assets/receipt-header.png" alt="নূরুল কোরআন মাদরাসা লোগো">
     </a>
     <nav class="nav-links" id="navLinks">
       <a href="#home">হোম</a>
