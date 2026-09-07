@@ -358,6 +358,7 @@
     <a href="#" onclick="goto('fee');return false;"><span class="plusicon">+</span> আদায়</a>
     <a href="#" onclick="goto('inventory');return false;"><span class="nqi nqi-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><line x1="12" y1="13" x2="12" y2="21"/></svg></span> ইনভেন্টরি</a>
     <a href="#" onclick="goto('hw-subject');return false;"><span class="plusicon">+</span> বাড়ির কাজ</a>
+    <a href="#" onclick="goto('hw-residential');return false;"><span class="nqi nqi-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span> নতুন (আবাসিক)</a>
     <a href="#" onclick="goto('syllabus');return false;"><span class="nqi nqi-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span> সিলেবাস</a>
     <a href="#" onclick="goto('leave');return false;"><span class="nqi nqi-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span> ছুটি</a>
     <a href="#" onclick="goto('notice');return false;"><span class="nqi nqi-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 001 1h3l7 4V6L7 10H4a1 1 0 00-1 1z"/><path d="M18 9a4 4 0 010 6"/></svg></span> নোটিশ</a>
@@ -385,7 +386,7 @@
     </div>
     <div class="tile-grid row-3">
       <div class="tile sm t-hw1" onclick="goto('hw-subject')"><span class="ic"><span class="nqi nqi-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span></span>বাড়ির কাজ (নূরানী)</div>
-      <div class="tile sm t-hw2" onclick="goto('hw-residential')"><span class="ic"><span class="nqi nqi-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span></span>বাড়ির কাজ (আবাসিক)</div>
+      <div class="tile sm t-hw2" onclick="goto('hw-residential')"><span class="ic"><span class="nqi nqi-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span></span>নতুন (আবাসিক)</div>
       <div class="tile sm t-hw3" onclick="goto('hw-list')"><span class="ic"><span class="nqi nqi-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span></span>বাড়ির কাজের তালিকা</div>
     </div>
     <div class="tile-grid row-3">
@@ -528,7 +529,7 @@
   <!-- ============ HOMEWORK: RESIDENTIAL ============ -->
   <section id="view-hw-residential" class="view">
     <div class="page-head">
-      <div class="page-head-left"><div class="icon-box"><span class="nqi nqi-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span></div><h1>বাড়ির কাজ (আবাসিক)</h1></div>
+      <div class="page-head-left"><div class="icon-box"><span class="nqi nqi-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span></div><h1>নতুন (আবাসিক)</h1></div>
       <div class="quicklinks">
         <button class="qb-dash" onclick="goto('dashboard')"><span class="nqi nqi-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span> <span class="lbl">ড্যাশবোর্ড</span></button>
         <button class="qb-admit"><span class="nqi nqi-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span> <span class="lbl">ভর্তি</span></button>

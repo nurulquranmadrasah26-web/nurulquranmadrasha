@@ -54,20 +54,20 @@
     var s = document.createElement('style');
     s.id = 'nqQardStyles';
     s.textContent = [
-      '.nq-qard-wrap{background:#fff;border-radius:14px;padding:18px;box-shadow:0 2px 12px rgba(15,23,42,.06);}',
+      '.nq-qard-wrap{background:#fff;border-radius:4px;padding:18px;box-shadow:0 2px 12px rgba(15,23,42,.06);}',
       '.nq-qard-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px;}',
       '.nq-qard-head h2{margin:0;color:#173b2c;font-size:20px;}',
       '.nq-qard-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}',
       '.nq-qard-field{display:flex;flex-direction:column;gap:5px;position:relative;}',
       '.nq-qard-field.full{grid-column:1/-1;}',
       '.nq-qard-field label{font-size:13px;font-weight:700;color:#475569;}',
-      '.nq-qard-field input,.nq-qard-field textarea{font:inherit;border:1px solid #d9e1dc;border-radius:8px;padding:9px 11px;background:#fbfdfb;}',
+      '.nq-qard-field input,.nq-qard-field textarea{font:inherit;border:1px solid #d9e1dc;border-radius:4px;padding:9px 11px;background:#fbfdfb;}',
       '.nq-qard-field textarea{min-height:74px;resize:vertical;}',
-      '.nq-qard-suggest{position:absolute;left:0;right:0;top:100%;z-index:20;background:#fff;border:1px solid #cbd5e1;border-radius:0 0 8px 8px;max-height:190px;overflow:auto;box-shadow:0 6px 18px rgba(0,0,0,.12);}',
+      '.nq-qard-suggest{position:absolute;left:0;right:0;top:100%;z-index:20;background:#fff;border:1px solid #cbd5e1;border-radius:0 0 4px 4px;max-height:260px;overflow:auto;box-shadow:0 6px 18px rgba(0,0,0,.12);}',
       '.nq-qard-suggest button{display:block;width:100%;text-align:left;background:#fff;padding:9px 11px;border:0;border-bottom:1px solid #eef2f0;font:inherit;cursor:pointer;}',
       '.nq-qard-suggest button:hover{background:#edf8f0;}',
       '.nq-qard-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:14px;}',
-      '.nq-qard-btn{border:0;border-radius:8px;padding:9px 15px;background:#176b42;color:#fff;font:600 14px inherit;cursor:pointer;}',
+      '.nq-qard-btn{border:0;border-radius:4px;padding:9px 15px;background:#176b42;color:#fff;font:600 14px inherit;cursor:pointer;}',
       '.nq-qard-btn.secondary{background:#e8f3ec;color:#176b42;}.nq-qard-btn.warn{background:#b45309;}',
       '.nq-qard-table{width:100%;border-collapse:collapse;margin-top:20px;font-size:13px;}.nq-qard-table th,.nq-qard-table td{padding:9px 8px;border-bottom:1px solid #edf0ee;text-align:left;vertical-align:top;}.nq-qard-table th{background:#f2f8f3;color:#315642;white-space:nowrap;}',
       '.nq-qard-status{display:inline-block;border-radius:999px;padding:3px 8px;font-size:12px;font-weight:700;}.nq-qard-status.outstanding{background:#fff4d6;color:#9a6700;}.nq-qard-status.returned{background:#e1f5e8;color:#176b42;}',
@@ -89,7 +89,7 @@
     page.className = 'page view nq-qard-view';
     page.innerHTML =
       '<div class="nq-qard-wrap">' +
-      '<div class="nq-qard-head"><h2>কর্জে হাসানা</h2><div class="nq-qard-actions" style="margin:0"><button class="nq-qard-btn secondary" onclick="nqQardPrint()"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg> ইতিহাস প্রিন্ট</button><button class="nq-qard-btn secondary" onclick="nqQardLoad()">↻ রিফ্রেশ</button></div></div>' +
+      '<div class="nq-qard-head"><h2><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px;margin-inline-end:6px;color:#176b42"><path d="M9 12l2 2 4-4"/><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 16h5"/></svg>কর্জে হাসানা</h2><div class="nq-qard-actions" style="margin:0"><button class="nq-qard-btn secondary" onclick="nqQardPrint()"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg> ইতিহাস প্রিন্ট</button><button class="nq-qard-btn secondary" onclick="nqQardLoad()"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 11a8 8 0 1 0 2 5"/><path d="M20 4v7h-7"/></svg> রিফ্রেশ</button></div></div>' +
       '<div class="nq-qard-form">' +
       '<div class="nq-qard-grid">' +
       '<div class="nq-qard-field"><label>শিক্ষার্থী (শ্রেণী/আইডি/নাম দিয়ে খুঁজুন)</label><input id="nqQardStudentSearch" autocomplete="off" placeholder="শিক্ষার্থীর নাম বা আইডি"><div id="nqQardSuggestions" class="nq-qard-suggest" style="display:none"></div><div id="nqQardSelected" class="nq-qard-note">কোনো শিক্ষার্থী নির্বাচিত হয়নি</div></div>' +
@@ -108,6 +108,13 @@
     var due = new Date(); due.setDate(due.getDate() + 30);
     document.getElementById('nqQardDueDate').value = due.getFullYear() + '-' + String(due.getMonth() + 1).padStart(2, '0') + '-' + String(due.getDate()).padStart(2, '0');
     document.getElementById('nqQardStudentSearch').addEventListener('input', renderSuggestions);
+    document.getElementById('nqQardStudentSearch').addEventListener('focus', renderSuggestions);
+    document.getElementById('nqQardStudentSearch').addEventListener('blur', function () {
+      setTimeout(function () {
+        var box = document.getElementById('nqQardSuggestions');
+        if (box) box.style.display = 'none';
+      }, 180);
+    });
     loadStudentsIfNeeded();
   }
 
@@ -116,7 +123,14 @@
     var box = document.getElementById('nqQardSuggestions');
     if (!input || !box) return;
     var q = String(input.value || '').trim().toLowerCase();
-    if (!q) { box.style.display = 'none'; return; }
+    var toEn = function (v) {
+      return String(v == null ? '' : v).replace(/[০-৯]/g, function (d) {
+        return String('০১২৩৪৫৬৭৮৯'.indexOf(d));
+      });
+    };
+    var normalize = function (v) {
+      return toEn(v).toLowerCase().replace(/\s+/g, ' ').trim();
+    };
     var available = storeStudents();
     if (!available.length) {
       box.innerHTML = '<div style="padding:10px;color:#64748b">শিক্ষার্থীদের তালিকা লোড হচ্ছে...</div>';
@@ -125,8 +139,9 @@
       return;
     }
     var list = available.filter(function (s) {
-      return [s.name, s.id, s.uid, s.regNo, s.cls, s.className, s.branch, s.type].join(' ').toLowerCase().indexOf(q) !== -1;
-    }).slice(0, 12);
+      return !q || [s.name, s.id, s.uid, s.regNo, s.cls, s.className, s.branch, s.type]
+        .map(normalize).join(' ').indexOf(normalize(q)) !== -1;
+    });
     box.innerHTML = list.map(function (s) {
       return '<button type="button" onclick="nqQardSelectStudent(' + JSON.stringify(String(s.id)) + ')"><b>' + esc(s.name || '-') + '</b> • ' + esc(s.cls || s.className || '-') + ' • আইডি: ' + esc(s.uid || s.regNo || s.id || '-') + '</button>';
     }).join('') || '<div style="padding:10px;color:#94a3b8">কোনো শিক্ষার্থী পাওয়া যায়নি</div>';

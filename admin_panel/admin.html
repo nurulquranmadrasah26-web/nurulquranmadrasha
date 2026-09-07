@@ -2032,7 +2032,7 @@
       <input type="date" id="plFrom" onchange="renderFinance()" />
       <input type="date" id="plTo" onchange="renderFinance()" />
       <button class="lf-btn lf-reset" onclick="document.getElementById('plFrom').value='';document.getElementById('plTo').value='';renderFinance();" title="রিসেট">↺</button>
-      <button class="add-btn" style="background:#1565c0;" onclick="window.print()">🖶 প্রিন্ট</button>
+      <button class="add-btn" style="background:#1565c0;" onclick="printFinancePage('#page-finance','লাভ/ক্ষতি')">🖶 প্রিন্ট</button>
       <button class="add-btn" style="background:#43a047;" onclick="exportSectionAsPDF('#page-finance','লাভ/ক্ষতি')">▣ PDF</button>
     </div>
     <div class="cards-grid" style="margin-bottom:20px">
@@ -2086,7 +2086,7 @@
       <input type="date" id="sfLedgerTo" onchange="renderStudentFinance()" />
       <button class="lf-btn lf-filter" onclick="renderStudentFinance()" title="ফিল্টার">▼</button>
       <button class="lf-btn lf-reset" onclick="resetFinanceFilter('sfLedger', renderStudentFinance)" title="রিসেট">↺</button>
-      <button class="lf-btn lf-print" onclick="window.print()" title="প্রিন্ট">🖶</button>
+      <button class="lf-btn lf-print" onclick="printFinancePage('#page-studentFinance','শিক্ষার্থীর আয়/ব্যয়')" title="প্রিন্ট">🖶</button>
     </div>
 
     <div class="ledger-cards">
@@ -2229,7 +2229,7 @@
       <input type="date" id="elLedgerTo" onchange="renderExpenseList()" />
       <button class="lf-btn lf-filter" onclick="renderExpenseList()" title="ফিল্টার">▼</button>
       <button class="lf-btn lf-reset" onclick="document.getElementById('elLedgerSearch').value='';resetFinanceFilter('elLedger', renderExpenseList)" title="রিসেট">↺</button>
-      <button class="lf-btn lf-print" onclick="window.print()" title="প্রিন্ট">🖶</button>
+      <button class="lf-btn lf-print" onclick="printFinancePage('#page-expenseList table','ব্যয়ের তালিকা')" title="প্রিন্ট">🖶</button>
       <button class="add-btn" style="background:#43a047;" onclick="exportSectionAsPDF('#page-expenseList table','ব্যয়ের তালিকা')">▣ PDF</button>
     </div>
     <div class="ledger-cards" style="grid-template-columns:1fr;">
@@ -2326,7 +2326,7 @@
     <div class="list-title-bar">
       <div class="section-title" style="margin:0;">ক্যাশ বুক</div>
       <div style="display:flex; gap:8px;">
-        <button class="add-btn" onclick="window.print()">🖶 প্রিন্ট</button>
+        <button class="add-btn" onclick="printFinancePage('#page-cashbook','ক্যাশ বুক')">🖶 প্রিন্ট</button>
         <button class="add-btn" style="background:#43a047;" onclick="exportSectionAsPDF('#page-cashbook table', 'ক্যাশ বুক')">পিডিএফ</button>
       </div>
     </div>
@@ -12842,6 +12842,22 @@ function exportSectionAsPDF(selector, title) {
   if (!section) { showErrorPopup('রিপোর্ট পাওয়া যায়নি'); return; }
   showToast((title ? title + ' — ' : '') + 'PDF-এর জন্য প্রিন্ট ডায়ালগ খোলা হচ্ছে...');
   openLedgerPrintWindow(title || 'রিপোর্ট', section.outerHTML);
+}
+
+/* হিসাবের পেজ থেকে সরাসরি প্রিন্ট — মূল অ্যাপের printArea-র কারণে
+   blank page হওয়া এড়িয়ে আলাদা, পরিষ্কার রিপোর্ট উইন্ডোতে খুলে। */
+function printFinancePage(selector, title) {
+  const section = document.querySelector(selector);
+  if (!section) { showErrorPopup('রিপোর্ট পাওয়া যায়নি'); return; }
+  syncFinanceFromOperations();
+  if (selector === '#page-studentFinance') renderStudentFinance();
+  if (selector === '#page-finance') renderFinance();
+  if (selector === '#page-expenseList table') renderExpenseList();
+  if (selector === '#page-cashbook') renderCashbookPage();
+  const clone = section.cloneNode(true);
+  clone.querySelectorAll('.ledger-entrybar, .ledger-filterbar, input, select, textarea, button').forEach(el => el.remove());
+  showToast((title ? title + ' — ' : '') + 'প্রিন্ট ডায়ালগ খোলা হচ্ছে...');
+  openLedgerPrintWindow(title || 'রিপোর্ট', clone.outerHTML);
 }
 
 function todayISO() { return new Date().toISOString().slice(0,10); }

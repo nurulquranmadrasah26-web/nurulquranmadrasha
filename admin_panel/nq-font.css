@@ -24,6 +24,23 @@
   --nq-font: 'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;
 }
 
+/* সাইটের সব সাধারণ popup/modal-এর জন্য একরকম ৪px কোণা।
+   গোল avatar/আইকন বা সাধারণ card-এর radius এতে পরিবর্তন হয় না। */
+.modal-box,
+.form-modal,
+.nq-modal-box,
+.ledger-donor-dialog,
+.popup-modal,
+.dialog,
+[role="dialog"],
+.toast,
+.popup,
+.warn-popup,
+#nqBellPanel,
+.nq-msg-panel {
+  border-radius: 4px !important;
+}
+
 html,
 body,
 button,
