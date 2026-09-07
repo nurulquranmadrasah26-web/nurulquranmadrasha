@@ -20,10 +20,25 @@
     var p = String(v || '').split('-');
     return p.length === 3 ? bn(p[2] + '/' + p[1] + '/' + p[0]) : (v || '-');
   }
+  var remoteStudentCache = [];
+  var remoteStudentPromise = null;
   function storeStudents() {
-    if (Array.isArray(window.students)) return window.students;
-    if (window.S && Array.isArray(window.S.students)) return window.S.students;
-    return [];
+    if (typeof students !== 'undefined' && Array.isArray(students) && students.length) return students;
+    if (Array.isArray(window.students) && window.students.length) return window.students;
+    if (window.S && Array.isArray(window.S.students) && window.S.students.length) return window.S.students;
+    return remoteStudentCache;
+  }
+  function loadStudentsIfNeeded() {
+    if (storeStudents().length || remoteStudentPromise) return remoteStudentPromise || Promise.resolve(storeStudents());
+    remoteStudentPromise = api('/api/store').then(function (data) {
+      remoteStudentCache = Array.isArray(data.students) ? data.students : [];
+      renderSuggestions();
+      return remoteStudentCache;
+    }).catch(function () {
+      remoteStudentCache = [];
+      return remoteStudentCache;
+    });
+    return remoteStudentPromise;
   }
   function api(path, options) {
     return window.NQAuth.authFetch(path, options || {}).then(function (r) {
@@ -74,7 +89,7 @@
     page.className = 'page view nq-qard-view';
     page.innerHTML =
       '<div class="nq-qard-wrap">' +
-      '<div class="nq-qard-head"><h2>কর্জে হাসানা</h2><div class="nq-qard-actions" style="margin:0"><button class="nq-qard-btn secondary" onclick="nqQardPrint()">🖶 ইতিহাস প্রিন্ট</button><button class="nq-qard-btn secondary" onclick="nqQardLoad()">↻ রিফ্রেশ</button></div></div>' +
+      '<div class="nq-qard-head"><h2>কর্জে হাসানা</h2><div class="nq-qard-actions" style="margin:0"><button class="nq-qard-btn secondary" onclick="nqQardPrint()"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg> ইতিহাস প্রিন্ট</button><button class="nq-qard-btn secondary" onclick="nqQardLoad()">↻ রিফ্রেশ</button></div></div>' +
       '<div class="nq-qard-form">' +
       '<div class="nq-qard-grid">' +
       '<div class="nq-qard-field"><label>শিক্ষার্থী (শ্রেণী/আইডি/নাম দিয়ে খুঁজুন)</label><input id="nqQardStudentSearch" autocomplete="off" placeholder="শিক্ষার্থীর নাম বা আইডি"><div id="nqQardSuggestions" class="nq-qard-suggest" style="display:none"></div><div id="nqQardSelected" class="nq-qard-note">কোনো শিক্ষার্থী নির্বাচিত হয়নি</div></div>' +
@@ -93,6 +108,7 @@
     var due = new Date(); due.setDate(due.getDate() + 30);
     document.getElementById('nqQardDueDate').value = due.getFullYear() + '-' + String(due.getMonth() + 1).padStart(2, '0') + '-' + String(due.getDate()).padStart(2, '0');
     document.getElementById('nqQardStudentSearch').addEventListener('input', renderSuggestions);
+    loadStudentsIfNeeded();
   }
 
   function renderSuggestions() {
@@ -101,7 +117,14 @@
     if (!input || !box) return;
     var q = String(input.value || '').trim().toLowerCase();
     if (!q) { box.style.display = 'none'; return; }
-    var list = storeStudents().filter(function (s) {
+    var available = storeStudents();
+    if (!available.length) {
+      box.innerHTML = '<div style="padding:10px;color:#64748b">শিক্ষার্থীদের তালিকা লোড হচ্ছে...</div>';
+      box.style.display = 'block';
+      loadStudentsIfNeeded();
+      return;
+    }
+    var list = available.filter(function (s) {
       return [s.name, s.id, s.uid, s.regNo, s.cls, s.className, s.branch, s.type].join(' ').toLowerCase().indexOf(q) !== -1;
     }).slice(0, 12);
     box.innerHTML = list.map(function (s) {
@@ -134,7 +157,10 @@
 
   window.nqQardLoad = function () {
     if (!window.NQAuth || !window.NQAuth.isLoggedIn()) return;
-    api('/api/qard-hasana').then(function (data) { qardItems = Array.isArray(data.items) ? data.items : []; renderHistory(); }).catch(function (e) {
+    Promise.all([api('/api/qard-hasana'), loadStudentsIfNeeded()]).then(function (results) {
+      qardItems = Array.isArray(results[0].items) ? results[0].items : [];
+      renderHistory();
+    }).catch(function (e) {
       var box = document.getElementById('nqQardHistory'); if (box) box.innerHTML = '<div class="nq-qard-empty" style="color:#b91c1c">' + esc(e.message) + '</div>';
     });
   };
@@ -176,13 +202,13 @@
     var adminMenu = document.querySelector('[data-mod="others"] .nav-drop-menu');
     if (adminMenu) {
       var b = document.createElement('button');
-      b.className = 'nav-drop-item'; b.setAttribute('data-nq-qard-link', '1'); b.textContent = '🤝 কর্জে হাসানা'; b.onclick = window.nqOpenQardPage;
+      b.className = 'nav-drop-item'; b.setAttribute('data-nq-qard-link', '1'); b.innerHTML = '<span class="ndi-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 16h5"/></svg></span><span class="ndi-text">কর্জে হাসানা</span>'; b.onclick = window.nqOpenQardPage;
       adminMenu.appendChild(b);
     }
     var teacherNav = document.querySelector('nav.mainnav');
     if (teacherNav) {
       var a = document.createElement('a');
-      a.href = '#'; a.setAttribute('data-nq-qard-link', '1'); a.textContent = '🤝 কর্জে হাসানা';
+      a.href = '#'; a.setAttribute('data-nq-qard-link', '1'); a.innerHTML = '<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><path d="M5 4h14v16H5z"/></svg> কর্জে হাসানা';
       a.onclick = function (e) { e.preventDefault(); window.nqOpenQardPage(); };
       teacherNav.appendChild(a);
     }

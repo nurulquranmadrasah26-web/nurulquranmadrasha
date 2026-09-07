@@ -1267,6 +1267,23 @@
     .ledger-badge.income { background:#c8e6c9; color:#2e7d32; }
     .ledger-badge.expense { background:#ffcdd2; color:#c62828; }
     .ledger-empty-row td { text-align:center; color:#999; font-style:italic; padding:18px; }
+    .ledger-report-panel { margin-top:16px; padding:16px; background:#fff; border:1px solid #e4e9e6; border-radius:10px; box-shadow:0 1px 4px rgba(0,0,0,.06); }
+    .ledger-report-panel[hidden] { display:none !important; }
+    .ledger-report-panel .report-title { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:12px; font-weight:700; color:#263238; }
+    .ledger-report-filters { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+    .ledger-report-filters > input, .ledger-report-filters > select { flex:1 1 145px; min-width:130px; padding:9px 10px; border:1.5px solid #ddd; background:#fff; font:inherit; }
+    .ledger-report-filters .report-action { border:0; padding:9px 14px; color:#fff; cursor:pointer; font:inherit; }
+    .ledger-report-filters .report-action.blue { background:#1565c0; }
+    .ledger-report-filters .report-action.gray { background:#757575; }
+    .ledger-donor-modal { position:fixed; inset:0; z-index:10000; display:flex; align-items:center; justify-content:center; padding:18px; background:rgba(15,23,42,.45); }
+    .ledger-donor-modal[hidden] { display:none !important; }
+    .ledger-donor-dialog { width:min(460px, 100%); background:#fff; border-radius:12px; padding:20px; box-shadow:0 18px 50px rgba(0,0,0,.22); }
+    .ledger-donor-dialog h3 { margin:0 0 14px; color:#173b2c; }
+    .ledger-donor-dialog .form-row { margin-bottom:10px; }
+    .ledger-donor-dialog .modal-actions { display:flex; justify-content:flex-end; gap:8px; margin-top:16px; }
+    .ledger-donor-dialog .modal-actions button { border:0; border-radius:6px; padding:9px 14px; font:inherit; cursor:pointer; }
+    .ledger-donor-dialog .modal-actions .save { background:#176b42; color:#fff; }
+    .ledger-donor-dialog .modal-actions .cancel { background:#eceff1; color:#37474f; }
 
     /* ═══════════════════════════════════════════════════
        GLOBAL RESPONSIVE (mobile / tablet) ADJUSTMENTS
@@ -1988,6 +2005,7 @@
       <button class="lf-btn lf-filter" onclick="renderAccountsPage()" title="ফিল্টার">▼</button>
       <button class="lf-btn lf-reset" onclick="document.getElementById('acFrom').value='';document.getElementById('acTo').value='';acSelectedCollector=null;renderAccountsPage();" title="রিসেট">↺</button>
       <button class="lf-btn lf-print" onclick="window.print()" title="প্রিন্ট">🖶</button>
+      <button class="add-btn" style="background:#43a047;" onclick="exportSectionAsPDF('#page-accounts table','আদায়কারীর হিসাব')">▣ PDF</button>
     </div>
     <div class="ledger-cards">
       <div class="ledger-card income"><span id="acCard1Label">মোট আদায়</span><span class="lc-val" id="acTotalCollected">৳ ০</span></div>
@@ -2015,6 +2033,7 @@
       <input type="date" id="plTo" onchange="renderFinance()" />
       <button class="lf-btn lf-reset" onclick="document.getElementById('plFrom').value='';document.getElementById('plTo').value='';renderFinance();" title="রিসেট">↺</button>
       <button class="add-btn" style="background:#1565c0;" onclick="window.print()">🖶 প্রিন্ট</button>
+      <button class="add-btn" style="background:#43a047;" onclick="exportSectionAsPDF('#page-finance','লাভ/ক্ষতি')">▣ PDF</button>
     </div>
     <div class="cards-grid" style="margin-bottom:20px">
       <div class="card c-salmon"><span class="card-label">আয় (নির্বাচিত সময়)</span><span class="card-value" id="plIncomeRange">০ টাকা</span></div>
@@ -2088,13 +2107,16 @@
   <div class="page" id="page-income">
     <div class="list-title-bar">
       <div class="section-title" style="margin:0;border:0;padding:0;">আয়</div>
-      <button class="add-btn" style="background:#1e88e5;" onclick="printFinanceByCategory('income')">🖶 খাতভিত্তিক প্রিন্ট / PDF</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="add-btn" style="background:#1e88e5;" onclick="printFinanceByCategory('income')">🖶 প্রিন্ট</button>
+        <button class="add-btn" style="background:#43a047;" onclick="exportFinanceByCategoryPDF('income')">▣ PDF</button>
+      </div>
     </div>
     <div class="desig-2col">
       <div>
         <div class="list-title-bar">
           <div class="leave-card-title" style="margin:0;" id="incTodayTitle">আজকের আয়ের তালিকা</div>
-          <button class="add-btn" style="background:#1e88e5;" onclick="showPage('income')">☰ বিস্তারিত</button>
+          <button class="add-btn" style="background:#1e88e5;" onclick="toggleIncomeDetails()">☰ বিস্তারিত</button>
         </div>
         <div class="tbl-wrap">
           <table>
@@ -2115,9 +2137,32 @@
           <select id="incMethod"><option>নগদ</option><option>বিকাশ</option><option>নগদ (Nagad)</option><option>ব্যাংক</option><option>অন্যান্য</option></select>
         </div>
         <div class="form-row"><label>পার্টি নাম/আই.ডি</label><input id="incParty" placeholder="-" /></div>
+        <div class="form-row"><label>অ্যাকাউন্ট নং</label><input id="incAccountNo" placeholder="অ্যাকাউন্ট নং" /></div>
+        <div class="form-row"><label>বিল/রশিদ নং</label><input id="incBillNo" placeholder="বিল বা রশিদ নং" /></div>
         <div class="form-row"><label>টাকার পরিমাণ</label><input id="incAmount" type="number" /></div>
         <div class="form-row"><label>মন্তব্য</label><input id="incNote" /></div>
         <button class="add-btn" style="width:100%;" onclick="saveIncome()">✓ সংরক্ষণ করুন</button>
+      </div>
+    </div>
+    <div id="incomeDetailPanel" class="ledger-report-panel" hidden>
+      <div class="report-title"><span>আয়ের বিস্তারিত</span><button class="add-btn" style="background:#757575;" onclick="toggleIncomeDetails(false)">বন্ধ করুন</button></div>
+      <div class="ledger-report-filters">
+        <input type="date" id="incDetailFrom" onchange="renderIncomeDetails()" />
+        <input type="date" id="incDetailTo" onchange="renderIncomeDetails()" />
+        <input type="text" id="incDetailBill" placeholder="বিল নং" oninput="renderIncomeDetails()" />
+        <input type="text" id="incDetailAccount" placeholder="অ্যাকাউন্ট নং" oninput="renderIncomeDetails()" />
+        <input type="text" id="incDetailFund" placeholder="আয়ের খাত" oninput="renderIncomeDetails()" />
+        <select id="incDetailMethod" onchange="renderIncomeDetails()"><option value="">পদ্ধতি</option><option>নগদ</option><option>বিকাশ</option><option>নগদ (Nagad)</option><option>ব্যাংক</option><option>অন্যান্য</option></select>
+        <input type="number" id="incDetailAmount" placeholder="পরিমাণ" oninput="renderIncomeDetails()" />
+        <input type="text" id="incDetailReceipt" placeholder="রশিদ নং" oninput="renderIncomeDetails()" />
+        <button class="report-action blue" onclick="renderIncomeDetails()">ফিল্টার</button>
+        <button class="report-action gray" onclick="resetIncomeDetails()">↺</button>
+      </div>
+      <div class="tbl-wrap">
+        <table class="ledger-tbl">
+          <thead><tr><th>#</th><th>আইডি</th><th>তারিখ</th><th>আয়ের খাত</th><th>অ্যাকাউন্ট/পার্টি</th><th>পদ্ধতি</th><th>পরিমাণ</th><th>রশিদ/বিল</th><th>মন্তব্য</th></tr></thead>
+          <tbody id="incDetailBody"></tbody>
+        </table>
       </div>
     </div>
   </div>
@@ -2126,7 +2171,10 @@
   <div class="page" id="page-expense">
     <div class="list-title-bar">
       <div class="section-title" style="margin:0;border:0;padding:0;">ব্যয়</div>
-      <button class="add-btn" style="background:#c62828;" onclick="printFinanceByCategory('expense')">🖶 খাতভিত্তিক প্রিন্ট / PDF</button>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="add-btn" style="background:#c62828;" onclick="printFinanceByCategory('expense')">🖶 প্রিন্ট</button>
+        <button class="add-btn" style="background:#43a047;" onclick="exportFinanceByCategoryPDF('expense')">▣ PDF</button>
+      </div>
     </div>
     <div class="desig-2col">
       <div class="tbl-wrap">
@@ -2136,8 +2184,16 @@
         </table>
       </div>
       <div class="desig-card">
-        <div class="form-row"><label>ফান্ড/অ্যাকাউন্ট</label><input id="expFund" placeholder="-" /></div>
-        <div class="form-row"><label>খরচের খাত</label><input id="expHead" placeholder="-" /></div>
+        <div class="form-row"><label>ফান্ড/অ্যাকাউন্ট</label>
+          <select id="expFund">
+            <option>সাধারণ ফান্ড</option><option>লিল্লাহ ফান্ড</option><option>অনাবাসিক বেতন থেকে আয়</option><option>আবাসিক বেতন থেকে আয়</option>
+          </select>
+        </div>
+        <div class="form-row"><label>খরচের খাত</label>
+          <select id="expHead">
+            <option>আবাসিক রান্নার বাজার</option><option>যাতায়াত ভাড়া</option><option>অফিস স্টেশনারি</option><option>মেহমানদের আপ্যায়ন</option><option>মোবাইল বিল</option><option>ইন্টারনেট বিল</option><option>অফিস সরঞ্জাম</option><option>অফিস আসবাবপত্র</option><option>প্রাথমিক চিকিৎসা (ছাত্র ও শিক্ষকদের)</option><option>আপ্যায়ন (অনাবাসিক শিক্ষকদের)</option><option>সফটওয়্যার ও এসএমএস বিল</option><option>গাড়ী ভাড়া (শিক্ষার্থীদের আনা-নেওয়া)</option><option>পরিষ্কার-পরিচ্ছন্নতা</option><option>ইলেকট্রিক মালামাল (অফিস)</option><option>স্টাফদের মাসিক বেতন</option>
+          </select>
+        </div>
         <div class="form-row"><label>পরিশোধের পদ্ধতি</label>
           <select id="expMethod"><option>নগদ</option><option>বিকাশ</option><option>ব্যাংক</option><option>অন্যান্য</option></select>
         </div>
@@ -2174,6 +2230,7 @@
       <button class="lf-btn lf-filter" onclick="renderExpenseList()" title="ফিল্টার">▼</button>
       <button class="lf-btn lf-reset" onclick="document.getElementById('elLedgerSearch').value='';resetFinanceFilter('elLedger', renderExpenseList)" title="রিসেট">↺</button>
       <button class="lf-btn lf-print" onclick="window.print()" title="প্রিন্ট">🖶</button>
+      <button class="add-btn" style="background:#43a047;" onclick="exportSectionAsPDF('#page-expenseList table','ব্যয়ের তালিকা')">▣ PDF</button>
     </div>
     <div class="ledger-cards" style="grid-template-columns:1fr;">
       <div class="ledger-card expense">মোট ব্যয়:<span class="lc-val" id="elLedgerTotal">৳ ০/-</span></div>
@@ -2196,6 +2253,8 @@
       </select>
       <input type="number" id="dgExpected" placeholder="প্রত্যাশিত পরিমাণ" />
       <button class="ledger-add-btn" onclick="saveDonationGroup()" title="তৈরি করুন">+</button>
+      <button class="add-btn" onclick="window.print()">🖶 প্রিন্ট</button>
+      <button class="add-btn" style="background:#43a047;" onclick="exportSectionAsPDF('#page-donationGroup table','ডোনেশন গ্রুপ')">▣ PDF</button>
     </div>
     <div class="tbl-wrap">
       <table class="ledger-tbl">
@@ -2210,20 +2269,36 @@
     <div class="section-title">ডোনেশন আদায়</div>
     <div class="ledger-entrybar">
       <select id="dcGroup"><option value="">গ্রুপ নির্বাচন করুন</option></select>
-      <input type="text" id="dcDonor" placeholder="দাতার নাম" />
+      <select id="dcDonorSelect" onchange="handleDonationDonorChange(this)"><option value="">ডোনার নির্বাচন করুন</option><option value="__new__">নতুন ডোনার যোগ করুন</option></select>
+      <input type="hidden" id="dcDonor" />
       <input type="number" id="dcAmount" placeholder="টাকা" />
+      <select id="dcSchedule"><option value="">নির্বাচন করুন</option><option>এককালীন</option><option>মাসিক</option><option>বার্ষিক</option><option>সেশনভিত্তিক</option></select>
+      <select id="dcPurpose"><option value="">নির্বাচন করুন</option><option>সাধারণ</option><option>যাকাত</option><option>ফিতরা</option><option>কুরবানি</option><option>অন্যান্য</option></select>
       <input type="date" id="dcDate" />
       <input type="text" id="dcNote" placeholder="মন্তব্য" />
       <button class="ledger-add-btn" onclick="saveDonationCollect()" title="লগ করুন">+</button>
     </div>
     <div class="ledger-cards" style="grid-template-columns:1fr;">
       <div class="ledger-card income">আজকের ডোনেশন আদায়:<span class="lc-val" id="dcTodayTotal">৳ ০/-</span></div>
+      <div style="display:flex;gap:8px;margin-top:10px;">
+        <button class="add-btn" onclick="window.print()">🖶 প্রিন্ট</button>
+        <button class="add-btn" style="background:#43a047;" onclick="exportSectionAsPDF('#page-donationCollect table','ডোনেশন আদায়')">▣ PDF</button>
+      </div>
     </div>
     <div class="tbl-wrap">
       <table class="ledger-tbl">
-        <thead><tr><th>#</th><th>নাম</th><th>গ্রুপ</th><th>পরিমাণ</th><th>তারিখ</th><th>মন্তব্য</th><th>অ্যাকশন</th></tr></thead>
+        <thead><tr><th>#</th><th>নাম</th><th>গ্রুপ</th><th>ধরণ</th><th>উদ্দেশ্য</th><th>পরিমাণ</th><th>তারিখ</th><th>মন্তব্য</th><th>অ্যাকশন</th></tr></thead>
         <tbody id="dcTableBody"></tbody>
       </table>
+    </div>
+    <div id="donorModal" class="ledger-donor-modal" hidden>
+      <div class="ledger-donor-dialog">
+        <h3>নতুন ডোনার যোগ করুন</h3>
+        <div class="form-row"><label>নাম</label><input id="newDonorName" placeholder="ডোনারের নাম" /></div>
+        <div class="form-row"><label>মোবাইল নম্বর</label><input id="newDonorPhone" placeholder="মোবাইল নম্বর" /></div>
+        <div class="form-row"><label>ঠিকানা</label><textarea id="newDonorAddress" rows="3" placeholder="ঠিকানা"></textarea></div>
+        <div class="modal-actions"><button class="cancel" onclick="closeDonorModal()">ক্যানসেল</button><button class="save" onclick="saveNewDonor()">সংরক্ষণ করুন</button></div>
+      </div>
     </div>
   </div>
 
@@ -2235,7 +2310,8 @@
       <input type="month" id="drMonth" onchange="renderDonationReport()" />
       <button class="lf-btn lf-filter" onclick="renderDonationReport()" title="ফিল্টার">▼</button>
       <button class="lf-btn lf-reset" onclick="document.getElementById('drGroup').value='';document.getElementById('drMonth').value='';renderDonationReport();" title="রিসেট">↺</button>
-      <button class="lf-btn lf-print" onclick="window.print()" title="প্রিন্ট">🖶</button>
+      <button class="lf-btn lf-print" onclick="printDonationReport()" title="প্রিন্ট">🖶</button>
+      <button class="add-btn" style="background:#43a047;" onclick="exportDonationReportPDF()">▣ PDF</button>
     </div>
     <div class="ledger-cards" style="grid-template-columns:1fr;">
       <div class="ledger-card balance">মোট সংগৃহীত:<span class="lc-val" id="drTotal">৳ ০/-</span></div>
@@ -12762,8 +12838,10 @@ function convertSiteRegToAdmission(id) {
 
 /* generic PDF/print fallback used by a few pages */
 function exportSectionAsPDF(selector, title) {
-  showToast((title ? title + ' — ' : '') + 'প্রিন্টের জন্য প্রস্তুত করা হচ্ছে...');
-  window.print();
+  const section = document.querySelector(selector);
+  if (!section) { showErrorPopup('রিপোর্ট পাওয়া যায়নি'); return; }
+  showToast((title ? title + ' — ' : '') + 'PDF-এর জন্য প্রিন্ট ডায়ালগ খোলা হচ্ছে...');
+  openLedgerPrintWindow(title || 'রিপোর্ট', section.outerHTML);
 }
 
 function todayISO() { return new Date().toISOString().slice(0,10); }
@@ -12879,16 +12957,18 @@ function saveIncome() {
   const type = document.getElementById('incType').value;
   const method = document.getElementById('incMethod').value;
   const party = document.getElementById('incParty').value.trim();
+  const accountNo = document.getElementById('incAccountNo')?.value.trim() || '';
+  const billNo = document.getElementById('incBillNo')?.value.trim() || '';
   const amount = parseFloat(document.getElementById('incAmount').value) || 0;
   const note = document.getElementById('incNote').value.trim();
   if (!source || !amount) { showErrorPopup('আয়ের খাত ও টাকার পরিমাণ আবশ্যক'); return; }
 
   financeTx.unshift({
     id: financeTxSeq++, source: 'manual', date: todayISO(), name: party || '-', desc: source,
-    type: 'income', amount, by: currentUserName(), category: type, method, note
+    type: 'income', amount, by: currentUserName(), category: type, method, note, accountNo, billNo, receiptNo: billNo
   });
 
-  ['incSource', 'incParty', 'incAmount', 'incNote'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['incSource', 'incParty', 'incAccountNo', 'incBillNo', 'incAmount', 'incNote'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
   document.getElementById('incType').selectedIndex = 0;
   document.getElementById('incMethod').selectedIndex = 0;
 
@@ -12919,6 +12999,54 @@ function renderIncomePage() {
     </tr>`).join('') : `<tr><td colspan="9" style="text-align:center;background:#f8bbd0;color:#c2185b;font-weight:600;padding:14px;">আজকের কোন রেকর্ড পাওয়া যায়নি !</td></tr>`;
 }
 
+function toggleIncomeDetails(force) {
+  const panel = document.getElementById('incomeDetailPanel');
+  if (!panel) return;
+  const show = typeof force === 'boolean' ? force : panel.hidden;
+  panel.hidden = !show;
+  if (show) renderIncomeDetails();
+}
+
+function resetIncomeDetails() {
+  ['incDetailFrom','incDetailTo','incDetailBill','incDetailAccount','incDetailFund','incDetailAmount','incDetailReceipt'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const method = document.getElementById('incDetailMethod'); if (method) method.selectedIndex = 0;
+  renderIncomeDetails();
+}
+
+function renderIncomeDetails() {
+  const body = document.getElementById('incDetailBody');
+  if (!body) return;
+  const from = document.getElementById('incDetailFrom')?.value || '';
+  const to = document.getElementById('incDetailTo')?.value || '';
+  const bill = (document.getElementById('incDetailBill')?.value || '').trim().toLowerCase();
+  const account = (document.getElementById('incDetailAccount')?.value || '').trim().toLowerCase();
+  const fund = (document.getElementById('incDetailFund')?.value || '').trim().toLowerCase();
+  const method = document.getElementById('incDetailMethod')?.value || '';
+  const amount = parseFloat(document.getElementById('incDetailAmount')?.value) || 0;
+  const receipt = (document.getElementById('incDetailReceipt')?.value || '').trim().toLowerCase();
+  const text = value => String(value == null ? '' : value).toLowerCase();
+  const rows = financeTx.filter(t => t.type === 'income').filter(t => {
+    const ref = [t.billNo, t.accountNo, t.receiptNo, t.note].map(text).join(' ');
+    if (from && t.date < from) return false;
+    if (to && t.date > to) return false;
+    if (bill && !ref.includes(bill)) return false;
+    if (account && ![t.name, t.accountNo].map(text).join(' ').includes(account)) return false;
+    if (fund && ![t.desc, t.category].map(text).join(' ').includes(fund)) return false;
+    if (method && t.method !== method) return false;
+    if (amount && Number(t.amount) !== amount) return false;
+    if (receipt && !ref.includes(receipt)) return false;
+    return true;
+  });
+  const safe = value => String(value == null ? '' : value).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  body.innerHTML = rows.length ? rows.map((t, i) => `
+    <tr><td>${bn(i + 1)}</td><td>${safe(t.id)}</td><td>${fmtBnDate(t.date)}</td><td>${safe(t.desc)}</td>
+    <td>${safe(t.accountNo || t.name || '-')}</td><td>${safe(t.method || '-')}</td><td>${bnTaka(t.amount)}</td>
+    <td>${safe([t.billNo, t.receiptNo].filter(Boolean).join(' / ') || '-')}</td><td>${safe(t.note || '-')}</td></tr>`).join('') :
+    '<tr class="ledger-empty-row"><td colspan="9">কোনো রেকর্ড পাওয়া যায়নি</td></tr>';
+}
+
 /* ─── ব্যয় পেজ ─── */
 function saveExpense() {
   const fund = document.getElementById('expFund').value.trim();
@@ -12940,7 +13068,11 @@ function saveExpense() {
     type: 'expense', category: head, amount, by: currentUserName(), method, note: receiptNote
   });
 
-  ['expFund', 'expHead', 'expAmount', 'expBookNo', 'expReceiptFrom', 'expReceiptTo', 'expNote'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['expFund', 'expHead', 'expAmount', 'expBookNo', 'expReceiptFrom', 'expReceiptTo', 'expNote'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (el.tagName === 'SELECT') el.selectedIndex = 0; else el.value = '';
+  });
   document.getElementById('expMethod').selectedIndex = 0;
   document.getElementById('expDate').value = '';
 
@@ -12952,6 +13084,8 @@ function saveExpense() {
 function renderExpensePage() {
   const body = document.getElementById('expTodayBody');
   if (!body) return;
+  const dateEl = document.getElementById('expDate');
+  if (dateEl && !dateEl.value) dateEl.value = todayISO();
   const rows = financeTx.filter(t => t.type === 'expense');
   body.innerHTML = rows.length ? rows.map((t, i) => `
     <tr>
@@ -12980,7 +13114,7 @@ function printFinanceByCategory(type) {
   const total = rows.reduce((s, t) => s + (Number(t.amount) || 0), 0);
   const title = type === 'income' ? 'আয় — খাতভিত্তিক হিসাব' : 'ব্যয় — খাতভিত্তিক হিসাব';
   const html = `<!doctype html><html lang="bn"><head><meta charset="utf-8"><title>${title}</title>
-    <style>body{font-family:Arial,'Noto Sans Bengali',sans-serif;padding:24px;color:#18231d}h1{text-align:center;color:#176b42;font-size:22px;margin:0 0 4px}p{text-align:center;color:#64748b;margin:0 0 18px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #cbd5cf;padding:9px;text-align:left}th{background:#e8f3ec;color:#176b42}.num{text-align:right}.total{font-weight:700;background:#f7faf8}@media print{button{display:none}}</style></head>
+    <style>@font-face{font-family:Kalpurush;src:url('fonts/Kalpurush.woff2')}body{font-family:'Kalpurush','Hind Siliguri','Noto Sans Bengali',sans-serif;padding:24px;color:#18231d}h1{text-align:center;color:#176b42;font-size:22px;margin:0 0 4px}p{text-align:center;color:#64748b;margin:0 0 18px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #cbd5cf;padding:9px;text-align:left}th{background:#e8f3ec;color:#176b42}.num{text-align:right}.total{font-weight:700;background:#f7faf8}@media print{button{display:none}}</style></head>
     <body><h1>নূরুল কোরআন মাদরাসা</h1><p>${title} • প্রস্তুতের তারিখ: ${fmtBnDate(todayISO())}</p>
     <table><thead><tr><th>#</th><th>খাত</th><th>লেনদেন</th><th class="num">মোট পরিমাণ</th></tr></thead><tbody>
     ${labels.map((key, i) => `<tr><td>${bn(i + 1)}</td><td>${String(key).replace(/[&<>"]/g, '')}</td><td>${bn(groups[key].count)}</td><td class="num">৳ ${bn(groups[key].amount.toLocaleString('en-IN'))}/-</td></tr>`).join('')}
@@ -12989,6 +13123,20 @@ function printFinanceByCategory(type) {
   const win = window.open('', '_blank', 'width=850,height=700');
   if (!win) { showErrorPopup('প্রিন্ট উইন্ডো খোলা যায়নি', 'ব্রাউজারে pop-up অনুমতি দিন।'); return; }
   win.document.write(html);
+  win.document.close();
+}
+
+function exportFinanceByCategoryPDF(type) {
+  showToast('PDF-এর জন্য প্রিন্ট ডায়ালগ খোলা হচ্ছে...');
+  printFinanceByCategory(type);
+}
+
+function openLedgerPrintWindow(title, content) {
+  const win = window.open('', '_blank', 'width=1000,height=760');
+  if (!win) { showErrorPopup('প্রিন্ট উইন্ডো খোলা যায়নি', 'ব্রাউজারে pop-up অনুমতি দিন।'); return; }
+  win.document.write(`<!doctype html><html lang="bn"><head><meta charset="utf-8"><title>${title}</title>
+    <style>@font-face{font-family:Kalpurush;src:url('fonts/Kalpurush.woff2')}body{font-family:Kalpurush,'Hind Siliguri','Noto Sans Bengali',sans-serif;color:#18231d;padding:22px}h1{text-align:center;color:#176b42;margin:0 0 4px;font-size:22px}p{text-align:center;color:#64748b;margin:0 0 18px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #cbd5cf;padding:8px;text-align:left}th{background:#e8f3ec;color:#176b42}.ledger-cards{display:none}@media print{button{display:none!important}}</style></head>
+    <body><h1>নূরুল কোরআন মাদরাসা</h1><p>${title} • প্রস্তুতের তারিখ: ${fmtBnDate(todayISO())}</p>${content}<script>window.onload=function(){window.print();};<\/script></body></html>`);
   win.document.close();
 }
 
@@ -13277,6 +13425,8 @@ let donationGroups = [];
 let donationGroupSeq = 1;
 let donationTx = [];
 let donationTxSeq = 1;
+let donationDonors = [];
+let donationDonorSeq = 1;
 
 function saveDonationGroup() {
   const name = document.getElementById('dgName').value.trim();
@@ -13298,6 +13448,8 @@ function deleteDonationGroup(id) {
   donationGroups = donationGroups.filter(g => g.id !== id);
   donationTx = donationTx.filter(t => t.groupId !== id);
   renderDonationGroupList(); renderDonationCollectList(); populateDonationGroupSelects();
+  if (typeof refreshFinanceViews === 'function') refreshFinanceViews();
+  if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
   showToast('মুছে ফেলা হয়েছে।');
 }
 
@@ -13329,18 +13481,70 @@ function populateDonationGroupSelects() {
   });
 }
 
+function populateDonationDonorSelect() {
+  const sel = document.getElementById('dcDonorSelect');
+  if (!sel) return;
+  const current = sel.value;
+  sel.innerHTML = '<option value="">ডোনার নির্বাচন করুন</option>' +
+    donationDonors.map(d => `<option value="${d.id}">${d.name}${d.phone ? ' — ' + d.phone : ''}</option>`).join('') +
+    '<option value="__new__">নতুন ডোনার যোগ করুন</option>';
+  if (current && current !== '__new__' && donationDonors.some(d => String(d.id) === String(current))) sel.value = current;
+}
+
+function handleDonationDonorChange(sel) {
+  if (sel.value === '__new__') {
+    openDonorModal();
+    sel.value = '';
+    return;
+  }
+  const donor = donationDonors.find(d => String(d.id) === String(sel.value));
+  const hidden = document.getElementById('dcDonor');
+  if (hidden) hidden.value = donor ? donor.name : '';
+}
+
+function openDonorModal() {
+  const modal = document.getElementById('donorModal');
+  if (modal) modal.hidden = false;
+  ['newDonorName', 'newDonorPhone', 'newDonorAddress'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  setTimeout(() => document.getElementById('newDonorName')?.focus(), 0);
+}
+function closeDonorModal() {
+  const modal = document.getElementById('donorModal');
+  if (modal) modal.hidden = true;
+}
+function saveNewDonor() {
+  const name = document.getElementById('newDonorName')?.value.trim() || '';
+  const phone = document.getElementById('newDonorPhone')?.value.trim() || '';
+  const address = document.getElementById('newDonorAddress')?.value.trim() || '';
+  if (!name) { showErrorPopup('ডোনারের নাম দিন'); return; }
+  const donor = { id: donationDonorSeq++, name, phone, address };
+  donationDonors.push(donor);
+  closeDonorModal();
+  populateDonationDonorSelect();
+  const sel = document.getElementById('dcDonorSelect');
+  if (sel) sel.value = String(donor.id);
+  const hidden = document.getElementById('dcDonor');
+  if (hidden) hidden.value = donor.name;
+  if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
+  showToast('নতুন ডোনার সংরক্ষণ করা হয়েছে');
+}
+
 function saveDonationCollect() {
   const groupId = parseInt(document.getElementById('dcGroup').value) || null;
+  const donorId = document.getElementById('dcDonorSelect')?.value || '';
   const donor = document.getElementById('dcDonor').value.trim();
   const amount = parseFloat(document.getElementById('dcAmount').value) || 0;
+  const schedule = document.getElementById('dcSchedule')?.value || '';
+  const purpose = document.getElementById('dcPurpose')?.value || '';
   const date = document.getElementById('dcDate').value || todayISO();
   const note = document.getElementById('dcNote').value.trim();
-  if (!groupId || !donor || !amount) { showErrorPopup('গ্রুপ, দাতার নাম ও পরিমাণ আবশ্যক'); return; }
+  if (!groupId || !donor || !amount || !schedule || !purpose) { showErrorPopup('গ্রুপ, ডোনার, ধরণ, উদ্দেশ্য ও পরিমাণ পূরণ করুন'); return; }
 
-  donationTx.unshift({ id: donationTxSeq++, groupId, donor, amount, date, note });
+  donationTx.unshift({ id: donationTxSeq++, groupId, donorId: donorId || null, donor, amount, date, note, schedule, purpose, by: currentUserName() });
   const groupName = (donationGroups.find(g => g.id === groupId) || {}).name || '-';
-  ['dcDonor', 'dcAmount', 'dcNote'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('dcDate').value = '';
+  ['dcDonor', 'dcAmount', 'dcNote'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  ['dcDonorSelect', 'dcSchedule', 'dcPurpose'].forEach(id => { const el = document.getElementById(id); if (el) el.selectedIndex = 0; });
+  document.getElementById('dcDate').value = todayISO();
   renderDonationCollectList(); renderDonationGroupList(); renderDonationReport();
   if (typeof refreshFinanceViews === 'function') refreshFinanceViews();
   if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
@@ -13351,7 +13555,7 @@ function saveDonationCollect() {
     payerLabel: 'দাতার নাম',
     payerName: donor,
     date: bnDate(date),
-    extraInfo: [['গ্রুপ', groupName]],
+    extraInfo: [['গ্রুপ', groupName], ['ধরণ', schedule], ['উদ্দেশ্য', purpose]],
     rows: [{ label: 'ডোনেশন — ' + groupName, amount }],
     paid: amount,
     due: 0,
@@ -13373,6 +13577,9 @@ function deleteDonationTx(id) {
 function renderDonationCollectList() {
   const body = document.getElementById('dcTableBody');
   if (!body) return;
+  const dateEl = document.getElementById('dcDate');
+  if (dateEl && !dateEl.value) dateEl.value = todayISO();
+  populateDonationDonorSelect();
   const groupName = id => (donationGroups.find(g => g.id === id) || {}).name || '-';
 
   body.innerHTML = donationTx.length ? donationTx.map((t, i) => `
@@ -13380,11 +13587,13 @@ function renderDonationCollectList() {
       <td>${bn(i + 1)}</td>
       <td>${t.donor}</td>
       <td>${groupName(t.groupId)}</td>
+      <td>${t.schedule || 'এককালীন'}</td>
+      <td>${t.purpose || 'সাধারণ'}</td>
       <td>${bnTaka(t.amount)}</td>
       <td>${fmtBnDate(t.date)}</td>
       <td>${t.note || '-'}</td>
       <td><button class="ldg-del" title="মুছুন" onclick="deleteDonationTx(${t.id})">✕</button></td>
-    </tr>`).join('') : `<tr class="ledger-empty-row"><td colspan="7">কোনো ডোনেশন পাওয়া যায়নি</td></tr>`;
+    </tr>`).join('') : `<tr class="ledger-empty-row"><td colspan="9">কোনো ডোনেশন পাওয়া যায়নি</td></tr>`;
 
   const today = todayISO();
   const todayTotal = donationTx.filter(t => t.date === today).reduce((s, t) => s + t.amount, 0);
@@ -13419,6 +13628,17 @@ function renderDonationReport() {
     </div>` : `<div style="font-style:italic;color:#555;">নির্বাচিত সময়ে কোনো ডোনেশন পাওয়া যায়নি।</div>`;
 }
 
+function printDonationReport() {
+  const wrap = document.getElementById('drResultWrap');
+  if (!wrap) return;
+  openLedgerPrintWindow('ডোনেশন রিপোর্ট', `<p>মোট সংগৃহীত: ${document.getElementById('drTotal')?.textContent || '৳ ০/-'}</p>${wrap.innerHTML}`);
+}
+
+function exportDonationReportPDF() {
+  showToast('ডোনেশন রিপোর্ট PDF-এর জন্য প্রস্তুত করা হচ্ছে...');
+  printDonationReport();
+}
+
 /* ══════════════════════════════════════════════════════════════════
    MongoDB-ভিত্তিক ডেটা সংরক্ষণ (Persistence Layer)
    ------------------------------------------------------------------
@@ -13442,7 +13662,7 @@ function nqStateSnapshot() {
     dailyRoutines, residentialRoutineItems, crTimeSlots, examSubjects, examTypes, exams,
     syllabusItems, examResults, results, resultPublishes, otClasses, otDivisions,
     classGroups, ieFunds, ieCategories, notices, buses, transportAssignments, driverPayments,
-    siteRegistrations, financeTx, donationGroups, donationTx, attendance, attendanceHistory, attendanceMeta, studentDues,
+    siteRegistrations, financeTx, donationGroups, donationTx, donationDonors, attendance, attendanceHistory, attendanceMeta, studentDues,
     feeTypes, mealRoutine, siteInfo, siteSlides, siteRules, siteProgs
   };
 }
@@ -13494,6 +13714,10 @@ function nqApplyLoadedState(data) {
   if (hasContent(data.financeTx)) financeTx = data.financeTx;
   if (hasContent(data.donationGroups)) donationGroups = data.donationGroups;
   if (hasContent(data.donationTx)) donationTx = data.donationTx;
+  if (hasContent(data.donationDonors)) donationDonors = data.donationDonors;
+  donationGroupSeq = Math.max(0, ...donationGroups.map(g => Number(g.id)).filter(Number.isFinite)) + 1;
+  donationTxSeq = Math.max(0, ...donationTx.map(t => Number(t.id)).filter(Number.isFinite)) + 1;
+  donationDonorSeq = Math.max(0, ...donationDonors.map(d => Number(d.id)).filter(Number.isFinite)) + 1;
   if (hasContent(data.attendance)) attendance = data.attendance;
   if (hasContent(data.attendanceHistory)) attendanceHistory = data.attendanceHistory;
   if (hasContent(data.attendanceMeta)) attendanceMeta = data.attendanceMeta;
