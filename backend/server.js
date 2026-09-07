@@ -1880,6 +1880,29 @@ const notificationSchema = new mongoose.Schema(
 );
 const Notification = mongoose.model("Notification", notificationSchema);
 
+/* কর্জে হাসানা — এটি হিসাবের ledger নয়; আলাদা সংগ্রহে থাকে। */
+const qardHasanaSchema = new mongoose.Schema(
+  {
+    studentId: { type: String, required: true, index: true },
+    studentUid: { type: String, default: "" },
+    studentName: { type: String, default: "" },
+    studentClass: { type: String, default: "" },
+    studentBranch: { type: String, default: "" },
+    studentUserId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null, index: true },
+    lenderId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
+    lenderUid: { type: String, default: "" },
+    lenderName: { type: String, default: "" },
+    description: { type: String, required: true, trim: true, maxlength: 1000 },
+    issueDate: { type: String, required: true },
+    dueDate: { type: String, required: true },
+    status: { type: String, enum: ["outstanding", "returned"], default: "outstanding", index: true },
+    returnedAt: { type: Date, default: null },
+    returnedBy: { type: String, default: "" },
+  },
+  { timestamps: true }
+);
+const QardHasana = mongoose.model("QardHasana", qardHasanaSchema);
+
 /* শিক্ষক → সুপার এডমিন → শিক্ষার্থী approval workflow */
 const approvalRequestSchema = new mongoose.Schema(
   {
@@ -2078,6 +2101,128 @@ app.post("/api/notifications/send", auth, canWriteStore, async (req, res) => {
 });
 
 /* ------------------------------------------------------------------ */
+/* কর্জে হাসানা                                                        */
+/* ------------------------------------------------------------------ */
+function qardStaff(req) {
+  return ["Super Admin", "Admin", "Teacher"].includes(req.user.role);
+}
+
+function qardIsoDate(value, fallback) {
+  const v = String(value || fallback || "").slice(0, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : "";
+}
+
+async function findStoreStudent(studentId) {
+  const doc = await Store.findOne({ key: "students" }).lean();
+  const rows = Array.isArray(doc && doc.data) ? doc.data : [];
+  const wanted = String(studentId == null ? "" : studentId).trim();
+  return rows.find((st) =>
+    st &&
+    [st.id, st.uid, st.regNo, st.rollNo].some((v) => v != null && String(v) === wanted)
+  ) || null;
+}
+
+async function findStudentAccount(student) {
+  if (!student) return null;
+  const ids = [student.uid, student.regNo, student.rollNo].filter(Boolean).map(String);
+  let user = ids.length ? await User.findOne({ role: "Student", uid: { $in: ids }, active: true }).lean() : null;
+  if (!user && student.name) {
+    user = await User.findOne({ role: "Student", name: String(student.name), active: true }).lean();
+  }
+  return user;
+}
+
+app.get("/api/qard-hasana", auth, async (req, res) => {
+  try {
+    if (req.user.role === "Student") {
+      const rows = await QardHasana.find({ studentUserId: req.user.id })
+        .sort({ createdAt: -1 }).limit(100).lean();
+      return res.json({ ok: true, items: rows });
+    }
+    if (!qardStaff(req)) return res.status(403).json({ message: "এই তথ্য দেখার অনুমতি নেই" });
+    const rows = await QardHasana.find().sort({ createdAt: -1 }).limit(300).lean();
+    res.json({ ok: true, items: rows });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "কর্জে হাসানার ইতিহাস আনা যায়নি" });
+  }
+});
+
+app.post("/api/qard-hasana", auth, async (req, res) => {
+  try {
+    if (!qardStaff(req)) return res.status(403).json({ message: "শুধু সুপার এডমিন, এডমিন ও শিক্ষক এই তথ্য যোগ করতে পারবেন" });
+    const body = req.body || {};
+    const student = await findStoreStudent(body.studentId);
+    if (!student) return res.status(404).json({ message: "শিক্ষার্থী পাওয়া যায়নি" });
+    const description = String(body.description || "").trim();
+    const issueDate = qardIsoDate(body.issueDate, new Date().toISOString());
+    const dueDate = qardIsoDate(body.dueDate);
+    if (!description || !issueDate || !dueDate) {
+      return res.status(400).json({ message: "শিক্ষার্থী, কর্জের বিবরণ, নেওয়ার তারিখ ও ফেরতের তারিখ দিন" });
+    }
+    if (dueDate < issueDate) return res.status(400).json({ message: "ফেরতের তারিখ নেওয়ার তারিখের আগে হতে পারবে না" });
+
+    const account = await findStudentAccount(student);
+    const item = await QardHasana.create({
+      studentId: String(student.id != null ? student.id : body.studentId),
+      studentUid: String(student.uid || student.regNo || ""),
+      studentName: String(student.name || ""),
+      studentClass: String(student.cls || student.className || student.attCls || ""),
+      studentBranch: String(student.branch || student.type || ""),
+      studentUserId: account ? account._id : null,
+      lenderId: req.user.id,
+      lenderUid: req.user.uid || "",
+      lenderName: req.user.name || req.user.uid || "ব্যবহারকারী",
+      description: description.slice(0, 1000),
+      issueDate,
+      dueDate,
+    });
+
+    if (account) {
+      await Notification.create({
+        userId: account._id,
+        title: "কর্জে হাসানা সংক্রান্ত নোটিশ",
+        body: `${item.description} • ফেরতের তারিখ: ${workflowDateBn(item.dueDate)}`,
+        url: "#qard-hasana",
+        type: "qard-hasana",
+        data: { qardId: String(item._id) },
+        read: false,
+      });
+    }
+    res.status(201).json({ ok: true, item, notified: !!account });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "কর্জে হাসানা সংরক্ষণ করা যায়নি" });
+  }
+});
+
+app.patch("/api/qard-hasana/:id/return", auth, async (req, res) => {
+  try {
+    if (!qardStaff(req)) return res.status(403).json({ message: "অনুমতি নেই" });
+    const item = await QardHasana.findById(req.params.id);
+    if (!item) return res.status(404).json({ message: "কর্জে হাসানার রেকর্ড পাওয়া যায়নি" });
+    const isOwner = String(item.lenderId) === String(req.user.id);
+    if (req.user.role !== "Super Admin" && !isOwner) {
+      return res.status(403).json({ message: "যিনি কর্জ দিয়েছেন, তিনিই ফেরত পাওয়া চিহ্নিত করবেন" });
+    }
+    if (item.status === "returned") return res.json({ ok: true, item });
+    item.status = "returned";
+    item.returnedAt = new Date();
+    item.returnedBy = req.user.name || req.user.uid || "";
+    await item.save();
+    await Notification.deleteMany({
+      userId: item.studentUserId,
+      type: "qard-hasana",
+      "data.qardId": String(item._id),
+    });
+    res.json({ ok: true, item });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ message: "ফেরত পাওয়া হিসেবে সংরক্ষণ করা যায়নি" });
+  }
+});
+
+/* ------------------------------------------------------------------ */
 /* Teacher approval workflow                                           */
 /* ------------------------------------------------------------------ */
 const APPROVAL_LABELS = {
@@ -2123,7 +2268,9 @@ async function workflowStudentUsers(payload) {
   const className = String(p.className || "").trim();
   const selected = records.filter((st) => {
     if (!st) return false;
-    if (wantedIds.length) return wantedIds.includes(String(st.id));
+    if (wantedIds.length) {
+      return [st.id, st.uid, st.regNo, st.rollNo].some((v) => v != null && wantedIds.includes(String(v)));
+    }
     const cls = st.cls || st.className || st.attCls || "";
     return className ? String(cls) === className : false;
   });
@@ -2213,6 +2360,7 @@ async function applyApprovedWorkflow(request, approver) {
 
   if (request.kind === "syllabus") {
     return appendStoreArray("syllabusItems", Object.assign({}, common, {
+      contentType: p.contentType === "suggestion" ? "suggestion" : "syllabus",
       className: p.className || "",
       subjectName: p.subjectName || p.subject || "",
       title: p.title || "",
@@ -2312,6 +2460,10 @@ async function applyApprovedWorkflow(request, approver) {
       desc: p.body || p.desc || "",
       date: workflowDateBn(p.date),
       dateISO: p.date || "",
+      start: p.start || p.showFrom || p.date || "",
+      end: p.end || p.showTo || p.date || "",
+      classes: Array.isArray(p.classes) ? p.classes : [],
+      divisions: Array.isArray(p.divisions) ? p.divisions : [],
       status: "প্রকাশিত",
     }));
   }

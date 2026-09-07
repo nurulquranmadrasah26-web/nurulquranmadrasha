@@ -454,7 +454,7 @@
 
       <div class="card">
         <div class="card-head">
-          <div class="title"><span class="nqi nqi-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h6l2 2h10v11H3z"/></svg></span> পরীক্ষার সিলেবাস</div>
+          <div class="title"><span class="nqi nqi-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h6l2 2h10v11H3z"/></svg></span> সিলেবাস ও সাজেশন</div>
         </div>
         <div id="stuSyllabus"></div>
       </div>
@@ -625,6 +625,23 @@ function isPublished(item){
 }
 function todayISO(){ var d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function bnDate(iso){ var p=String(iso).split('-'); return p.length===3 ? bn(p[2]+'/'+p[1]+'/'+p[0]) : String(iso); }
+function isVisibleNow(item, today){
+  item = item || {};
+  var from = item.showFrom || item.start || item.startDate || '';
+  var to = item.showTo || item.end || item.endDate || '';
+  if(from && today < from) return false;
+  if(to && today > to) return false;
+  return isPublished(item);
+}
+function matchesStudentAudience(item){
+  item = item || {};
+  var cls = ME && (ME.cls || ME.className || '');
+  var branch = ME && (ME.branch || ME.division || ME.type || '');
+  var classes = arr(item.classes), divisions = arr(item.divisions);
+  if(classes.length && classes.indexOf(cls) === -1) return false;
+  if(divisions.length && divisions.indexOf(branch) === -1) return false;
+  return true;
+}
 function empty(icon, text){ return '<div class="empty-state"><div class="icon">' + icon + '</div><p>' + text + '</p></div>'; }
 
 /* ---------- ট্যাব নেভিগেশন ---------- */
@@ -779,12 +796,10 @@ function renderHome(){
   var syll = rawSyll.filter(function(x){
     var itemCls = x.className || x.cls || '';
     if (itemCls && cls && itemCls !== cls) return false;
-    if (x.showFrom && today < x.showFrom) return false;
-    if (x.showTo && today > x.showTo) return false;
-    return isPublished(x);
+    return isVisibleNow(x, today) && matchesStudentAudience(x);
   });
   document.getElementById('stuSyllabus').innerHTML = syll.length ? syll.map(function(x){
-    var head = (x.examTypeName ? x.examTypeName + ' • ' : '') + (x.subjectName || x.subject || x.title || '-');
+    var head = (x.contentType === 'suggestion' ? 'সাজেশন • ' : 'সিলেবাস • ') + (x.examTypeName ? x.examTypeName + ' • ' : '') + (x.subjectName || x.subject || x.title || '-');
     var range = (x.showFrom || x.showTo)
       ? '<div style="font-size:11.5px;color:#6b7280;margin-top:4px;"><span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span> ' + bnDate(x.showFrom || today) + ' — ' + bnDate(x.showTo || today) + '</div>'
       : '';
@@ -802,7 +817,7 @@ function renderHome(){
       ' বিস্তারিত সময়সূচী "রুটিন" ট্যাবে দেখুন।</div></div>';
   }).join('');
 
-  var notices = arr(S.notices).filter(isPublished).slice(-6).reverse();
+  var notices = arr(S.notices).filter(function(n){ return isVisibleNow(n, today) && matchesStudentAudience(n); }).slice(-6).reverse();
   document.getElementById('stuNotices').innerHTML = (examNotices + (notices.map(function(n){
     return '<div class="hw-item"><div class="hw-title">' + esc(n.title) + '</div><div class="hw-body">' + esc(n.desc || '') + '</div></div>';
   }).join(''))) || '<div class="notice-empty"><div class="bell"><span class="nqi nqi-muted"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 00-9.3-5"/><path d="M6 9v-1"/><path d="M3 17h18s-3-2-3-9"/><line x1="3" y1="3" x2="21" y2="21"/></svg></span></div><div>কোন নোটিশ নেই</div></div>';

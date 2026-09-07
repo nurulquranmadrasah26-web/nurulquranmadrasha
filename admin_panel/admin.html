@@ -1443,6 +1443,26 @@
       }
       .main-nav .nav-drop-group-title { padding: 8px 8px 2px 12px; }
     }
+    /* খাবার রুটিন — বোর্ড/প্রিন্টে পরিষ্কার, হালকা ডিজাইন */
+    .meal-board { background:#fffdf7; border:1px solid #e7dfc9; border-radius:14px; overflow:hidden; }
+    .meal-board table { width:100%; border-collapse:collapse; font-size:15px; }
+    .meal-board th { background:#236b45; color:#fff; padding:11px 10px; text-align:center; font-weight:700; }
+    .meal-board td { border:1px solid #e6dfcf; padding:10px; text-align:center; vertical-align:middle; }
+    .meal-board tr:nth-child(even) td { background:#fffaf0; }
+    .meal-board .meal-day { background:#f4f0e4; color:#174d34; font-weight:700; white-space:nowrap; }
+    .meal-board .meal-cell { min-width:145px; line-height:1.55; }
+    .meal-board .meal-cell input { width:100%; border:1px solid #d9d1bd; border-radius:7px; padding:8px; background:#fffefb; font:inherit; text-align:center; }
+    .meal-board .meal-icon { display:inline-block; margin-right:4px; font-size:19px; }
+    .meal-print-btn { background:#236b45!important; color:#fff!important; }
+    @media print {
+      body.nq-print-meal > *:not(.content) { display:none!important; }
+      body.nq-print-meal .content > .page:not(#page-mealRoutine) { display:none!important; }
+      #page-mealRoutine { display:block!important; }
+      #page-mealRoutine .meal-edit-actions, #page-mealRoutine .meal-board input { display:none!important; }
+      #page-mealRoutine .meal-board .meal-cell { min-width:0; }
+      #page-mealRoutine .meal-board .meal-cell::after { content: attr(data-print); }
+      .meal-board th { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    }
   </style>
 </head>
 <body>
@@ -2066,7 +2086,10 @@
 
   <!-- ▌ আয় ▌ -->
   <div class="page" id="page-income">
-    <div class="section-title">আয়</div>
+    <div class="list-title-bar">
+      <div class="section-title" style="margin:0;border:0;padding:0;">আয়</div>
+      <button class="add-btn" style="background:#1e88e5;" onclick="printFinanceByCategory('income')">🖶 খাতভিত্তিক প্রিন্ট / PDF</button>
+    </div>
     <div class="desig-2col">
       <div>
         <div class="list-title-bar">
@@ -2101,7 +2124,10 @@
 
   <!-- ▌ ব্যয় ▌ -->
   <div class="page" id="page-expense">
-    <div class="section-title">ব্যয়</div>
+    <div class="list-title-bar">
+      <div class="section-title" style="margin:0;border:0;padding:0;">ব্যয়</div>
+      <button class="add-btn" style="background:#c62828;" onclick="printFinanceByCategory('expense')">🖶 খাতভিত্তিক প্রিন্ট / PDF</button>
+    </div>
     <div class="desig-2col">
       <div class="tbl-wrap">
         <table>
@@ -3355,6 +3381,9 @@
     <div class="desig-2col" style="grid-template-columns: 1fr 1.6fr;">
       <div class="desig-card">
         <div class="leave-card-title">সিলেবাস আইটেম যোগ করুন</div>
+        <div class="form-row"><label>ধরন</label>
+          <select id="sylContentType"><option value="syllabus">সিলেবাস</option><option value="suggestion">সাজেশন</option></select>
+        </div>
         <div class="form-row"><label>পরীক্ষার ধরণ নির্বাচন করুন</label>
           <select id="sylExamType"><option value="">-- পরীক্ষার ধরণ নির্বাচন করুন --</option></select>
         </div>
@@ -4294,15 +4323,20 @@
 
   <!-- ═══════════════ অন্যান্য মেনু: ৯. খাবার রুটিন ═══════════════ -->
   <div class="page" id="page-mealRoutine">
-    <div class="section-title">খাবার রুটিন</div>
+    <div class="list-title-bar">
+      <div class="section-title" style="margin:0;border:0;padding:0;">খাবার রুটিন</div>
+      <div class="meal-edit-actions" style="display:flex;gap:8px;">
+        <button class="add-btn meal-print-btn" onclick="printMealRoutine()">🖶 প্রিন্ট / PDF</button>
+      </div>
+    </div>
     <div style="background:#fff;border-radius:10px;padding:18px;">
-      <div class="tbl-wrap">
+      <div class="meal-board">
         <table>
-          <thead><tr><th>#</th><th>বার</th><th>বাদ ফজর নাস্তা</th><th>সকালের নাস্তা</th><th>দুপুরের খাবার</th><th>বিকালের নাস্তা</th><th>রাতের খাবার</th></tr></thead>
+          <thead><tr><th>#</th><th>বার</th><th>সকাল</th><th>দুপুর</th><th>রাত</th></tr></thead>
           <tbody id="mealRoutineBody"></tbody>
         </table>
       </div>
-      <button class="add-btn" style="width:100%;margin-top:16px;" onclick="saveMealRoutine()">✓ সংরক্ষণ করুন</button>
+      <button class="add-btn meal-edit-actions" style="width:100%;margin-top:16px;" onclick="saveMealRoutine()">✓ সংরক্ষণ করুন</button>
     </div>
   </div>
 
@@ -11312,6 +11346,7 @@ function addSyllabusItem() {
   const desc = document.getElementById('sylDesc').value.trim();
   const showFrom = document.getElementById('sylShowFrom').value;
   const showTo = document.getElementById('sylShowTo').value;
+  const contentType = document.getElementById('sylContentType')?.value || 'syllabus';
   const notify = !!document.getElementById('sylNotify')?.checked;
   const missing = nqMissing([[className, 'ক্লাস'], [subjectId, 'বিষয়'], [title, 'শিরোনাম'], [showFrom, 'দেখানো শুরুর তারিখ'], [showTo, 'দেখানো শেষের তারিখ']]);
   if (missing.length) { showErrorPopup('সিলেবাস সংরক্ষণ করা যায়নি', nqReason(missing)); return; }
@@ -11321,7 +11356,7 @@ function addSyllabusItem() {
   }
   const examType = examTypes.find(t => t.id === examTypeId);
   const subject = examSubjects.find(s => s.id === subjectId);
-  const payload = { examTypeId, examTypeName: examType ? examType.name : '', className, subjectId, subjectName: subject ? subject.name : '', title, desc, showFrom, showTo };
+  const payload = { contentType, examTypeId, examTypeName: examType ? examType.name : '', className, subjectId, subjectName: subject ? subject.name : '', title, desc, showFrom, showTo };
 
   if (editingSyllabusId) {
     const it = syllabusItems.find(x => x.id === editingSyllabusId);
@@ -11372,7 +11407,7 @@ function renderSyllabusList() {
       <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
         <div>
           <div style="font-weight:700;">${it.title}</div>
-          <div style="font-size:12px;color:#888;">${it.className} • ${it.subjectName}${it.examTypeName ? ' • ' + it.examTypeName : ''}</div>
+          <div style="font-size:12px;color:#888;">${it.contentType === 'suggestion' ? 'সাজেশন' : 'সিলেবাস'} • ${it.className} • ${it.subjectName}${it.examTypeName ? ' • ' + it.examTypeName : ''}</div>
           ${(it.showFrom || it.showTo) ? `<div style="font-size:12px;color:#00796b;">🗓️ শিক্ষার্থীর প্যানেলে: ${bn(it.showFrom || '-')} — ${bn(it.showTo || '-')}</div>` : ''}
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0;">
@@ -11389,6 +11424,7 @@ function editSyllabusItem(id) {
   if (!it) return;
   editingSyllabusId = id;
   sylPopulateSelects();
+  document.getElementById('sylContentType').value = it.contentType || 'syllabus';
   document.getElementById('sylExamType').value = it.examTypeId || '';
   document.getElementById('sylClass').value = it.className;
   fillSyllabusSubjectSelect('sylSubject', it.className);
@@ -12144,8 +12180,13 @@ function deleteIeFund(id) {
 
 /* ═══════════ ৮. আয়/ব্যয় খাত (IE Category) ═══════════ */
 let ieCategories = [
-  { id: 1, name: 'বেতন', type: 'ব্যয়', status: 'সক্রিয়' },
-  { id: 2, name: 'ফি আদায়', type: 'আয়', status: 'সক্রিয়' },
+  { id: 1, name: 'বেতন/মাসিক ফি', type: 'আয়', status: 'সক্রিয়' },
+  { id: 2, name: 'ভর্তি ফি', type: 'আয়', status: 'সক্রিয়' },
+  { id: 3, name: 'ডোনেশন', type: 'আয়', status: 'সক্রিয়' },
+  { id: 4, name: 'অন্যান্য আয়', type: 'আয়', status: 'সক্রিয়' },
+  { id: 5, name: 'বেতন (ব্যয়)', type: 'ব্যয়', status: 'সক্রিয়' },
+  { id: 6, name: 'ফি আদায়/সংগ্রহ খরচ', type: 'ব্যয়', status: 'সক্রিয়' },
+  { id: 7, name: 'অন্যান্য ব্যয়', type: 'ব্যয়', status: 'সক্রিয়' },
 ];
 let editingIeCategoryId = null;
 function renderIeCategories() {
@@ -12202,16 +12243,25 @@ registerListDetail('ieCategory', { title: 'আয়/ব্যয় খাত �
 
 /* ═══════════ ৯. খাবার রুটিন (Meal Routine) ═══════════ */
 const mealRoutineDays = ['শনিবার', 'রবিবার', 'সোমবার', 'মঙ্গলবার', 'বুধবার', 'বৃহস্পতিবার', 'শুক্রবার'];
-const mealRoutineSlots = ['fajr', 'morning', 'lunch', 'afternoon', 'dinner'];
-let mealRoutine = mealRoutineDays.map(day => ({ day, fajr: '', morning: '', lunch: '', afternoon: '', dinner: '' }));
+const mealRoutineSlots = ['morning', 'lunch', 'dinner'];
+const mealRoutineDefault = [
+  { day:'শনিবার', morning:'শুকনা খিচুড়ি, ভর্তা', lunch:'সবজি, ভাত', dinner:'মুড়িঘণ্ট, ভাত' },
+  { day:'রবিবার', morning:'ভর্তা, ভাত', lunch:'মুরগী গোস্ত, ভাত', dinner:'সবজি, ভাত' },
+  { day:'সোমবার', morning:'সবজি, ভাত', lunch:'বড় মাছ, ভাত', dinner:'ভর্তা, ডাল, ভাত' },
+  { day:'মঙ্গলবার', morning:'পাতলা খিচুড়ি, ডিম দিয়ে ঝোল, ভাত', lunch:'মুড়িঘণ্ট, ভাত', dinner:'ভাত' },
+  { day:'বুধবার', morning:'ভাজি, ডাল, গোস্ত, ভাত', lunch:'সবজি, ভাত', dinner:'ভাত' },
+  { day:'বৃহস্পতিবার', morning:'সবজি, ভাত', lunch:'মাছ, ভাত', dinner:'ভাজি, ডাল, ভাত' },
+  { day:'শুক্রবার', morning:'ভুনা খিচুড়ি গোস্ত, ভাত / বিরিয়ানি', lunch:'আলুভর্তা, ডাল, ভাত', dinner:'—' }
+];
+let mealRoutine = mealRoutineDefault.map(r => ({ ...r }));
 
 function renderMealRoutine() {
   const body = document.getElementById('mealRoutineBody');
   if (!body) return;
   body.innerHTML = mealRoutine.map((r, i) => `
     <tr>
-      <td>${bn(i + 1)}</td><td>${r.day}</td>
-      ${mealRoutineSlots.map(slot => `<td><input data-mr-row="${i}" data-mr-slot="${slot}" value="${(r[slot] || '').replace(/"/g, '&quot;')}" placeholder="আইটেম লিখুন" style="width:100%;border:1px solid #ddd;border-radius:5px;padding:5px 6px;font-size:13px;" /></td>`).join('')}
+      <td>${bn(i + 1)}</td><td class="meal-day">${r.day}</td>
+      ${mealRoutineSlots.map((slot, slotIndex) => `<td class="meal-cell" data-print="${(r[slot] || '').replace(/"/g, '&quot;')}"><span class="meal-icon">${['🍳','🍲','🍛'][slotIndex]}</span><input data-mr-row="${i}" data-mr-slot="${slot}" value="${(r[slot] || '').replace(/"/g, '&quot;')}" placeholder="খাবারের নাম" /></td>`).join('')}
     </tr>`).join('');
 }
 function saveMealRoutine() {
@@ -12221,6 +12271,16 @@ function saveMealRoutine() {
   });
   if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
   showToast('খাবার রুটিন সংরক্ষণ করা হয়েছে!');
+}
+function printMealRoutine() {
+  document.querySelectorAll('#mealRoutineBody input[data-mr-row]').forEach(inp => {
+    const cell = inp.closest('.meal-cell');
+    if (cell) cell.setAttribute('data-print', inp.value.trim());
+  });
+  document.body.classList.add('nq-print-meal');
+  window.onafterprint = function(){ document.body.classList.remove('nq-print-meal'); window.onafterprint = null; };
+  showToast('খাবার রুটিন প্রিন্ট উইন্ডোর জন্য প্রস্তুত...');
+  window.print();
 }
 
 /* ═══════════ ১০. নোটিশ (Notice Board) ═══════════ */
@@ -12277,7 +12337,8 @@ function saveNotice() {
   const status = document.getElementById('noticeStatus').value;
   const classes = Array.from(document.querySelectorAll('.noticeClassChk:checked')).map(c => c.value);
   const divisions = Array.from(document.querySelectorAll('.noticeDivChk:checked')).map(c => c.value);
-  if (!title || status === '-') { showErrorPopup('প্রয়োজনীয় তথ্য দিন'); return; }
+  if (!title || !desc || !start || !end || status === '-') { showErrorPopup('নোটিশের শিরোনাম, বিস্তারিত এবং শুরু/শেষের তারিখ আবশ্যক'); return; }
+  if (start > end) { showErrorPopup('নোটিশ সংরক্ষণ করা যায়নি', 'শুরুর তারিখ শেষের তারিখের পরে হতে পারবে না'); return; }
   if (editingNoticeId) {
     const n = notices.find(x => x.id === editingNoticeId);
     if (n) Object.assign(n, { title, desc, start, end, status, classes, divisions });
@@ -12291,6 +12352,7 @@ function saveNotice() {
   ['noticeTitle', 'noticeDesc', 'noticeStart', 'noticeEnd'].forEach(f => document.getElementById(f).value = '');
   document.getElementById('noticeStatus').value = '-';
   renderNotices();
+  if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
 }
 registerListDetail('notice', { title: 'নোটিশের তালিকা — বিস্তারিত', getArr: () => notices, cols: ['title', 'status'], render: renderNotices });
 
@@ -12748,7 +12810,7 @@ function syncFinanceFromOperations() {
       by: by || 'ব্যবহারকারী',
     }, extra || {}));
   };
-  (payments || []).forEach(p => add(`payment:${p.id}`, p.dateISO || p.date, p.student, 'ফি আদায়', 'income', p.amount, p.by, { method: p.method, category: 'student-fee' }));
+  (payments || []).forEach(p => add(`payment:${p.id}`, p.dateISO || p.date, p.student, 'ফি আদায়', 'income', p.amount, p.by, { method: p.method, category: p.category || 'বেতন/মাসিক ফি' }));
   (donationTx || []).forEach(p => {
     const group = (donationGroups || []).find(g => g.id === p.groupId);
     add(`donation:${p.id}`, p.date, p.donor, 'ডোনেশন' + (group ? ' — ' + group.name : ''), 'income', p.amount, p.by || currentUserName(), { category: 'donation' });
@@ -12875,7 +12937,7 @@ function saveExpense() {
 
   financeTx.unshift({
     id: financeTxSeq++, source: 'manual', date, name: fund || '-', desc: head,
-    type: 'expense', amount, by: currentUserName(), method, note: receiptNote
+    type: 'expense', category: head, amount, by: currentUserName(), method, note: receiptNote
   });
 
   ['expFund', 'expHead', 'expAmount', 'expBookNo', 'expReceiptFrom', 'expReceiptTo', 'expNote'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
@@ -12901,6 +12963,33 @@ function renderExpensePage() {
       <td>${bnTaka(t.amount)}</td>
       <td>${financeDeleteButton(t)}</td>
     </tr>`).join('') : `<tr><td colspan="7" style="text-align:center;color:#888;">কোনো আইটেম যোগ করা হয়নি</td></tr>`;
+}
+
+/* প্রতিটি খাতের মোটসহ এক পাতার রিপোর্ট — ব্রাউজারের Print থেকে PDF-ও করা যায় */
+function printFinanceByCategory(type) {
+  syncFinanceFromOperations();
+  const rows = financeTx.filter(t => t.type === type);
+  const groups = {};
+  rows.forEach(t => {
+    const key = t.category || t.desc || 'অন্যান্য';
+    if (!groups[key]) groups[key] = { count: 0, amount: 0 };
+    groups[key].count += 1;
+    groups[key].amount += Number(t.amount) || 0;
+  });
+  const labels = Object.keys(groups).sort();
+  const total = rows.reduce((s, t) => s + (Number(t.amount) || 0), 0);
+  const title = type === 'income' ? 'আয় — খাতভিত্তিক হিসাব' : 'ব্যয় — খাতভিত্তিক হিসাব';
+  const html = `<!doctype html><html lang="bn"><head><meta charset="utf-8"><title>${title}</title>
+    <style>body{font-family:Arial,'Noto Sans Bengali',sans-serif;padding:24px;color:#18231d}h1{text-align:center;color:#176b42;font-size:22px;margin:0 0 4px}p{text-align:center;color:#64748b;margin:0 0 18px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #cbd5cf;padding:9px;text-align:left}th{background:#e8f3ec;color:#176b42}.num{text-align:right}.total{font-weight:700;background:#f7faf8}@media print{button{display:none}}</style></head>
+    <body><h1>নূরুল কোরআন মাদরাসা</h1><p>${title} • প্রস্তুতের তারিখ: ${fmtBnDate(todayISO())}</p>
+    <table><thead><tr><th>#</th><th>খাত</th><th>লেনদেন</th><th class="num">মোট পরিমাণ</th></tr></thead><tbody>
+    ${labels.map((key, i) => `<tr><td>${bn(i + 1)}</td><td>${String(key).replace(/[&<>"]/g, '')}</td><td>${bn(groups[key].count)}</td><td class="num">৳ ${bn(groups[key].amount.toLocaleString('en-IN'))}/-</td></tr>`).join('')}
+    <tr class="total"><td colspan="3">সর্বমোট</td><td class="num">৳ ${bn(total.toLocaleString('en-IN'))}/-</td></tr></tbody></table>
+    <script>window.onload=function(){window.print();};<\/script></body></html>`;
+  const win = window.open('', '_blank', 'width=850,height=700');
+  if (!win) { showErrorPopup('প্রিন্ট উইন্ডো খোলা যায়নি', 'ব্রাউজারে pop-up অনুমতি দিন।'); return; }
+  win.document.write(html);
+  win.document.close();
 }
 
 /* ─── লাভ/ক্ষতি পেজ ─── */
@@ -13411,6 +13500,9 @@ function nqApplyLoadedState(data) {
   if (hasContent(data.studentDues)) studentDues = data.studentDues;
   if (hasContent(data.feeTypes)) feeTypes = data.feeTypes;
   if (hasContent(data.mealRoutine)) mealRoutine = data.mealRoutine;
+  if (!Array.isArray(mealRoutine) || !mealRoutine.some(r => r && (r.morning || r.lunch || r.dinner))) {
+    mealRoutine = mealRoutineDefault.map(r => ({ ...r }));
+  }
   if (hasContent(data.siteInfo)) siteInfo = data.siteInfo;
   if (hasContent(data.siteSlides)) siteSlides = data.siteSlides;
   if (hasContent(data.siteRules)) siteRules = data.siteRules;
@@ -14457,6 +14549,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <script src="nq-monthly.js"></script>
 <script src="nq-fixes.js"></script>
 <script src="nq-en-digits.js"></script>
+<script src="nq-qard-hasana.js"></script>
 <script src="site-cms.js"></script>
 </body>
 </html>

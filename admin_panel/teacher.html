@@ -675,6 +675,7 @@
       <div class="workflow-grid">
         <div class="workflow-field"><label>শ্রেণী</label><select id="tsClass"></select></div>
         <div class="workflow-field"><label>বিষয়</label><select id="tsSubject"></select></div>
+        <div class="workflow-field"><label>ধরন</label><select id="tsType"><option value="syllabus">সিলেবাস</option><option value="suggestion">সাজেশন</option></select></div>
         <div class="workflow-field"><label>শিরোনাম</label><input id="tsTitle" placeholder="যেমন: প্রথম সাময়িক পরীক্ষা"></div>
         <div class="workflow-field"><label>প্রকাশ শুরু</label><input id="tsFrom" type="date"></div>
         <div class="workflow-field"><label>প্রকাশ শেষ</label><input id="tsTo" type="date"></div>
@@ -712,7 +713,8 @@
       <h2>নতুন নোটিশের আবেদন</h2>
       <div class="workflow-grid">
         <div class="workflow-field"><label>শিরোনাম</label><input id="tnTitle" placeholder="নোটিশের শিরোনাম"></div>
-        <div class="workflow-field"><label>প্রকাশের তারিখ</label><input id="tnDate" type="date"></div>
+        <div class="workflow-field"><label>দেখানো শুরু</label><input id="tnFrom" type="date"></div>
+        <div class="workflow-field"><label>দেখানো শেষ</label><input id="tnTo" type="date"></div>
         <div class="workflow-field full"><label>বিস্তারিত</label><textarea id="tnBody" rows="3" placeholder="নোটিশের বিষয়বস্তু"></textarea></div>
       </div>
       <button class="workflow-submit" onclick="submitTeacherNotice()">সুপার এডমিনের অনুমোদনের জন্য পাঠান</button>
@@ -1252,19 +1254,21 @@ function fillTeacherWorkflowOptions(){
   var sel = document.getElementById('tsSubject');
   if(sel){ var cur = sel.value; sel.innerHTML = subjects.map(function(x){ return '<option>' + esc(x) + '</option>'; }).join(''); if(cur) sel.value = cur; }
   var today = todayISO();
-  ['tsFrom','tlFrom'].forEach(function(id){ var el=document.getElementById(id); if(el && !el.value) el.value=today; });
-  ['tsTo','tlTo'].forEach(function(id){ var el=document.getElementById(id); if(el && !el.value) el.value=today; });
+  ['tsFrom','tlFrom','tnFrom'].forEach(function(id){ var el=document.getElementById(id); if(el && !el.value) el.value=today; });
+  ['tsTo','tlTo','tnTo'].forEach(function(id){ var el=document.getElementById(id); if(el && !el.value) el.value=today; });
 }
 function submitTeacherSyllabus(){
   var p = {
     className: document.getElementById('tsClass').value,
     subjectName: document.getElementById('tsSubject').value,
+    contentType: document.getElementById('tsType').value,
     title: document.getElementById('tsTitle').value.trim(),
     details: document.getElementById('tsDetails').value.trim(),
     showFrom: document.getElementById('tsFrom').value,
     showTo: document.getElementById('tsTo').value
   };
-  if(!p.className || !p.subjectName || !p.details) { toast('ক্লাস, বিষয় ও বিস্তারিত পূরণ করুন'); return; }
+  if(!p.className || !p.subjectName || !p.details || !p.showFrom || !p.showTo) { toast('ক্লাস, বিষয়, বিস্তারিত এবং দেখানোর দুইটি তারিখ পূরণ করুন'); return; }
+  if(p.showFrom > p.showTo) { toast('শুরুর তারিখ শেষের তারিখের পরে হতে পারবে না'); return; }
   submitApproval('syllabus','সিলেবাস প্রকাশের আবেদন',p).then(function(){
     ['tsTitle','tsDetails'].forEach(function(id){ document.getElementById(id).value=''; });
     teacherEditingRequestId = null;
@@ -1401,10 +1405,13 @@ function renderTeacherNotices(){
   box.innerHTML=list.length ? list.map(function(x){ return '<div class="workflow-status approved"><strong>' + esc(x.title || 'নোটিশ') + '</strong><div class="body">' + esc(x.desc || x.body || '') + '</div></div>'; }).join('') : '<div class="empty-row">কোনো নোটিশ নেই</div>';
 }
 function submitTeacherNotice(){
-  var title=document.getElementById('tnTitle').value.trim(), body=document.getElementById('tnBody').value.trim(), date=document.getElementById('tnDate').value || todayISO();
-  if(!title || !body){ toast('নোটিশের শিরোনাম ও বিস্তারিত লিখুন'); return; }
-  submitApproval('notice','নোটিশ প্রকাশের আবেদন',{title:title,body:body,date:date}).then(function(){
+  var title=document.getElementById('tnTitle').value.trim(), body=document.getElementById('tnBody').value.trim();
+  var start=document.getElementById('tnFrom').value, end=document.getElementById('tnTo').value;
+  if(!title || !body || !start || !end){ toast('নোটিশের শিরোনাম, বিস্তারিত এবং শুরু/শেষের তারিখ পূরণ করুন'); return; }
+  if(start > end){ toast('শুরুর তারিখ শেষের তারিখের পরে হতে পারবে না'); return; }
+  submitApproval('notice','নোটিশ প্রকাশের আবেদন',{title:title,body:body,date:start,start:start,end:end}).then(function(){
     document.getElementById('tnTitle').value=''; document.getElementById('tnBody').value='';
+    document.getElementById('tnFrom').value=''; document.getElementById('tnTo').value='';
   });
 }
 function submitTeacherExamSubject(){
@@ -1644,6 +1651,7 @@ document.addEventListener('DOMContentLoaded', boot);
 <script src="pwa-install.js"></script>
 <script src="nq-notify.js"></script>
 <script src="nq-en-digits.js"></script>
+<script src="nq-qard-hasana.js"></script>
 <script src="teacher-mobile.js"></script>
 </body>
 </html>
