@@ -1182,19 +1182,20 @@
     .ci-btn.ci-print-a { background: #f9a825; }
 
     /* ───── Generic warning popup (matches reference) ───── */
-    .warn-popup { text-align: center; padding: 10px 6px; }
+    .warn-popup { text-align: center; padding: 24px 22px 22px; border-radius: 4px !important; border: 1px solid #e6ebe8; box-shadow: 0 18px 52px rgba(0,0,0,.2); }
     .warn-icon-circle {
       width: 92px; height: 92px; margin: 4px auto 22px;
       display: flex; align-items: center; justify-content: center;
     }
-    .warn-msg { font-size: 22px; font-weight: 700; color: #555; margin-bottom: 14px; }
+    .warn-title { font-size: 13px; font-weight: 700; color: #c27a00; margin: -8px 0 7px; }
+    .warn-msg { font-size: 19px; font-weight: 700; color: #173b2c; margin-bottom: 14px; line-height: 1.5; }
     .warn-reason {
-      background: #fff8e1; border: 1px solid #ffe0a3; border-left: 4px solid #fb8c00;
+      background: #fffaf0; border: 1px solid #ffe0a3; border-left: 4px solid #fb8c00;
       color: #7a4a00; font-size: 14.5px; line-height: 1.7; text-align: left;
       padding: 10px 14px; border-radius: 6px; margin: 0 4px 22px; white-space: pre-wrap;
     }
     .warn-ok-btn {
-      background: #5c6bc0; color: #fff; border: none; padding: 11px 46px;
+      background: #176b42; color: #fff; border: none; border-radius: 4px !important; padding: 11px 46px;
       font-family: 'Kalpurush', 'Hind Siliguri', 'Noto Sans Bengali', sans-serif; font-size: 15px; font-weight: 700; cursor: pointer;
     }
     .warn-ok-btn:hover { background: #3f51b5; }
@@ -4629,9 +4630,10 @@
         <circle cx="12" cy="16.7" r="0.9" fill="#fb8c00"/>
       </svg>
     </div>
+    <div class="warn-title" id="genericErrorTitle">সিস্টেম বার্তা</div>
     <div class="warn-msg" id="genericErrorMsg">প্রয়োজনীয় তথ্য দিন</div>
     <div class="warn-reason" id="genericErrorReason" style="display:none;"></div>
-    <button class="warn-ok-btn" onclick="closeModal('genericErrorModal')">OK</button>
+    <button class="warn-ok-btn" onclick="closeModal('genericErrorModal')">ঠিক আছে</button>
   </div>
 </div>
 
@@ -6734,7 +6736,16 @@ async function impersonateUser(id) {
   }
   const u = usersListData.find(x => x.id === id);
   if (!u) return;
-  if (!confirm(`"${u.name}" (${u.type}) — এই ব্যবহারকারীর ড্যাশবোর্ডে লগইন করবেন?`)) return;
+  const enterPanel = window.nqConfirm
+    ? await window.nqConfirm({
+        title: 'ব্যবহারকারীর প্যানেলে প্রবেশ',
+        message: `"${u.name}" (${u.type})-এর প্যানেলে প্রবেশ করতে চান?`,
+        confirmText: 'প্রবেশ করুন',
+        cancelText: 'বাতিল',
+        tone: 'permission'
+      })
+    : confirm(`"${u.name}" (${u.type}) — এই ব্যবহারকারীর ড্যাশবোর্ডে লগইন করবেন?`);
+  if (!enterPanel) return;
   try {
     const res = await window.NQAuth.authFetch('/api/users/' + id + '/impersonate', { method: 'POST' });
     const data = await res.json().catch(() => ({}));
@@ -6832,7 +6843,7 @@ async function toggleUserStatus(id) {
 async function deleteUser(id) {
   const u = usersListData.find(x => x.id === id);
   if (!u) return;
-  if (!confirm(`"${u.name}" ব্যবহারকারীকে স্থায়ীভাবে মুছে ফেলবেন?`)) return;
+  if (!(await nqAskConfirm(`"${u.name}" ব্যবহারকারীকে স্থায়ীভাবে মুছে ফেলবেন?`))) return;
   try {
     const res = await window.NQAuth.authFetch('/api/users/' + id, { method: 'DELETE' });
     const data = await res.json().catch(() => ({}));
@@ -7562,10 +7573,10 @@ function editTeacher(id) {
   openModal('teacherModal');
 }
 
-function deleteTeacher(id) {
+async function deleteTeacher(id) {
   const t = teachers.find(x => x.id === id);
   if (!t) return;
-  if (!confirm(`${t.name} কে তালিকা থেকে মুছে ফেলতে চান?`)) return;
+  if (!(await nqAskConfirm(`${t.name} কে তালিকা থেকে মুছে ফেলতে চান?`))) return;
   teachers = teachers.filter(x => x.id !== id);
   renderTeachers();
   if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
@@ -7930,8 +7941,8 @@ function saveInvProduct() {
   if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
 }
 
-function deleteInvProduct(id) {
-  if (!confirm('এই পণ্যটি মুছে ফেলবেন?')) return;
+async function deleteInvProduct(id) {
+  if (!(await nqAskConfirm('এই পণ্যটি মুছে ফেলবেন?'))) return;
   invProducts = invProducts.filter(p => p.id !== id);
   renderInventory(); renderInvProductList(); renderInvStock();
   invFillProductSelect('invSaleProduct'); invFillProductSelect('invPurchaseProduct');
@@ -8106,8 +8117,8 @@ function invViewTx(kind, id) {
   showDetailModal((kind === 'sale' ? 'বিক্রয়' : 'ক্রয়') + ' বিস্তারিত (#' + bn(tx.id) + ')', html);
 }
 
-function invDeleteTx(kind, id) {
-  if (!confirm('এই লেনদেনটি মুছে ফেলবেন? (স্টক পুনরায় সমন্বয় করা হবে)')) return;
+async function invDeleteTx(kind, id) {
+  if (!(await nqAskConfirm('এই লেনদেনটি মুছে ফেলবেন? (স্টক পুনরায় সমন্বয় করা হবে)'))) return;
   const arr = kind === 'sale' ? invSales : invPurchases;
   const tx = arr.find(t => t.id === id);
   if (!tx) return;
@@ -8265,8 +8276,8 @@ function editHwDaily(id) {
   showToast('বাড়ির কাজের তথ্য পরিবর্তন করে সংরক্ষণ করুন');
 }
 
-function deleteHwDaily(id) {
-  if (!confirm('এই তথ্যটি মুছে ফেলবেন?')) return;
+async function deleteHwDaily(id) {
+  if (!(await nqAskConfirm('এই তথ্যটি মুছে ফেলবেন?'))) return;
   hwDailyList = hwDailyList.filter(h => h.id !== id);
   renderHwDailyList();
   renderHwList();
@@ -8309,8 +8320,8 @@ function deleteHwListItem(hwType, id) {
   if (hwType === 'daily') deleteHwDaily(id); else deleteHwResidential(id);
 }
 
-function deleteHwResidential(id) {
-  if (!confirm('এই তথ্যটি মুছে ফেলবেন?')) return;
+async function deleteHwResidential(id) {
+  if (!(await nqAskConfirm('এই তথ্যটি মুছে ফেলবেন?'))) return;
   hwResidentialList = hwResidentialList.filter(h => h.id !== id);
   renderHwList();
   if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
@@ -8752,8 +8763,8 @@ function addStudent() {
   showToast('শিক্ষার্থী যোগ করা হয়েছে!');
 }
 
-function deleteStudent(id) {
-  if (!confirm('এই শিক্ষার্থীকে মুছে ফেলবেন?')) return;
+async function deleteStudent(id) {
+  if (!(await nqAskConfirm('এই শিক্ষার্থীকে মুছে ফেলবেন?'))) return;
   students = students.filter(s => s.id !== id);
   renderStudents(); renderParents();
   if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
@@ -8901,6 +8912,8 @@ function showToast(msg, ms=2400) {
 /* ─── Generic warning popup ─── */
 /* কারণসহ সতর্কবার্তা — কেন কাজটি হচ্ছে না তা স্পষ্ট করে দেখায় */
 function showErrorPopup(msg = 'প্রয়োজনীয় তথ্য দিন', reason = '') {
+  const titleEl = document.getElementById('genericErrorTitle');
+  if (titleEl) titleEl.textContent = String(msg).includes('অনুমতি') ? 'প্রবেশের অনুমতি নেই' : 'সিস্টেম বার্তা';
   document.getElementById('genericErrorMsg').textContent = msg;
   const rEl = document.getElementById('genericErrorReason');
   if (rEl) {
@@ -8909,6 +8922,18 @@ function showErrorPopup(msg = 'প্রয়োজনীয় তথ্য �
     rEl.style.display = text ? '' : 'none';
   }
   openModal('genericErrorModal');
+}
+
+async function nqAskConfirm(message, tone = 'danger') {
+  if (window.nqConfirm) {
+    return window.nqConfirm({
+      title: tone === 'permission' ? 'অনুমতি নিশ্চিত করুন' : 'নিশ্চিত করুন',
+      message: message,
+      confirmText: tone === 'danger' ? 'মুছে ফেলুন' : 'নিশ্চিত করুন',
+      tone: tone
+    });
+  }
+  return confirm(message);
 }
 
 /* খালি/অবৈধ ফিল্ডগুলোর নাম বের করে — কারণ লেখার জন্য
@@ -10106,8 +10131,8 @@ function editDueDetail(id) {
   showToast('বকেয়া হালনাগাদ করা হয়েছে');
 }
 
-function deleteDueDetail(id) {
-  if (!confirm('এই বকেয়া এন্ট্রিটি মুছে ফেলতে চান?')) return;
+async function deleteDueDetail(id) {
+  if (!(await nqAskConfirm('এই বকেয়া এন্ট্রিটি মুছে ফেলতে চান?'))) return;
   Object.keys(studentDues).forEach(sid => {
     studentDues[sid] = (studentDues[sid] || []).filter(d => d.id !== id);
   });
@@ -10163,8 +10188,8 @@ function renderCollectionDetail() {
   if (totEl) totEl.textContent = fmtTk(total) + '/-';
 }
 
-function deleteCollectionDetail(id) {
-  if (!confirm('এই আদায়ের এন্ট্রিটি মুছে ফেলতে চান?')) return;
+async function deleteCollectionDetail(id) {
+  if (!(await nqAskConfirm('এই আদায়ের এন্ট্রিটি মুছে ফেলতে চান?'))) return;
   paymentDetails = paymentDetails.filter(p => p.id !== id);
   renderCollectionDetail();
   showToast('মুছে ফেলা হয়েছে।');
@@ -10548,10 +10573,10 @@ function editDesignation(id) {
   document.getElementById('desigType').value = d.type;
 }
 
-function deleteDesignation(id) {
+async function deleteDesignation(id) {
   const d = staffDesignations.find(x => x.id === id);
   if (!d) return;
-  if (!confirm(`${d.name} পদবীটি মুছে ফেলতে চান?`)) return;
+  if (!(await nqAskConfirm(`${d.name} পদবীটি মুছে ফেলতে চান?`))) return;
   staffDesignations = staffDesignations.filter(x => x.id !== id);
   renderStaffDesignation();
   showToast('পদবী মুছে ফেলা হয়েছে');
@@ -10658,8 +10683,8 @@ function crdAddSlot() {
 }
 
 /* রুটিন তৈরির পেজ থেকেই টাইম স্লট মুছে ফেলা যায় */
-function crdDeleteSlot(id) {
-  if (!confirm('এই টাইম স্লটটি মুছে ফেলতে চান?')) return;
+async function crdDeleteSlot(id) {
+  if (!(await nqAskConfirm('এই টাইম স্লটটি মুছে ফেলতে চান?'))) return;
   crdCommitSlotLabels();
   crTimeSlots = crTimeSlots.filter(x => x.id !== id);
   dailyRoutines.forEach(r => { r.items = (r.items || []).filter(it => it.slotId !== id); });
@@ -10731,10 +10756,10 @@ function editDailyRoutine(id) {
   }, 0);
 }
 
-function deleteDailyRoutine(id) {
+async function deleteDailyRoutine(id) {
   const r = dailyRoutines.find(x => x.id === id);
   if (!r) return;
-  if (!confirm(`"${r.className}" শ্রেণীর সময়সূচীটি মুছে ফেলতে চান?`)) return;
+  if (!(await nqAskConfirm(`"${r.className}" শ্রেণীর সময়সূচীটি মুছে ফেলতে চান?`))) return;
   dailyRoutines = dailyRoutines.filter(x => x.id !== id);
   renderClassRoutineList();
   if (typeof nqScheduleSave === 'function') nqScheduleSave();
@@ -10829,10 +10854,10 @@ function editCrResidentialItem(id) {
   window.scrollTo(0, 0);
 }
 
-function deleteCrResidentialItem(id) {
+async function deleteCrResidentialItem(id) {
   const it = residentialRoutineItems.find(x => x.id === id);
   if (!it) return;
-  if (!confirm('এই রুটিন আইটেমটি মুছে ফেলতে চান?')) return;
+  if (!(await nqAskConfirm('এই রুটিন আইটেমটি মুছে ফেলতে চান?'))) return;
   residentialRoutineItems = residentialRoutineItems.filter(x => x.id !== id);
   renderCrResidentialList();
   showToast('মুছে ফেলা হয়েছে।');
@@ -10936,8 +10961,8 @@ function saveCrTimeSlot() {
   renderCrTimeSlots();
 }
 
-function deleteCrTimeSlot(id) {
-  if (!confirm('এই টাইম স্লটটি মুছে ফেলতে চান?')) return;
+async function deleteCrTimeSlot(id) {
+  if (!(await nqAskConfirm('এই টাইম স্লটটি মুছে ফেলতে চান?'))) return;
   crTimeSlots = crTimeSlots.filter(x => x.id !== id);
   renderCrTimeSlots();
   showToast('মুছে ফেলা হয়েছে।');
@@ -11038,10 +11063,10 @@ function editExamSubject(id) {
   document.querySelectorAll('.esClassChk').forEach(chk => { chk.checked = s.classes.includes(chk.value); });
   window.scrollTo(0, 0);
 }
-function deleteExamSubject(id) {
+async function deleteExamSubject(id) {
   const s = examSubjects.find(x => x.id === id);
   if (!s) return;
-  if (!confirm(`"${s.name}" বিষয়টি মুছে ফেলতে চান?`)) return;
+  if (!(await nqAskConfirm(`"${s.name}" বিষয়টি মুছে ফেলতে চান?`))) return;
   examSubjects = examSubjects.filter(x => x.id !== id);
   renderExamSubjects();
   showToast('বিষয় মুছে ফেলা হয়েছে');
@@ -11090,10 +11115,10 @@ function editExamType(id) {
   document.getElementById('etName').value = t.name;
   window.scrollTo(0, 0);
 }
-function deleteExamType(id) {
+async function deleteExamType(id) {
   const t = examTypes.find(x => x.id === id);
   if (!t) return;
-  if (!confirm(`"${t.name}" মুছে ফেলতে চান?`)) return;
+  if (!(await nqAskConfirm(`"${t.name}" মুছে ফেলতে চান?`))) return;
   examTypes = examTypes.filter(x => x.id !== id);
   renderExamTypes();
   showToast('মুছে ফেলা হয়েছে।');
@@ -11364,10 +11389,10 @@ function editExam(id) {
   }, 0);
 }
 
-function deleteExam(id) {
+async function deleteExam(id) {
   const ex = exams.find(x => x.id === id);
   if (!ex) return;
-  if (!confirm(`"${ex.examTypeName}" (${ex.className}) পরীক্ষাটি মুছে ফেলতে চান? এর সাথে সম্পর্কিত সব ফলাফলও মুছে যাবে।`)) return;
+  if (!(await nqAskConfirm(`"${ex.examTypeName}" (${ex.className}) পরীক্ষাটি মুছে ফেলতে চান? এর সাথে সম্পর্কিত সব ফলাফলও মুছে যাবে।`))) return;
   exams = exams.filter(x => x.id !== id);
   examResults = examResults.filter(r => r.examId !== id);
   resultPublishes = resultPublishes.filter(p => p.examId !== id);
@@ -11513,10 +11538,10 @@ function editSyllabusItem(id) {
   window.scrollTo(0, 0);
 }
 
-function deleteSyllabusItem(id) {
+async function deleteSyllabusItem(id) {
   const it = syllabusItems.find(x => x.id === id);
   if (!it) return;
-  if (!confirm(`"${it.title}" সিলেবাসটি মুছে ফেলতে চান?`)) return;
+  if (!(await nqAskConfirm(`"${it.title}" সিলেবাসটি মুছে ফেলতে চান?`))) return;
   syllabusItems = syllabusItems.filter(x => x.id !== id);
   renderSyllabusList();
   if (typeof nqScheduleSave === 'function') nqScheduleSave();
@@ -11742,8 +11767,8 @@ function renderResultList() {
     </tr>`).join('') || '<tr><td colspan="12" style="text-align:center;color:#888;">কোনো ফলাফল পাওয়া যায়নি</td></tr>';
 }
 
-function deleteExamResult(id) {
-  if (!confirm('এই ফলাফলটি মুছে ফেলতে চান?')) return;
+async function deleteExamResult(id) {
+  if (!(await nqAskConfirm('এই ফলাফলটি মুছে ফেলতে চান?'))) return;
   examResults = examResults.filter(x => x.id !== id);
   refreshExamResultViews();
   if (typeof nqScheduleSave === 'function') nqScheduleSave();
@@ -11855,8 +11880,8 @@ function toggleResultPublish(id) {
   showToast(p.published ? 'ফলাফল প্রকাশ করা হয়েছে' : 'প্রকাশ প্রত্যাহার করা হয়েছে');
 }
 
-function deleteResultPublish(id) {
-  if (!confirm('এই এন্ট্রিটি মুছে ফেলতে চান?')) return;
+async function deleteResultPublish(id) {
+  if (!(await nqAskConfirm('এই এন্ট্রিটি মুছে ফেলতে চান?'))) return;
   resultPublishes = resultPublishes.filter(x => x.id !== id);
   renderResultPublishList();
   if (typeof nqScheduleSave === 'function') nqScheduleSave();
@@ -11910,7 +11935,7 @@ async function markContactRead(id) {
 }
 
 async function deleteContactMessage(id) {
-  if (!confirm('এই বার্তাটি মুছে ফেলতে চান?')) return;
+  if (!(await nqAskConfirm('এই বার্তাটি মুছে ফেলতে চান?'))) return;
   try {
     await window.NQAuth.postJSON('/api/contact-messages/' + id, {}, 'DELETE');
     contactMessages = contactMessages.filter(x => x._id !== id);
@@ -12090,8 +12115,8 @@ function saveFeeType() {
   closeModal('feeTypeModal');
   renderFeeTypes();
 }
-function deleteFeeType(id) {
-  if (!confirm('এই ফি ধরনটি মুছে ফেলতে চান?')) return;
+async function deleteFeeType(id) {
+  if (!(await nqAskConfirm('এই ফি ধরনটি মুছে ফেলতে চান?'))) return;
   feeTypes = feeTypes.filter(x => x.id !== id);
   renderFeeTypes();
   showToast('মুছে ফেলা হয়েছে।');
@@ -12118,10 +12143,10 @@ function editOtClass(id) {
   editingOtClassId = id;
   document.getElementById('otClassName').value = c.name;
 }
-function deleteOtClass(id) {
+async function deleteOtClass(id) {
   const c = otClasses.find(x => x.id === id);
   if (!c) return;
-  if (!confirm(`"${c.name}" মুছে ফেলতে চান?`)) return;
+  if (!(await nqAskConfirm(`"${c.name}" মুছে ফেলতে চান?`))) return;
   otClasses = otClasses.filter(x => x.id !== id);
   renderOtClasses();
   showToast('মুছে ফেলা হয়েছে।');
@@ -12165,10 +12190,10 @@ function editOtDivision(id) {
   editingOtDivisionId = id;
   document.getElementById('otDivisionName').value = d.name;
 }
-function deleteOtDivision(id) {
+async function deleteOtDivision(id) {
   const d = otDivisions.find(x => x.id === id);
   if (!d) return;
-  if (!confirm(`"${d.name}" মুছে ফেলতে চান?`)) return;
+  if (!(await nqAskConfirm(`"${d.name}" মুছে ফেলতে চান?`))) return;
   otDivisions = otDivisions.filter(x => x.id !== id);
   renderOtDivisions();
   showToast('মুছে ফেলা হয়েছে।');
@@ -12216,8 +12241,8 @@ function toggleClassGroupStatus(id) {
   g.status = g.status === 'সক্রিয়' ? 'নিষ্ক্রিয়' : 'সক্রিয়';
   renderClassGroups();
 }
-function deleteClassGroup(id) {
-  if (!confirm('এই ক্লাস গ্রুপটি মুছে ফেলতে চান?')) return;
+async function deleteClassGroup(id) {
+  if (!(await nqAskConfirm('এই ক্লাস গ্রুপটি মুছে ফেলতে চান?'))) return;
   classGroups = classGroups.filter(x => x.id !== id);
   renderClassGroups();
   showToast('মুছে ফেলা হয়েছে।');
@@ -12248,8 +12273,8 @@ function toggleIeFundStatus(id) {
   f.status = f.status === 'সক্রিয়' ? 'নিষ্ক্রিয়' : 'সক্রিয়';
   renderIeFunds();
 }
-function deleteIeFund(id) {
-  if (!confirm('এই ফান্ডটি মুছে ফেলতে চান?')) return;
+async function deleteIeFund(id) {
+  if (!(await nqAskConfirm('এই ফান্ডটি মুছে ফেলতে চান?'))) return;
   ieFunds = ieFunds.filter(x => x.id !== id);
   renderIeFunds();
   showToast('মুছে ফেলা হয়েছে।');
@@ -12285,10 +12310,10 @@ function editIeCategory(id) {
   document.querySelectorAll('input[name="ieCategoryType"]').forEach(r => { r.checked = (r.value === c.type); });
   window.scrollTo(0, 0);
 }
-function deleteIeCategory(id) {
+async function deleteIeCategory(id) {
   const c = ieCategories.find(x => x.id === id);
   if (!c) return;
-  if (!confirm(`"${c.name}" খাতটি মুছে ফেলতে চান?`)) return;
+  if (!(await nqAskConfirm(`"${c.name}" খাতটি মুছে ফেলতে চান?`))) return;
   ieCategories = ieCategories.filter(x => x.id !== id);
   renderIeCategories();
   showToast('মুছে ফেলা হয়েছে।');
@@ -12400,10 +12425,10 @@ function editNotice(id) {
   document.querySelectorAll('.noticeDivChk').forEach(c => { c.checked = n.divisions.includes(c.value); });
   window.scrollTo(0, 0);
 }
-function deleteNotice(id) {
+async function deleteNotice(id) {
   const n = notices.find(x => x.id === id);
   if (!n) return;
-  if (!confirm(`"${n.title}" নোটিশটি মুছে ফেলতে চান?`)) return;
+  if (!(await nqAskConfirm(`"${n.title}" নোটিশটি মুছে ফেলতে চান?`))) return;
   notices = notices.filter(x => x.id !== id);
   renderNotices();
   showToast('মুছে ফেলা হয়েছে।');
@@ -12553,8 +12578,8 @@ function saveBus() {
   closeModal('busModal');
   renderTransportBuses();
 }
-function deleteBus(id) {
-  if (!confirm('এই বাসটি মুছে ফেলতে চান?')) return;
+async function deleteBus(id) {
+  if (!(await nqAskConfirm('এই বাসটি মুছে ফেলতে চান?'))) return;
   buses = buses.filter(x => x.id !== id);
   transportAssignments = transportAssignments.filter(a => a.busId !== id);
   driverPayments = driverPayments.filter(p => p.busId !== id);
@@ -12628,8 +12653,8 @@ function renderTransportAssignList() {
       <td><button class="ci-btn ci-del-a" title="বাদ দিন" onclick="deleteTransportAssign(${a.id})">${icoDelete}</button></td></tr>`;
   }).join('') || '<tr><td colspan="4" style="text-align:center;color:#888;">কোনো শিক্ষার্থী অ্যাসাইন করা হয়নি</td></tr>';
 }
-function deleteTransportAssign(id) {
-  if (!confirm('এই অ্যাসাইনমেন্ট বাদ দিতে চান?')) return;
+async function deleteTransportAssign(id) {
+  if (!(await nqAskConfirm('এই অ্যাসাইনমেন্ট বাদ দিতে চান?'))) return;
   transportAssignments = transportAssignments.filter(x => x.id !== id);
   renderTransportAssignStudents();
   showToast('বাদ দেওয়া হয়েছে।');
@@ -12657,8 +12682,8 @@ function saveDriverPay() {
   renderDriverPay();
   showToast('ড্রাইভার পেমেন্ট সংরক্ষণ করা হয়েছে');
 }
-function deleteDriverPay(id) {
-  if (!confirm('এই পেমেন্টটি মুছে ফেলতে চান?')) return;
+async function deleteDriverPay(id) {
+  if (!(await nqAskConfirm('এই পেমেন্টটি মুছে ফেলতে চান?'))) return;
   driverPayments = driverPayments.filter(x => x.id !== id);
   renderDriverPay();
   showToast('মুছে ফেলা হয়েছে।');
@@ -12821,8 +12846,8 @@ function toggleSiteRegStatus(id) {
   r.status = r.status === 'অনুমোদিত' ? 'পেন্ডিং' : 'অনুমোদিত';
   renderSiteRegList();
 }
-function deleteSiteReg(id) {
-  if (!confirm('এই রেজিস্ট্রেশনটি মুছে ফেলতে চান?')) return;
+async function deleteSiteReg(id) {
+  if (!(await nqAskConfirm('এই রেজিস্ট্রেশনটি মুছে ফেলতে চান?'))) return;
   siteRegistrations = siteRegistrations.filter(x => x.id !== id);
   renderSiteRegList();
   showToast('মুছে ফেলা হয়েছে।');
@@ -12956,8 +12981,8 @@ function addFinanceTx(prefix, forcedType) {
   if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
 }
 
-function deleteFinanceTx(id) {
-  if (!confirm('এই এন্ট্রিটি মুছে ফেলবেন?')) return;
+async function deleteFinanceTx(id) {
+  if (!(await nqAskConfirm('এই এন্ট্রিটি মুছে ফেলবেন?'))) return;
   financeTx = financeTx.filter(t => t.id !== id);
   refreshFinanceViews();
   if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
@@ -13468,8 +13493,8 @@ function saveDonationGroup() {
   showToast('ডোনেশন গ্রুপ তৈরি করা হয়েছে');
 }
 
-function deleteDonationGroup(id) {
-  if (!confirm('এই গ্রুপটি মুছে ফেলবেন?')) return;
+async function deleteDonationGroup(id) {
+  if (!(await nqAskConfirm('এই গ্রুপটি মুছে ফেলবেন?'))) return;
   donationGroups = donationGroups.filter(g => g.id !== id);
   donationTx = donationTx.filter(t => t.groupId !== id);
   renderDonationGroupList(); renderDonationCollectList(); populateDonationGroupSelects();
@@ -13590,8 +13615,8 @@ function saveDonationCollect() {
   });
 }
 
-function deleteDonationTx(id) {
-  if (!confirm('এই এন্ট্রিটি মুছে ফেলবেন?')) return;
+async function deleteDonationTx(id) {
+  if (!(await nqAskConfirm('এই এন্ট্রিটি মুছে ফেলবেন?'))) return;
   donationTx = donationTx.filter(t => t.id !== id);
   renderDonationCollectList(); renderDonationGroupList(); renderDonationReport();
   if (typeof refreshFinanceViews === 'function') refreshFinanceViews();
@@ -13966,8 +13991,8 @@ function saveCommitteeMember() {
   if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
 }
 
-function deleteCommitteeMember(id) {
-  if (!confirm('এই সদস্যকে মুছে ফেলবেন?')) return;
+async function deleteCommitteeMember(id) {
+  if (!(await nqAskConfirm('এই সদস্যকে মুছে ফেলবেন?'))) return;
   committeeMembers = committeeMembers.filter(x => x.id !== id);
   renderCommittee();
   if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
@@ -14237,7 +14262,7 @@ function renderAdminMessages() {
 }
 
 async function approveWorkflow(id) {
-  if (!confirm('এই তথ্য অনুমোদন করে শিক্ষার্থীদের কাছে প্রকাশ করবেন?')) return;
+  if (!(await nqAskConfirm('এই তথ্য অনুমোদন করে শিক্ষার্থীদের কাছে প্রকাশ করবেন?', 'permission'))) return;
   try {
     await window.NQAuth.postJSON('/api/approval-requests/' + id + '/approve', {});
     showToast('অনুমোদন হয়েছে এবং শিক্ষার্থীদের কাছে পাঠানো হয়েছে');
@@ -14305,7 +14330,7 @@ async function markContactBadgeRead(id) {
 }
 
 async function deleteAdminMessage(id) {
-  if (!confirm('এই বার্তাটি মুছে ফেলতে চান?')) return;
+  if (!(await nqAskConfirm('এই বার্তাটি মুছে ফেলতে চান?'))) return;
   try {
     await window.NQAuth.postJSON('/api/messages/' + id, {}, 'DELETE');
     nqInboxMessages = nqInboxMessages.filter(x => x._id !== id);
@@ -14816,6 +14841,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <script src="nq-monthly.js"></script>
 <script src="nq-fixes.js"></script>
 <script src="nq-en-digits.js"></script>
+<script src="nq-dialogs.js"></script>
 <script src="nq-qard-hasana.js"></script>
 <script src="site-cms.js"></script>
 </body>

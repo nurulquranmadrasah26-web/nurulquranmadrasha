@@ -721,8 +721,8 @@ function boot(){
         }
         window.NQNotify.enablePush().then(function () {
  pushBtn.dataset.on = '1'; pushBtn.innerHTML = '<span class="nqi nqi-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 10-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></span> নোটিফিকেশন চালু আছে';
-          alert('নোটিফিকেশন চালু হয়েছে — নতুন বাড়ির কাজ দিলেই জানানো হবে।');
-        }).catch(function (e) { alert(e.message || 'নোটিফিকেশন চালু করা যায়নি'); });
+          (window.nqAlert || alert)('নোটিফিকেশন চালু হয়েছে — নতুন বাড়ির কাজ দিলেই জানানো হবে।');
+        }).catch(function (e) { (window.nqAlert || alert)(e.message || 'নোটিফিকেশন চালু করা যায়নি'); });
       });
     }
   }
@@ -1146,7 +1146,7 @@ function toggleProfileEdit(force){
   var view = document.getElementById('stuProfile');
   var btn = document.getElementById('stuProfileEditBtn');
   var open = (force === undefined) ? (form.style.display === 'none') : !!force;
-  if(open && !ME){ alert('আপনার শিক্ষার্থী রেকর্ড পাওয়া যায়নি'); return; }
+  if(open && !ME){ (window.nqAlert || alert)('আপনার শিক্ষার্থী রেকর্ড পাওয়া যায়নি'); return; }
   if(open){
     PF_NEW_PHOTO = null;
     renderProfileForm();
@@ -1200,7 +1200,7 @@ function saveProfile(){
     if(el) payload[f.key] = bn(el.value.trim());
   });
   if(PF_NEW_PHOTO) payload.photo = PF_NEW_PHOTO;
-  if(!payload.name){ alert('নাম দিতে হবে'); return; }
+  if(!payload.name){ (window.nqAlert || alert)('নাম দিতে হবে'); return; }
 
   window.NQAuth.postJSON('/api/student/profile', payload, 'PUT')
     .then(function(res){
@@ -1210,20 +1210,20 @@ function saveProfile(){
       renderProfile(u);
       renderHeader(u);
       toggleProfileEdit(false);
-      alert('প্রোফাইল সংরক্ষণ করা হয়েছে');
+      (window.nqAlert || alert)('প্রোফাইল সংরক্ষণ করা হয়েছে');
     })
-    .catch(function(e){ alert(e.message || 'সংরক্ষণ ব্যর্থ'); });
+    .catch(function(e){ (window.nqAlert || alert)(e.message || 'সংরক্ষণ ব্যর্থ'); });
 }
 
 function changeStudentPassword(){
   var cur = document.getElementById('stuPwCur').value;
   var n1 = document.getElementById('stuPwNew').value;
   var n2 = document.getElementById('stuPwNew2').value;
-  if(!cur || !n1){ alert('সব ঘর পূরণ করুন'); return; }
-  if(n1 !== n2){ alert('নতুন পাসওয়ার্ড দুটি মিলছে না'); return; }
+  if(!cur || !n1){ (window.nqAlert || alert)('সব ঘর পূরণ করুন'); return; }
+  if(n1 !== n2){ (window.nqAlert || alert)('নতুন পাসওয়ার্ড দুটি মিলছে না'); return; }
   window.NQAuth.postJSON('/api/auth/change-password', { currentPassword: cur, newPassword: n1 })
-    .then(function(){ ['stuPwCur','stuPwNew','stuPwNew2'].forEach(function(id){ document.getElementById(id).value=''; }); alert('পাসওয়ার্ড পরিবর্তন করা হয়েছে'); })
-    .catch(function(e){ alert(e.message || 'পরিবর্তন ব্যর্থ'); });
+    .then(function(){ ['stuPwCur','stuPwNew','stuPwNew2'].forEach(function(id){ document.getElementById(id).value=''; }); (window.nqAlert || alert)('পাসওয়ার্ড পরিবর্তন করা হয়েছে'); })
+    .catch(function(e){ (window.nqAlert || alert)(e.message || 'পরিবর্তন ব্যর্থ'); });
 }
 
 /* ---------- মেসেজ ---------- */
@@ -1260,16 +1260,16 @@ function sendStudentMessage(){
   var toUserId = sel.value || (DIR[0] && DIR[0].id) || '';
   var subject = document.getElementById('msgSubject').value.trim();
   var body = document.getElementById('msgBody').value.trim();
-  if(!toUserId){ alert('সুপার এডমিন পাওয়া যায়নি'); return; }
-  if(!body){ alert('বার্তা লিখুন'); return; }
+  if(!toUserId){ (window.nqAlert || alert)('সুপার এডমিন পাওয়া যায়নি'); return; }
+  if(!body){ (window.nqAlert || alert)('বার্তা লিখুন'); return; }
   window.NQAuth.postJSON('/api/messages/send', { toUserId: toUserId, subject: subject, body: body })
     .then(function(){
       document.getElementById('msgSubject').value = '';
       document.getElementById('msgBody').value = '';
-      alert('বার্তা পাঠানো হয়েছে');
+      (window.nqAlert || alert)('বার্তা পাঠানো হয়েছে');
       loadStudentInbox();
     })
-    .catch(function(e){ alert(e.message || 'মেসেজ পাঠাতে ব্যর্থ'); });
+    .catch(function(e){ (window.nqAlert || alert)(e.message || 'মেসেজ পাঠাতে ব্যর্থ'); });
 }
 
 document.addEventListener('DOMContentLoaded', boot);
@@ -1278,5 +1278,6 @@ document.addEventListener('DOMContentLoaded', boot);
 <script src="pwa-install.js"></script>
 <script src="nq-notify.js"></script>
 <script src="nq-en-digits.js"></script>
+<script src="nq-dialogs.js"></script>
 </body>
 </html>

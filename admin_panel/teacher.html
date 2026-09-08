@@ -1663,8 +1663,11 @@ function editPublishedHomework(type, id){
   }
   toast('তথ্য পরিবর্তন করে সংরক্ষণ করুন; সুপার এডমিন অনুমোদনের পর প্রকাশ হবে');
 }
-function deleteHw(type, id){
-  if(!confirm('মুছে ফেলতে চান?')) return;
+async function deleteHw(type, id){
+  var accepted = window.nqConfirm
+    ? await window.nqConfirm({ title:'বাড়ির কাজ মুছে ফেলুন', message:'এই তথ্যটি মুছে ফেলতে চান?', confirmText:'মুছে ফেলুন', tone:'danger' })
+    : confirm('মুছে ফেলতে চান?');
+  if(!accepted) return;
   var keys = {};
   if(type === 'daily') keys.hwDailyList = arr(S.hwDailyList).filter(function(h){ return h.id !== id; });
   else keys.hwResidentialList = arr(S.hwResidentialList).filter(function(h){ return h.id !== id; });
@@ -1739,6 +1742,7 @@ document.addEventListener('DOMContentLoaded', boot);
 <script src="pwa-install.js"></script>
 <script src="nq-notify.js"></script>
 <script src="nq-en-digits.js"></script>
+<script src="nq-dialogs.js"></script>
 <script src="nq-qard-hasana.js"></script>
 <script src="teacher-mobile.js"></script>
 </body>

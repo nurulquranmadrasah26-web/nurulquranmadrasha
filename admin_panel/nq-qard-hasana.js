@@ -22,6 +22,16 @@
   }
   var remoteStudentCache = [];
   var remoteStudentPromise = null;
+  function studentKey(s) {
+    return s && (s.id != null ? s.id : s.uid != null ? s.uid : s.regNo != null ? s.regNo : s.rollNo != null ? s.rollNo : s._id);
+  }
+  function studentsFromPayload(data) {
+    if (Array.isArray(data)) return data;
+    if (data && Array.isArray(data.students)) return data.students;
+    if (data && data.data && Array.isArray(data.data.students)) return data.data.students;
+    if (data && data.data && Array.isArray(data.data)) return data.data;
+    return [];
+  }
   function storeStudents() {
     if (typeof students !== 'undefined' && Array.isArray(students) && students.length) return students;
     if (Array.isArray(window.students) && window.students.length) return window.students;
@@ -30,13 +40,20 @@
   }
   function loadStudentsIfNeeded() {
     if (storeStudents().length || remoteStudentPromise) return remoteStudentPromise || Promise.resolve(storeStudents());
-    remoteStudentPromise = api('/api/store').then(function (data) {
-      remoteStudentCache = Array.isArray(data.students) ? data.students : [];
+    remoteStudentPromise = api('/api/store/students').then(function (data) {
+      remoteStudentCache = studentsFromPayload(data);
       renderSuggestions();
       return remoteStudentCache;
     }).catch(function () {
-      remoteStudentCache = [];
-      return remoteStudentCache;
+      return api('/api/store').then(function (data) {
+        remoteStudentCache = studentsFromPayload(data);
+        renderSuggestions();
+        return remoteStudentCache;
+      }).catch(function () {
+        remoteStudentCache = [];
+        renderSuggestions();
+        return remoteStudentCache;
+      });
     });
     return remoteStudentPromise;
   }
@@ -154,17 +171,17 @@
       return;
     }
     var list = available.filter(function (s) {
-      return !q || [s.name, s.id, s.uid, s.regNo, s.cls, s.className, s.branch, s.type]
+      return !q || [s.name, s.studentName, s.id, s.uid, s.regNo, s.rollNo, s._id, s.cls, s.className, s.attCls, s.branch, s.branchName, s.attDept, s.type]
         .map(normalize).join(' ').indexOf(normalize(q)) !== -1;
     });
     box.innerHTML = list.map(function (s) {
-      return '<button type="button" onmousedown="event.preventDefault()" onclick="nqQardSelectStudent(' + JSON.stringify(String(s.id)) + ')"><b>' + esc(s.name || '-') + '</b> • ' + esc(s.cls || s.className || '-') + ' • আইডি: ' + esc(s.uid || s.regNo || s.id || '-') + '</button>';
+      return '<button type="button" onmousedown="event.preventDefault()" onclick="nqQardSelectStudent(' + JSON.stringify(String(studentKey(s))) + ')"><b>' + esc(s.name || s.studentName || '-') + '</b> • ' + esc(s.cls || s.className || s.attCls || '-') + ' • আইডি: ' + esc(s.uid || s.regNo || s.id || s._id || '-') + '</button>';
     }).join('') || '<div style="padding:10px;color:#94a3b8">কোনো শিক্ষার্থী পাওয়া যায়নি</div>';
     box.style.display = 'block';
   }
 
   window.nqQardSelectStudent = function (id) {
-    selectedStudent = storeStudents().find(function (s) { return String(s.id) === String(id); }) || null;
+    selectedStudent = storeStudents().find(function (s) { return String(studentKey(s)) === String(id); }) || null;
     var input = document.getElementById('nqQardStudentSearch');
     var box = document.getElementById('nqQardSuggestions');
     var label = document.getElementById('nqQardSelected');
@@ -172,7 +189,7 @@
     input.value = selectedStudent.name || '';
     box.style.display = 'none';
     document.getElementById('nqQardStudentClear').style.display = 'inline-block';
-    label.textContent = 'নির্বাচিত: ' + (selectedStudent.name || '-') + ' • শ্রেণী: ' + (selectedStudent.cls || selectedStudent.className || '-') + ' • আইডি: ' + (selectedStudent.uid || selectedStudent.regNo || selectedStudent.id || '-');
+    label.textContent = 'নির্বাচিত: ' + (selectedStudent.name || selectedStudent.studentName || '-') + ' • শ্রেণী: ' + (selectedStudent.cls || selectedStudent.className || selectedStudent.attCls || '-') + ' • আইডি: ' + (selectedStudent.uid || selectedStudent.regNo || selectedStudent.id || selectedStudent._id || '-');
   };
 
   function renderHistory() {
@@ -199,9 +216,9 @@
     var desc = document.getElementById('nqQardDescription').value.trim();
     var issueDate = document.getElementById('nqQardIssueDate').value;
     var dueDate = document.getElementById('nqQardDueDate').value;
-    if (!selectedStudent || !desc || !issueDate || !dueDate) { alert('শিক্ষার্থী, বিবরণ ও দুইটি তারিখ পূরণ করুন'); return; }
-    if (dueDate < issueDate) { alert('ফেরতের তারিখ নেওয়ার তারিখের আগে হতে পারবে না'); return; }
-    api('/api/qard-hasana', { method: 'POST', body: JSON.stringify({ studentId: selectedStudent.id, description: desc, issueDate: issueDate, dueDate: dueDate }) })
+    if (!selectedStudent || !desc || !issueDate || !dueDate) { (window.nqAlert || alert)('শিক্ষার্থী, বিবরণ ও দুইটি তারিখ পূরণ করুন'); return; }
+    if (dueDate < issueDate) { (window.nqAlert || alert)('ফেরতের তারিখ নেওয়ার তারিখের আগে হতে পারবে না'); return; }
+    api('/api/qard-hasana', { method: 'POST', body: JSON.stringify({ studentId: studentKey(selectedStudent), description: desc, issueDate: issueDate, dueDate: dueDate }) })
       .then(function (data) {
         document.getElementById('nqQardDescription').value = '';
         selectedStudent = null;
@@ -209,14 +226,15 @@
         document.getElementById('nqQardSelected').textContent = 'কোনো শিক্ষার্থী নির্বাচিত হয়নি';
         document.getElementById('nqQardStudentClear').style.display = 'none';
         qardItems.unshift(data.item); renderHistory();
-        alert(data.notified ? 'কর্জে হাসানা সংরক্ষণ হয়েছে এবং শিক্ষার্থীর আইডিতে নোটিফিকেশন গেছে' : 'সংরক্ষণ হয়েছে; শিক্ষার্থীর User ID পাওয়া যায়নি');
-      }).catch(function (e) { alert(e.message); });
+        (window.nqAlert || alert)(data.notified ? 'কর্জে হাসানা সংরক্ষণ হয়েছে এবং শিক্ষার্থীর আইডিতে নোটিফিকেশন গেছে' : 'সংরক্ষণ হয়েছে; শিক্ষার্থীর User ID পাওয়া যায়নি');
+      }).catch(function (e) { (window.nqAlert || alert)(e.message); });
   };
-  window.nqQardReturn = function (id) {
-    if (!confirm('এই কর্জে হাসানা ফেরত পাওয়া গেছে হিসেবে চিহ্নিত করবেন? শিক্ষার্থীর নোটিফিকেশনও সরিয়ে দেওয়া হবে।')) return;
+  window.nqQardReturn = async function (id) {
+    var accepted = window.nqConfirm ? await window.nqConfirm({ title: 'কর্জে হাসানা ফেরত', message: 'এই কর্জে হাসানা ফেরত পাওয়া গেছে হিসেবে চিহ্নিত করবেন? শিক্ষার্থীর নোটিফিকেশনও সরিয়ে দেওয়া হবে।', confirmText: 'হ্যাঁ, সম্পন্ন করুন', tone: 'permission' }) : confirm('এই কর্জে হাসানা ফেরত পাওয়া গেছে হিসেবে চিহ্নিত করবেন? শিক্ষার্থীর নোটিফিকেশনও সরিয়ে দেওয়া হবে।');
+    if (!accepted) return;
     api('/api/qard-hasana/' + encodeURIComponent(id) + '/return', { method: 'PATCH' })
       .then(function (data) { qardItems = qardItems.map(function (x) { return String(x._id) === String(id) ? data.item : x; }); renderHistory(); })
-      .catch(function (e) { alert(e.message); });
+      .catch(function (e) { (window.nqAlert || alert)(e.message); });
   };
   window.nqQardPrint = function () { window.print(); };
   window.nqOpenQardPage = function () {

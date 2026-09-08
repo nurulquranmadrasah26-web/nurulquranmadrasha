@@ -134,16 +134,34 @@ nav.bottomnav a.active{
     flex-wrap:nowrap;
     gap:10px;
   }
-  header.topbar .brand{flex:1;min-width:0;}
-  header.topbar .brand .logo{width:40px;height:40px;font-size:18px;}
-  header.topbar .brand .names .bn{font-size:14px;}
-  header.topbar .brand .names .en{font-size:11px;}
-  header.topbar .topbar-right{gap:8px;align-items:center;}
-  header.topbar .topbar-right span[data-user-name]{
-    max-width:88px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12.5px !important;
+  /* ছোট স্ক্রিনে শুধু লোগো ও সমান মাপের icon actions থাকবে */
+  header.topbar .brand{flex:0 0 40px;min-width:40px;width:40px;}
+  header.topbar .brand .names{display:none !important;}
+  header.topbar .brand .logo,
+  header.topbar .topbar-right .bell,
+  header.topbar .topbar-right .nq-burger,
+  header.topbar .topbar-right [data-logout]{
+    width:40px !important;height:40px !important;min-width:40px;min-height:40px;
+    box-sizing:border-box;border-radius:4px !important;
+    display:inline-flex;align-items:center;justify-content:center;
   }
-  header.topbar .topbar-right span[data-user-role]{display:none;}
-  header.topbar [data-logout]{padding:8px 11px !important;font-size:12px !important;}
+  header.topbar .brand .logo{font-size:18px;}
+  header.topbar .topbar-right{gap:8px;align-items:center;}
+  header.topbar .topbar-right{margin-left:auto;}
+  header.topbar .topbar-right span[data-user-name],
+  header.topbar .topbar-right span[data-user-role]{display:none !important;}
+  header.topbar .topbar-right [data-logout]{
+    padding:0 !important;font-size:0 !important;line-height:1;
+    background:rgba(255,255,255,.16) !important;color:#fff !important;
+  }
+  header.topbar .topbar-right [data-logout]::before{
+    content:'↪';font:700 25px/1 Arial,sans-serif;color:#fff;
+  }
+  header.topbar .topbar-right .bell{position:relative;cursor:pointer;}
+  header.topbar .topbar-right .bell .nqi{width:21px;height:21px;}
+  header.topbar .topbar-right .nq-burger{padding:0 !important;}
+  header.topbar .topbar-right .nq-burger .nqi{width:21px;height:21px;color:#fff !important;}
+  header.topbar .topbar-right .badge{top:3px;right:3px;}
 
   main{padding:12px 12px 0 !important;}
   body{padding-bottom:96px;}

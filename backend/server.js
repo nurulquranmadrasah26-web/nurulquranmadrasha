@@ -2118,7 +2118,7 @@ async function findStoreStudent(studentId) {
   const wanted = String(studentId == null ? "" : studentId).trim();
   return rows.find((st) =>
     st &&
-    [st.id, st.uid, st.regNo, st.rollNo].some((v) => v != null && String(v) === wanted)
+    [st.id, st.uid, st.regNo, st.rollNo, st._id].some((v) => v != null && String(v) === wanted)
   ) || null;
 }
 
@@ -2126,8 +2126,8 @@ async function findStudentAccount(student) {
   if (!student) return null;
   const ids = [student.uid, student.regNo, student.rollNo].filter(Boolean).map(String);
   let user = ids.length ? await User.findOne({ role: "Student", uid: { $in: ids }, active: true }).lean() : null;
-  if (!user && student.name) {
-    user = await User.findOne({ role: "Student", name: String(student.name), active: true }).lean();
+  if (!user && (student.name || student.studentName)) {
+    user = await User.findOne({ role: "Student", name: String(student.name || student.studentName), active: true }).lean();
   }
   return user;
 }
@@ -2166,9 +2166,9 @@ app.post("/api/qard-hasana", auth, async (req, res) => {
     const item = await QardHasana.create({
       studentId: String(student.id != null ? student.id : body.studentId),
       studentUid: String(student.uid || student.regNo || ""),
-      studentName: String(student.name || ""),
+      studentName: String(student.name || student.studentName || ""),
       studentClass: String(student.cls || student.className || student.attCls || ""),
-      studentBranch: String(student.branch || student.type || ""),
+      studentBranch: String(student.branch || student.branchName || student.attDept || student.type || ""),
       studentUserId: account ? account._id : null,
       lenderId: req.user.id,
       lenderUid: req.user.uid || "",
