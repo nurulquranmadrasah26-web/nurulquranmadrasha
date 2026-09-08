@@ -126,6 +126,7 @@ nav.bottomnav a.active{
    ============================================================ */
 @media(max-width:820px){
   .nq-burger{display:flex;}
+  header.topbar nav.mainnav{display:none;}
 
   header.topbar{
     padding:10px 14px;

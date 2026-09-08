@@ -2326,7 +2326,7 @@ async function applyApprovedWorkflow(request, approver) {
         comment: p.task || p.comment || "",
         details: p.details || "",
         students: Array.isArray(p.studentIds) ? p.studentIds : [],
-        progress: [],
+        progress: Array.isArray(p.progress) ? p.progress : [],
         date: workflowDateBn(p.date),
         dateISO: p.date || "",
         ts: Date.now(),

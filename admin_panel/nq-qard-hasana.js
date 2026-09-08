@@ -63,7 +63,7 @@
       '.nq-qard-field label{font-size:13px;font-weight:700;color:#475569;}',
       '.nq-qard-field input,.nq-qard-field textarea{font:inherit;border:1px solid #d9e1dc;border-radius:4px;padding:9px 11px;background:#fbfdfb;}',
       '.nq-qard-field textarea{min-height:74px;resize:vertical;}',
-      '.nq-qard-suggest{position:absolute;left:0;right:0;top:100%;z-index:20;background:#fff;border:1px solid #cbd5e1;border-radius:0 0 4px 4px;max-height:260px;overflow:auto;box-shadow:0 6px 18px rgba(0,0,0,.12);}',
+      '.nq-qard-suggest{position:absolute;left:0;right:0;top:100%;z-index:20;background:#fff;border:1px solid #cbd5e1;border-radius:0 0 4px 4px;max-height:55vh;overflow:auto;box-shadow:0 6px 18px rgba(0,0,0,.12);}',
       '.nq-qard-suggest button{display:block;width:100%;text-align:left;background:#fff;padding:9px 11px;border:0;border-bottom:1px solid #eef2f0;font:inherit;cursor:pointer;}',
       '.nq-qard-suggest button:hover{background:#edf8f0;}',
       '.nq-qard-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:14px;}',
@@ -92,7 +92,7 @@
       '<div class="nq-qard-head"><h2><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-4px;margin-inline-end:6px;color:#176b42"><path d="M9 12l2 2 4-4"/><path d="M5 4h14v16H5z"/><path d="M8 8h8M8 16h5"/></svg>কর্জে হাসানা</h2><div class="nq-qard-actions" style="margin:0"><button class="nq-qard-btn secondary" onclick="nqQardPrint()"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg> ইতিহাস প্রিন্ট</button><button class="nq-qard-btn secondary" onclick="nqQardLoad()"><svg aria-hidden="true" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 11a8 8 0 1 0 2 5"/><path d="M20 4v7h-7"/></svg> রিফ্রেশ</button></div></div>' +
       '<div class="nq-qard-form">' +
       '<div class="nq-qard-grid">' +
-      '<div class="nq-qard-field"><label>শিক্ষার্থী (শ্রেণী/আইডি/নাম দিয়ে খুঁজুন)</label><input id="nqQardStudentSearch" autocomplete="off" placeholder="শিক্ষার্থীর নাম বা আইডি"><div id="nqQardSuggestions" class="nq-qard-suggest" style="display:none"></div><div id="nqQardSelected" class="nq-qard-note">কোনো শিক্ষার্থী নির্বাচিত হয়নি</div></div>' +
+      '<div class="nq-qard-field"><label>শিক্ষার্থী (শ্রেণী/আইডি/নাম দিয়ে খুঁজুন)</label><div style="display:flex;gap:6px;align-items:center;"><input id="nqQardStudentSearch" autocomplete="off" placeholder="শিক্ষার্থীর নাম বা আইডি" style="flex:1;"><button type="button" id="nqQardStudentClear" class="nq-qard-btn secondary" aria-label="শিক্ষার্থী নির্বাচন বাতিল করুন" title="ক্যানসেল" style="display:none;padding:7px 10px;">✕</button></div><div id="nqQardSuggestions" class="nq-qard-suggest" style="display:none"></div><div id="nqQardSelected" class="nq-qard-note">কোনো শিক্ষার্থী নির্বাচিত হয়নি</div></div>' +
       '<div class="nq-qard-field"><label>কর্জ প্রদানকারী (লগইন করা আইডি)</label><input id="nqQardLender" readonly></div>' +
       '<div class="nq-qard-field"><label>কর্জ নেওয়ার তারিখ</label><input id="nqQardIssueDate" type="date"></div>' +
       '<div class="nq-qard-field"><label>ফেরত দেওয়ার তারিখ</label><input id="nqQardDueDate" type="date"></div>' +
@@ -107,8 +107,23 @@
     document.getElementById('nqQardIssueDate').value = today();
     var due = new Date(); due.setDate(due.getDate() + 30);
     document.getElementById('nqQardDueDate').value = due.getFullYear() + '-' + String(due.getMonth() + 1).padStart(2, '0') + '-' + String(due.getDate()).padStart(2, '0');
-    document.getElementById('nqQardStudentSearch').addEventListener('input', renderSuggestions);
+    document.getElementById('nqQardStudentSearch').addEventListener('input', function () {
+      if (selectedStudent) {
+        selectedStudent = null;
+        document.getElementById('nqQardSelected').textContent = 'কোনো শিক্ষার্থী নির্বাচিত হয়নি';
+        document.getElementById('nqQardStudentClear').style.display = 'none';
+      }
+      renderSuggestions();
+    });
     document.getElementById('nqQardStudentSearch').addEventListener('focus', renderSuggestions);
+    document.getElementById('nqQardStudentClear').addEventListener('click', function () {
+      selectedStudent = null;
+      document.getElementById('nqQardStudentSearch').value = '';
+      document.getElementById('nqQardSelected').textContent = 'কোনো শিক্ষার্থী নির্বাচিত হয়নি';
+      document.getElementById('nqQardStudentClear').style.display = 'none';
+      renderSuggestions();
+      document.getElementById('nqQardStudentSearch').focus();
+    });
     document.getElementById('nqQardStudentSearch').addEventListener('blur', function () {
       setTimeout(function () {
         var box = document.getElementById('nqQardSuggestions');
@@ -143,7 +158,7 @@
         .map(normalize).join(' ').indexOf(normalize(q)) !== -1;
     });
     box.innerHTML = list.map(function (s) {
-      return '<button type="button" onclick="nqQardSelectStudent(' + JSON.stringify(String(s.id)) + ')"><b>' + esc(s.name || '-') + '</b> • ' + esc(s.cls || s.className || '-') + ' • আইডি: ' + esc(s.uid || s.regNo || s.id || '-') + '</button>';
+      return '<button type="button" onmousedown="event.preventDefault()" onclick="nqQardSelectStudent(' + JSON.stringify(String(s.id)) + ')"><b>' + esc(s.name || '-') + '</b> • ' + esc(s.cls || s.className || '-') + ' • আইডি: ' + esc(s.uid || s.regNo || s.id || '-') + '</button>';
     }).join('') || '<div style="padding:10px;color:#94a3b8">কোনো শিক্ষার্থী পাওয়া যায়নি</div>';
     box.style.display = 'block';
   }
@@ -156,6 +171,7 @@
     if (!selectedStudent) return;
     input.value = selectedStudent.name || '';
     box.style.display = 'none';
+    document.getElementById('nqQardStudentClear').style.display = 'inline-block';
     label.textContent = 'নির্বাচিত: ' + (selectedStudent.name || '-') + ' • শ্রেণী: ' + (selectedStudent.cls || selectedStudent.className || '-') + ' • আইডি: ' + (selectedStudent.uid || selectedStudent.regNo || selectedStudent.id || '-');
   };
 
@@ -191,6 +207,7 @@
         selectedStudent = null;
         document.getElementById('nqQardStudentSearch').value = '';
         document.getElementById('nqQardSelected').textContent = 'কোনো শিক্ষার্থী নির্বাচিত হয়নি';
+        document.getElementById('nqQardStudentClear').style.display = 'none';
         qardItems.unshift(data.item); renderHistory();
         alert(data.notified ? 'কর্জে হাসানা সংরক্ষণ হয়েছে এবং শিক্ষার্থীর আইডিতে নোটিফিকেশন গেছে' : 'সংরক্ষণ হয়েছে; শিক্ষার্থীর User ID পাওয়া যায়নি');
       }).catch(function (e) { alert(e.message); });

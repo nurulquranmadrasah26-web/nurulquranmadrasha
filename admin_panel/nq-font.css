@@ -37,7 +37,9 @@
 .popup,
 .warn-popup,
 #nqBellPanel,
-.nq-msg-panel {
+.nq-msg-panel,
+#nqToast,
+.nq-drawer {
   border-radius: 4px !important;
 }
 

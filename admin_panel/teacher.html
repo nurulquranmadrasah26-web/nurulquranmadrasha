@@ -70,7 +70,8 @@
   .brand .names .bn{font-size:15px;font-weight:600;line-height:1.3;}
   .brand .names .en{font-size:14px;color:var(--muted);line-height:1.3;}
 
-  nav.mainnav{display:flex;gap:26px;flex-wrap:wrap;}
+  nav.mainnav{display:flex;gap:12px;flex-wrap:nowrap;flex:1;min-width:0;overflow-x:auto;white-space:nowrap;scrollbar-width:none;}
+  nav.mainnav::-webkit-scrollbar{display:none;}
   nav.mainnav a{
     display:flex;align-items:center;gap:6px;
     font-size:15px;color:#374151;font-weight:500;
@@ -79,7 +80,7 @@
   nav.mainnav a:hover{background:#eef1f5;}
   nav.mainnav a .plusicon{color:#9aa1ab;font-weight:700;}
 
-  .topbar-right{display:flex;align-items:center;gap:14px;}
+  .topbar-right{display:flex;align-items:center;gap:14px;flex-shrink:0;}
   .bell{
     position:relative;width:38px;height:38px;border-radius:50%;
     background:#e9ebef;display:flex;align-items:center;justify-content:center;
@@ -337,6 +338,11 @@
   .subject-admin-card input{width:100%;padding:10px;border:1px solid #dfe3ea;font:inherit;}
   @media(max-width:900px){.adm-grid{grid-template-columns:repeat(2,1fr);}.subject-admin-layout{grid-template-columns:1fr;}}
   @media(max-width:600px){.adm-grid{grid-template-columns:1fr;}.adm-panel{padding:16px;}.adm-field[style*="span 2"]{grid-column:span 1!important;}.wizard-step{padding:11px 8px;font-size:13px;}.subj-chk-grid{grid-template-columns:1fr;}}
+  .thwr-student-grid{max-height:300px;overflow:auto;border:1px solid var(--line);border-radius:4px;padding:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:7px;}
+  .thwr-student-grid label{display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;}
+  .thwr-quran-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;}
+  .thwr-quran-grid input{min-width:0;}
+  @media(max-width:700px){.thwr-quran-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
 </style>
 <link rel="stylesheet" href="./teacher-mobile.css">
 <script src="config.js"></script>
@@ -359,10 +365,7 @@
     <a href="#" onclick="goto('inventory');return false;"><span class="nqi nqi-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><line x1="12" y1="13" x2="12" y2="21"/></svg></span> ইনভেন্টরি</a>
     <a href="#" onclick="goto('hw-subject');return false;"><span class="plusicon">+</span> বাড়ির কাজ</a>
     <a href="#" onclick="goto('hw-residential');return false;"><span class="nqi nqi-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg></span> নতুন (আবাসিক)</a>
-    <a href="#" onclick="goto('syllabus');return false;"><span class="nqi nqi-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span> সিলেবাস</a>
-    <a href="#" onclick="goto('leave');return false;"><span class="nqi nqi-purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span> ছুটি</a>
-    <a href="#" onclick="goto('notice');return false;"><span class="nqi nqi-red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11v2a1 1 0 001 1h3l7 4V6L7 10H4a1 1 0 00-1 1z"/><path d="M18 9a4 4 0 010 6"/></svg></span> নোটিশ</a>
-    <a href="#" onclick="goto('exam-subjects');return false;"><span class="nqi nqi-maroon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 3h4v18H4z"/><path d="M10 3h4v18h-4z"/><path d="M16.5 4l3.5 1-4 16-3.4-1z"/></svg></span> পরীক্ষার বিষয়</a>
+    <a href="#" onclick="goto('settings');return false;"><span class="nqi nqi-muted"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-2.9 1.2V21a2 2 0 11-4 0v-.1A1.7 1.7 0 007 19.4l-.1.1a2 2 0 11-2.8-2.8l.1-.1A1.7 1.7 0 003 13.6H3a2 2 0 110-4h.1A1.7 1.7 0 004.6 7l-.1-.1a2 2 0 112.8-2.8l.1.1A1.7 1.7 0 0010 3.6V3a2 2 0 114 0v.1a2 2 0 002.9 1.2l.1-.1a2 2 0 112.8 2.8l-.1.1A1.7 1.7 0 0021 13.6H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg></span> সেটিং</a>
     <a href="#" onclick="goto('hw-list');return false;"><span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h9a3 3 0 013 3v13a2.5 2.5 0 00-2.5-2.5H4z"/><path d="M20 4h-3a3 3 0 00-3 3v13a2.5 2.5 0 012.5-2.5H20z"/></svg></span> তালিকা</a>
     <a href="#" onclick="goto('requests');return false;"><span class="nqi nqi-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/></svg></span> অনুমোদন</a>
   </nav>
@@ -544,16 +547,36 @@
         <h2 style="margin:0;">বাড়ির কাজের তথ্য</h2>
         <span class="detail-btn"><span class="nqi nqi-blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></span> বিস্তারিত</span>
       </div>
-      <div class="radio-row" style="margin-top:16px;">
-        <label><input type="radio" name="hwrCat" value="কায়দা" checked>কায়দা</label>
-        <label><input type="radio" name="hwrCat" value="আমপারা">আমপারা</label>
-        <label><input type="radio" name="hwrCat" value="কুরআন">কুরআন</label>
-        <label><input type="radio" name="hwrCat" value="হিফজ">হিফজ</label>
+      <div class="radio-row" style="margin-top:16px;gap:14px;flex-wrap:wrap;">
+        <label><input type="radio" name="hwrBranch" value="নুরানি" checked onchange="updateTeacherHwResidentialLayout()"> নুরানি</label>
+        <label><input type="radio" name="hwrBranch" value="বালিকা শাখা" onchange="updateTeacherHwResidentialLayout()"> বালিকা শাখা</label>
+        <span style="color:#ccc;">||</span>
+        <label><input type="radio" name="hwrSubject" value="কায়দা" onchange="updateTeacherHwResidentialLayout()"> কায়দা</label>
+        <label><input type="radio" name="hwrSubject" value="আমপারা" onchange="updateTeacherHwResidentialLayout()"> আমপারা</label>
+        <span style="color:#ccc;">||</span>
+        <label><input type="radio" name="hwrSubject" value="কুরআন" onchange="updateTeacherHwResidentialLayout()"> কুরআন</label>
       </div>
-      <div class="form-field" style="margin-bottom:18px;"><label>মন্তব্য</label><textarea rows="4" id="hwrComment" placeholder="মন্তব্য"></textarea></div>
-      <div class="form-field"><label>শিক্ষার্থী (একাধিক নির্বাচন করা যাবে)</label>
-        <div id="hwrStudents" style="max-height:220px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:10px;"></div>
+      <div id="thwrLayout1">
+        <textarea id="hwrComment1" rows="3" placeholder="মন্তব্য" style="width:100%;box-sizing:border-box;"></textarea>
+        <div class="form-field"><label>শিক্ষার্থী</label><div id="hwrStudentGrid1" class="thwr-student-grid"></div></div>
       </div>
+      <div id="thwrLayout2" style="display:none;">
+        <div style="display:grid;grid-template-columns:1fr auto;gap:8px;"><input id="hwrSearch2" oninput="renderTeacherHwGrid2()" placeholder="ছাত্র খুঁজুন"><button type="button" class="workflow-submit" onclick="renderTeacherHwGrid2()">খুঁজুন</button></div>
+        <textarea id="hwrComment2" rows="3" placeholder="মন্তব্য" style="width:100%;box-sizing:border-box;margin-top:12px;"></textarea>
+        <div class="form-field"><label>শিক্ষার্থী</label><div id="hwrStudentGrid2" class="thwr-student-grid"></div></div>
+        <div class="form-field"><label>✓ শিক্ষার্থী অগ্রগতি</label><div id="hwrChecklist2" class="thwr-student-grid"></div></div>
+      </div>
+      <div id="thwrLayout3" style="display:none;">
+        <select id="hwrSearch3" style="width:100%;margin-bottom:12px;"><option value="">সূরা নির্বাচন করুন</option><option>আন নাযিয়াত</option><option>আবাসা</option><option>আত তাকভীর</option><option>আল ইনফিতার</option><option>আত মুতাফফিফীন</option><option>আল ফীল</option><option>কুরাইশ</option><option>আল মাউন</option><option>আল কাউসার</option><option>আল কাফিরুন</option><option>আন নাসর</option><option>আল লাহাব</option><option>আল ইখলাস</option><option>আল ফালাক</option><option>আন নাস</option></select>
+        <textarea id="hwrComment3" rows="3" placeholder="মন্তব্য" style="width:100%;box-sizing:border-box;"></textarea>
+        <div class="form-field"><label>শিক্ষার্থী</label><div id="hwrStudentGrid3" class="thwr-student-grid"></div></div>
+      </div>
+      <div id="thwrLayout4" style="display:none;">
+        <div class="thwr-quran-grid"><input id="hwrSabaqPara4" type="number" placeholder="ছবক পারা নং"><input id="hwrSabaqPage4" type="number" placeholder="ছবক পৃষ্ঠা নং"><input id="hwrSabqiPara4" type="number" placeholder="সাত ছবক পারা নং"><input id="hwrSabqiPage4" type="number" placeholder="সাত ছবক পৃষ্ঠা নং"><input id="hwrAmuktaPara4" type="number" placeholder="আমুক্তা পারা নং"><input id="hwrAmuktaPage4" type="number" placeholder="আমুক্তা পৃষ্ঠা নং"></div>
+        <textarea id="hwrComment4" rows="3" placeholder="মন্তব্য" style="width:100%;box-sizing:border-box;margin-top:12px;"></textarea>
+        <div class="form-field"><label>শিক্ষার্থী</label><div id="hwrStudentGrid4" class="thwr-student-grid"></div></div>
+      </div>
+      <div class="form-field" style="max-width:260px;"><label>তারিখ</label><input type="date" id="hwrDate"></div>
     </div>
     <div class="fee-save" style="border-radius:8px;" onclick="saveHwResidential()"><span class="nqi nqi-green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12 10 18 20 6"/></svg></span> সংরক্ষণ করুন</div>
   </section>
@@ -743,6 +766,19 @@
     </div>
   </section>
 
+  <!-- ============ TEACHER SETTINGS ============ -->
+  <section id="view-settings" class="view">
+    <div class="page-head"><div class="page-head-left"><div class="icon-box"><span class="nqi nqi-muted"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.9l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-2.9 1.2V21a2 2 0 11-4 0v-.1A1.7 1.7 0 007 19.4l-.1.1a2 2 0 11-2.8-2.8l.1.1A1.7 1.7 0 003 13.6H3a2 2 0 110-4h.1A1.7 1.7 0 004.6 7l-.1-.1a2 2 0 112.8-2.8l.1.1A1.7 1.7 0 0010 3.6V3a2 2 0 114 0v.1a2 2 0 002.9 1.2l.1-.1a2 2 0 112.8 2.8l-.1.1A1.7 1.7 0 0021 13.6H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg></span></div><h1>সেটিং</h1></div></div>
+    <div class="card"><h2>কম ব্যবহৃত মেনু</h2><p style="color:var(--muted);margin-top:0;">প্রয়োজন অনুযায়ী নিচের বিভাগগুলো খুলুন। এগুলো টপবারে আলাদা করে রাখা হয়নি।</p>
+      <div class="quicklinks">
+        <button class="qb-hw" onclick="goto('syllabus')"><span class="nqi nqi-purple">▤</span> সিলেবাস</button>
+        <button class="qb-attend" onclick="goto('leave')"><span class="nqi nqi-purple">▣</span> ছুটি</button>
+        <button class="qb-admit" onclick="goto('notice')"><span class="nqi nqi-red">!</span> নোটিশ</button>
+        <button class="qb-fee" onclick="goto('exam-subjects')"><span class="nqi nqi-maroon">✦</span> পরীক্ষার বিষয়</button>
+      </div>
+    </div>
+  </section>
+
   <!-- ============ APPROVAL STATUS ============ -->
   <section id="view-requests" class="view">
     <div class="page-head"><div class="page-head-left"><div class="icon-box"><span class="nqi nqi-amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/></svg></span></div><h1>অনুমোদনের অবস্থা</h1></div>
@@ -899,12 +935,17 @@ function editTeacherApproval(id){
     document.getElementById('hwdDate').value = p.date || todayISO();
   } else if(r.kind === 'homework' && obj(p).homeworkType === 'residential'){
     goto('hw-residential');
-    var catRadio = document.querySelector('input[name="hwrCat"][value="' + (p.category || '') + '"]');
-    if(catRadio) catRadio.checked = true;
-    document.getElementById('hwrComment').value = p.task || p.comment || '';
+    document.querySelectorAll('input[name="hwrBranch"]').forEach(function(x){ x.checked = x.value === (p.branchName || 'নুরানি'); });
+    document.querySelectorAll('input[name="hwrSubject"]').forEach(function(x){ x.checked = x.value === (p.subject || ''); });
+    updateTeacherHwResidentialLayout();
+    var editCommentId = p.subject === 'কায়দা' ? 'hwrComment2' : p.subject === 'আমপারা' ? 'hwrComment3' : p.subject === 'কুরআন' ? 'hwrComment4' : 'hwrComment1';
+    document.getElementById(editCommentId).value = p.task || p.comment || '';
+    if (document.getElementById('hwrSearch3')) document.getElementById('hwrSearch3').value = (p.details || '').replace(/^সূরা:\s*/, '');
+    document.getElementById('hwrDate').value = p.date || todayISO();
     renderHwrStudents();
     arr(p.studentIds).forEach(function(sid){
-      var c = document.querySelector('.hwr-stu-check[value="' + sid + '"]');
+      var editCls = p.subject === 'কায়দা' ? 'hwr-stu-2' : p.subject === 'আমপারা' ? 'hwr-stu-3' : p.subject === 'কুরআন' ? 'hwr-stu-4' : 'hwr-stu-1';
+      var c = document.querySelector('.' + editCls + '[value="' + sid + '"]');
       if(c) c.checked = true;
     });
   } else if(r.kind === 'syllabus'){
@@ -1489,29 +1530,71 @@ function deleteHwDaily(id){
   toast('অনুমোদিত বাড়ির কাজ সরাসরি মুছবেন না; প্রয়োজনে সুপার এডমিনকে জানান');
 }
 
-/* ---------- বাড়ির কাজ (আবাসিক) ---------- */
-function renderHwrStudents(){
-  var box = document.getElementById('hwrStudents');
-  var students = arr(S.students);
-  box.innerHTML = students.length ? students.map(function(st){
-    return '<label style="display:block;font-size:14px;padding:4px 0;"><input type="checkbox" class="hwr-stu-check" value="' + st.id + '"> ' + esc(st.name) + ' <small style="color:var(--muted)">(' + esc(st.cls) + ')</small></label>';
-  }).join('') : '<div class="empty-row">কোনো শিক্ষার্থী নেই</div>';
+/* ---------- বাড়ির কাজ (আবাসিক) — Super Admin-এর পূর্ণ ফর্ম ---------- */
+function teacherHwBranch(){
+  return (document.querySelector('input[name="hwrBranch"]:checked') || {}).value || '';
 }
+function teacherHwSubject(){
+  return (document.querySelector('input[name="hwrSubject"]:checked') || {}).value || '';
+}
+function teacherHwStudents(search){
+  var branch = teacherHwBranch(), q = String(search || '').toLowerCase().trim();
+  var norm = function(v){ return String(v || '').replace(/শাখা/g,'').replace(/আবাসিক/g,'').replace(/\s+/g,' ').trim(); };
+  var nb = norm(branch);
+  return arr(S.students).filter(function(st){
+    var fields = [st.branch, st.dept, st.attDept, st.cls, st.attCls].map(norm).filter(Boolean);
+    var branchOk = !nb || fields.some(function(v){ return v.indexOf(nb) !== -1 || nb.indexOf(v) !== -1; });
+    var hay = [st.name, st.regNo, st.mobile, st.id].map(function(v){ return String(v || '').toLowerCase(); }).join(' ');
+    return branchOk && (!q || hay.indexOf(q) !== -1);
+  });
+}
+function renderTeacherHwGrid(id, cls, search){
+  var box = document.getElementById(id); if(!box) return;
+  var list = teacherHwStudents(search);
+  box.innerHTML = list.length ? '<label style="grid-column:1/-1;font-weight:600;"><input type="checkbox" onchange="toggleTeacherHwStudents(this,\'' + cls + '\')"> সবাইকে নির্বাচন করুন (' + list.length + ' জন)</label>' + list.map(function(st){
+    return '<label><input type="checkbox" class="' + cls + '" value="' + st.id + '"> ' + esc(st.regNo || st.id) + ' - ' + esc(st.name) + ' <small>(' + esc(st.cls || '') + ')</small></label>';
+  }).join('') : '<div class="empty-row" style="grid-column:1/-1;">এই শাখায় কোনো শিক্ষার্থী পাওয়া যায়নি</div>';
+}
+function toggleTeacherHwStudents(master, cls){
+  document.querySelectorAll('.' + cls).forEach(function(c){ c.checked = master.checked; });
+}
+function renderTeacherHwGrid1(){ renderTeacherHwGrid('hwrStudentGrid1','hwr-stu-1'); }
+function renderTeacherHwGrid2(){ renderTeacherHwGrid('hwrStudentGrid2','hwr-stu-2',document.getElementById('hwrSearch2')?.value); renderTeacherHwChecklist(); }
+function renderTeacherHwGrid3(){ renderTeacherHwGrid('hwrStudentGrid3','hwr-stu-3'); }
+function renderTeacherHwGrid4(){ renderTeacherHwGrid('hwrStudentGrid4','hwr-stu-4'); }
+function renderTeacherHwChecklist(){
+  var box=document.getElementById('hwrChecklist2'); if(!box) return;
+  var list=teacherHwStudents(document.getElementById('hwrSearch2')?.value);
+  box.innerHTML=list.length ? list.map(function(st,i){ return '<label><input type="checkbox" class="hwr-progress-2" value="' + st.id + '"> ' + bn(i+1) + '. ' + esc(st.name) + '</label>'; }).join('') : '<div class="empty-row">তালিকা খালি</div>';
+}
+function updateTeacherHwResidentialLayout(){
+  ['thwrLayout1','thwrLayout2','thwrLayout3','thwrLayout4'].forEach(function(id){ var el=document.getElementById(id); if(el) el.style.display='none'; });
+  var subject=teacherHwSubject(), id=subject==='কায়দা'?'thwrLayout2':subject==='আমপারা'?'thwrLayout3':subject==='কুরআন'?'thwrLayout4':'thwrLayout1';
+  document.getElementById(id).style.display='block';
+  if(id==='thwrLayout1') renderTeacherHwGrid1();
+  if(id==='thwrLayout2'){ renderTeacherHwGrid2(); renderTeacherHwChecklist(); }
+  if(id==='thwrLayout3') renderTeacherHwGrid3();
+  if(id==='thwrLayout4') renderTeacherHwGrid4();
+}
+function renderHwrStudents(){ updateTeacherHwResidentialLayout(); }
 function saveHwResidential(){
-  var category = (document.querySelector('input[name="hwrCat"]:checked') || {}).value || '';
-  var comment = document.getElementById('hwrComment').value.trim();
-  var ids = Array.prototype.map.call(document.querySelectorAll('.hwr-stu-check:checked'), function(c){ return parseInt(c.value); });
-  if(!comment){ toast('মন্তব্য লিখুন'); return; }
-  if(!ids.length){ toast('অন্তত একজন শিক্ষার্থী নির্বাচন করুন'); return; }
-  var payload = {
-    homeworkType:'residential', category:category, task:comment, studentIds:ids, date:todayISO()
-  };
-  if(teacherEditingHomeworkId !== null) payload.editId = teacherEditingHomeworkId;
-  submitApproval('homework','আবাসিক বাড়ির কাজ অনুমোদনের আবেদন', payload).then(function(){
-    document.getElementById('hwrComment').value = '';
-    document.querySelectorAll('.hwr-stu-check').forEach(function(c){ c.checked = false; });
-    renderHwList();
-    goto('hw-list');
+  var branch=teacherHwBranch(), subject=teacherHwSubject(), commentId=subject==='কায়দা'?'hwrComment2':subject==='আমপারা'?'hwrComment3':subject==='কুরআন'?'hwrComment4':'hwrComment1';
+  var cls=subject==='কায়দা'?'hwr-stu-2':subject==='আমপারা'?'hwr-stu-3':subject==='কুরআন'?'hwr-stu-4':'hwr-stu-1';
+  var extra=[], comment=(document.getElementById(commentId)?.value || '').trim(), date=document.getElementById('hwrDate')?.value || todayISO();
+  if(subject==='আমপারা'){ var surah=document.getElementById('hwrSearch3')?.value || ''; if(!surah){ toast('সূরা নির্বাচন করুন'); return; } extra.push('সূরা: '+surah); }
+  if(subject==='কুরআন'){
+    [['ছবক','hwrSabaqPara4','hwrSabaqPage4'],['সাত ছবক','hwrSabqiPara4','hwrSabqiPage4'],['আমুক্তা','hwrAmuktaPara4','hwrAmuktaPage4']].forEach(function(p){ var a=document.getElementById(p[1])?.value||'', b=document.getElementById(p[2])?.value||''; if(a||b) extra.push(p[0]+': পারা '+(a||'-')+', পৃষ্ঠা '+(b||'-')); });
+    if(!extra.length){ toast('অন্তত একটি পারা/পৃষ্ঠা নম্বর দিন'); return; }
+  }
+  var ids=Array.from(document.querySelectorAll('.'+cls+':checked')).map(function(c){ return Number(c.value); });
+  if(!branch || !ids.length){ toast(!branch?'শাখা নির্বাচন করুন':'অন্তত একজন শিক্ষার্থী নির্বাচন করুন'); return; }
+  if(!comment && !extra.length){ toast('মন্তব্য/বাড়ির কাজের বিবরণ লিখুন'); return; }
+  var payload={homeworkType:'residential',branchName:branch,subject:subject,category:branch+(subject?' — '+subject:''),task:comment,comment:comment,details:extra.join(' • '),studentIds:ids,progress:subject==='কায়দা'?Array.from(document.querySelectorAll('.hwr-progress-2:checked')).map(function(c){return Number(c.value);}):[],date:date};
+  if(teacherEditingHomeworkId !== null) payload.editId=teacherEditingHomeworkId;
+  submitApproval('homework','আবাসিক বাড়ির কাজ অনুমোদনের আবেদন',payload).then(function(){
+    ['hwrComment1','hwrComment2','hwrComment3','hwrComment4','hwrSabaqPara4','hwrSabaqPage4','hwrSabqiPara4','hwrSabqiPage4','hwrAmuktaPara4','hwrAmuktaPage4','hwrSearch2'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
+    var s=document.getElementById('hwrSearch3');if(s)s.value=''; document.querySelectorAll('#view-hw-residential input[type=checkbox]').forEach(function(c){c.checked=false;});
+    renderHwList(); goto('hw-list');
   });
 }
 
@@ -1521,7 +1604,7 @@ function renderHwList(){
   var daily = arr(S.hwDailyList).map(function(h){ return { type:'daily', id:h.id, title:h.subject, cls:h.cls, desc:h.task, date:h.date, teacher:h.teacher, status:h.status }; });
   var res = arr(S.hwResidentialList).map(function(h){
     var names = arr(h.students).map(function(sid){ var st = arr(S.students).find(function(x){ return x.id === sid; }); return st ? st.name : sid; });
-    return { type:'res', id:h.id, title:h.category || 'আবাসিক', cls:'আবাসিক', desc:h.comment + ' — ' + names.join(', '), date:h.date, teacher:h.teacher, status:h.status };
+    return { type:'res', id:h.id, title:h.category || 'আবাসিক', cls:'আবাসিক', desc:(h.comment || '') + (h.details ? ' • ' + h.details : '') + ' — ' + names.join(', '), date:h.date, teacher:h.teacher, status:h.status };
   });
   var pending = teacherApprovalRequests.filter(function(r){
     return r.kind === 'homework' && r.status === 'pending';
@@ -1565,12 +1648,16 @@ function editPublishedHomework(type, id){
     document.getElementById('hwdDate').value = item.dateISO || todayISO();
   } else {
     goto('hw-residential');
-    var radio = document.querySelector('input[name="hwrCat"][value="' + (item.subject || item.category || '') + '"]');
-    if(radio) radio.checked = true;
-    document.getElementById('hwrComment').value = item.comment || '';
+    document.querySelectorAll('input[name="hwrBranch"]').forEach(function(x){ x.checked = x.value === (item.branchName || 'নুরানি'); });
+    document.querySelectorAll('input[name="hwrSubject"]').forEach(function(x){ x.checked = x.value === (item.subject || ''); });
+    updateTeacherHwResidentialLayout();
+    var itemCommentId = item.subject === 'কায়দা' ? 'hwrComment2' : item.subject === 'আমপারা' ? 'hwrComment3' : item.subject === 'কুরআন' ? 'hwrComment4' : 'hwrComment1';
+    document.getElementById(itemCommentId).value = item.comment || item.task || '';
+    document.getElementById('hwrDate').value = item.dateISO || todayISO();
     renderHwrStudents();
     arr(item.students).forEach(function(sid){
-      var c = document.querySelector('.hwr-stu-check[value="' + sid + '"]');
+      var itemCls = item.subject === 'কায়দা' ? 'hwr-stu-2' : item.subject === 'আমপারা' ? 'hwr-stu-3' : item.subject === 'কুরআন' ? 'hwr-stu-4' : 'hwr-stu-1';
+      var c = document.querySelector('.' + itemCls + '[value="' + sid + '"]');
       if(c) c.checked = true;
     });
   }

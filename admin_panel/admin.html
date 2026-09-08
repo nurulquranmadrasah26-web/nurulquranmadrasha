@@ -2281,8 +2281,8 @@
     <div class="ledger-cards" style="grid-template-columns:1fr;">
       <div class="ledger-card income">আজকের ডোনেশন আদায়:<span class="lc-val" id="dcTodayTotal">৳ ০/-</span></div>
       <div style="display:flex;gap:8px;margin-top:10px;">
-        <button class="add-btn" onclick="window.print()">🖶 প্রিন্ট</button>
-        <button class="add-btn" style="background:#43a047;" onclick="exportSectionAsPDF('#page-donationCollect table','ডোনেশন আদায়')">▣ PDF</button>
+        <button class="add-btn" onclick="printDonationCollect()">🖶 প্রিন্ট</button>
+        <button class="add-btn" style="background:#43a047;" onclick="exportDonationCollectPDF()">▣ PDF</button>
       </div>
     </div>
     <div class="tbl-wrap">
@@ -4402,7 +4402,8 @@
     <div class="list-title-bar">
       <div class="section-title" style="margin:0;border:0;padding:0;">খাবার রুটিন</div>
       <div class="meal-edit-actions" style="display:flex;gap:8px;">
-        <button class="add-btn meal-print-btn" onclick="printMealRoutine()">🖶 প্রিন্ট / PDF</button>
+        <button class="add-btn meal-print-btn" onclick="printMealRoutine()">🖶 প্রিন্ট</button>
+        <button class="add-btn" style="background:#43a047;" onclick="exportMealRoutinePDF()">▣ PDF</button>
       </div>
     </div>
     <div style="background:#fff;border-radius:10px;padding:18px;">
@@ -12348,15 +12349,23 @@ function saveMealRoutine() {
   if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
   showToast('খাবার রুটিন সংরক্ষণ করা হয়েছে!');
 }
-function printMealRoutine() {
+function mealRoutinePrintContent() {
   document.querySelectorAll('#mealRoutineBody input[data-mr-row]').forEach(inp => {
     const cell = inp.closest('.meal-cell');
     if (cell) cell.setAttribute('data-print', inp.value.trim());
   });
-  document.body.classList.add('nq-print-meal');
-  window.onafterprint = function(){ document.body.classList.remove('nq-print-meal'); window.onafterprint = null; };
-  showToast('খাবার রুটিন প্রিন্ট উইন্ডোর জন্য প্রস্তুত...');
-  window.print();
+  const rows = mealRoutine.map((r, i) => '<tr><td>' + bn(i + 1) + '</td><td>' + r.day + '</td><td>' + (r.morning || '-') + '</td><td>' + (r.lunch || '-') + '</td><td>' + (r.dinner || '-') + '</td></tr>').join('');
+  return '<table><thead><tr><th>#</th><th>বার</th><th>সকাল</th><th>দুপুর</th><th>রাত</th></tr></thead><tbody>' + rows + '</tbody></table>';
+}
+function printMealRoutine() {
+  saveMealRoutine();
+  showToast('খাবার রুটিন প্রিন্ট উইন্ডোতে খোলা হচ্ছে...');
+  openLedgerPrintWindow('খাবার রুটিন', mealRoutinePrintContent());
+}
+function exportMealRoutinePDF() {
+  saveMealRoutine();
+  showToast('খাবার রুটিন PDF-এর জন্য প্রিন্ট ডায়ালগ খোলা হচ্ছে...');
+  openLedgerPrintWindow('খাবার রুটিন PDF', mealRoutinePrintContent());
 }
 
 /* ═══════════ ১০. নোটিশ (Notice Board) ═══════════ */
@@ -13615,6 +13624,24 @@ function renderDonationCollectList() {
   const todayTotal = donationTx.filter(t => t.date === today).reduce((s, t) => s + t.amount, 0);
   const el = document.getElementById('dcTodayTotal');
   if (el) el.textContent = bnTaka(todayTotal);
+}
+
+function donationCollectPrintContent() {
+  renderDonationCollectList();
+  const page = document.getElementById('page-donationCollect');
+  if (!page) return '';
+  const clone = page.cloneNode(true);
+  clone.querySelectorAll('.ledger-entrybar, input, select, textarea, button, #donorModal').forEach(el => el.remove());
+  clone.querySelectorAll('td:last-child, th:last-child').forEach(el => el.remove());
+  return clone.innerHTML;
+}
+function printDonationCollect() {
+  showToast('ডোনেশন আদায় প্রিন্ট উইন্ডোতে খোলা হচ্ছে...');
+  openLedgerPrintWindow('ডোনেশন আদায়', donationCollectPrintContent());
+}
+function exportDonationCollectPDF() {
+  showToast('ডোনেশন আদায় PDF-এর জন্য প্রিন্ট ডায়ালগ খোলা হচ্ছে...');
+  openLedgerPrintWindow('ডোনেশন আদায় PDF', donationCollectPrintContent());
 }
 
 function renderDonationReport() {
