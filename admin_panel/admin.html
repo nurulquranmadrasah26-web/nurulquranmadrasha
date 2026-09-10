@@ -1481,6 +1481,34 @@
       #page-mealRoutine .meal-board .meal-cell::after { content: attr(data-print); }
       .meal-board th { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
     }
+
+    /* ───── শিক্ষার্থীর ফির তথ্য (Fee Info Modal) ───── */
+    .fi-modal { max-width: 920px; padding: 0; border-radius: 6px; }
+    .fi-head { display:flex; align-items:center; justify-content:space-between; padding:16px 20px; border-bottom:1px solid #e5e8ee; }
+    .fi-head h2 { margin:0; font-size:19px; color:#2c3e50; font-weight:600; }
+    .fi-close { background:none; border:none; font-size:22px; line-height:1; color:#7b8794; cursor:pointer; padding:2px 6px; }
+    .fi-close:hover { color:#333; }
+    .fi-body { padding:6px 20px 10px; overflow-x:auto; }
+    .fi-table { width:100%; border-collapse:collapse; }
+    .fi-table th { font-size:14px; color:#2c3e50; font-weight:600; text-align:center; padding:12px 8px; border-bottom:2px solid #2c3e50; white-space:nowrap; }
+    .fi-table th:first-child { text-align:left; }
+    .fi-table td { padding:10px 8px; border-bottom:1px solid #eceff3; vertical-align:middle; text-align:center; }
+    .fi-table td:first-child { text-align:left; font-size:14px; color:#2c3e50; white-space:nowrap; }
+    .fi-table tbody tr { background:#dce9f5; }
+    .fi-table input { width:100%; max-width:170px; padding:9px 12px; border:1px solid #d7dce3; border-radius:4px; background:#eceff3; color:#495057;
+      font-family:'Kalpurush','Hind Siliguri','Noto Sans Bengali',sans-serif; font-size:15px; text-align:left; }
+    .fi-table input.fi-editable { background:#fff; }
+    .fi-table input.fi-editable:focus { outline:none; border-color:#66afe9; box-shadow:0 0 6px rgba(102,175,233,.6); }
+    .fi-del { width:34px; height:22px; border:none; border-radius:11px; background:#e3355c; color:#fff; cursor:pointer; font-size:12px; line-height:1; display:inline-flex; align-items:center; justify-content:center; }
+    .fi-del:hover { background:#c62848; }
+    .fi-total-row td { background:#fff; }
+    .fi-total-row td:first-child { text-align:right; font-size:14px; color:#2c3e50; padding-right:14px; }
+    .fi-foot { display:flex; justify-content:flex-end; padding:14px 20px 20px; border-top:1px solid #e5e8ee; }
+    .fi-save { background:#3b7dd8; color:#fff; border:none; border-radius:4px; padding:9px 16px; font-size:14px; cursor:pointer;
+      font-family:'Kalpurush','Hind Siliguri','Noto Sans Bengali',sans-serif; }
+    .fi-save:hover { background:#2f6bc0; }
+    .fi-empty { text-align:center; color:#888; padding:18px; font-size:14px; }
+
   </style>
 </head>
 <body>
@@ -5340,6 +5368,37 @@
 </div>
 
 <!-- Generic details / reorder / list-overview modal (reused across several pages) -->
+<!-- ═══════════════ শিক্ষার্থীর ফির তথ্য ═══════════════ -->
+<div class="form-modal-overlay" id="feeInfoModal">
+  <div class="form-modal fi-modal">
+    <div class="fi-head">
+      <h2>শিক্ষার্থীর ফির তথ্য</h2>
+      <button class="fi-close" type="button" onclick="closeModal('feeInfoModal')">&times;</button>
+    </div>
+    <div class="fi-body">
+      <table class="fi-table">
+        <thead>
+          <tr><th>আইডি</th><th>পরিমাণ</th><th>নির্বাচিত</th><th>ডিসকাউন্ট</th><th>Action</th></tr>
+        </thead>
+        <tbody id="feeInfoBody"></tbody>
+        <tfoot>
+          <tr class="fi-total-row">
+            <td>মোট</td>
+            <td><input type="text" id="feeInfoTotalAmount" value="0" readonly></td>
+            <td><input type="text" id="feeInfoTotalSelected" value="0" readonly></td>
+            <td><input type="text" id="feeInfoTotalDiscount" value="0" readonly></td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+    <div class="fi-foot">
+      <button class="fi-save" type="button" onclick="saveStudentFeeInfo()">সংরক্ষণ করুন</button>
+    </div>
+  </div>
+</div>
+
+
 <div class="form-modal-overlay" id="detailModal">
   <div class="form-modal" style="max-width:520px;">
     <h2 id="detailModalTitle">বিস্তারিত</h2>
@@ -9958,67 +10017,112 @@ function addOneYearMinusOneDay(iso) {
   d.setDate(d.getDate() - 1);
   return d.toISOString().slice(0, 10);
 }
+function nqFeeInfoLabel(id) {
+  const it = feeItems.find(f => f.id === id);
+  return it ? it.label : id;
+}
+let feeInfoStudentId = null;
+let feeInfoRows = [];
+
+function nqStudentFeeRows(s) {
+  if (Array.isArray(s.feeRows) && s.feeRows.length) {
+    return s.feeRows.map(r => ({
+      id: r.id || 'monthly',
+      label: r.label || nqFeeInfoLabel(r.id || 'monthly'),
+      amount: Math.max(0, Number(r.amount) || 0),
+      selected: Math.max(0, Number(r.selected !== undefined ? r.selected : r.amount) || 0)
+    }));
+  }
+  const base = feeBaseAmount(s);
+  const selected = getStudentCurrentFee(s);
+  return [{ id: 'monthly', label: nqFeeInfoLabel('monthly'), amount: base, selected }];
+}
+
 function openFeeStudentDetail(id) {
   const s = students.find(x => String(x.id) === String(id));
   if (!s) return;
-  const d = s.feeDiscount || {};
-  const base = feeBaseAmount(s);
-  const discount = feeDiscountActive(d) ? Number(d.amount) || 0 : 0;
-  const from = d.from || nqTodayISO();
-  const to = d.to || addOneYearMinusOneDay(from);
-  showDetailModal('শিক্ষার্থীর ফি — বিস্তারিত', `
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-bottom:16px;">
-      <div style="background:#f5f7ff;border:1px solid #dfe5ff;border-radius:8px;padding:12px;"><div style="font-size:12px;color:#666;">শিক্ষার্থী</div><strong>${cmEsc(s.name)}</strong><div style="font-size:12px;color:#777;">রেজি. ${cmEsc(s.regNo)}</div></div>
-      <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:8px;padding:12px;"><div style="font-size:12px;color:#666;">শিক্ষার্থীর পূর্বের বেতন</div><strong>${fmtTk(base)} টাকা</strong></div>
-      <div style="background:#e8f5e9;border:1px solid #a5d6a7;border-radius:8px;padding:12px;"><div style="font-size:12px;color:#666;">বর্তমান বেতন</div><strong id="feeStudentCurrentPreview">${fmtTk(Math.max(0, base - discount))} টাকা</strong></div>
-    </div>
-    <div style="border:1px solid #e0e0e0;border-radius:8px;padding:14px;">
-      <div style="font-weight:700;color:#1a237e;margin-bottom:10px;">শিক্ষার্থীর ছাড়</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;">
-        <label style="font-size:12px;color:#666;">ছাড়ের পরিমাণ (টাকা)
-          <input id="feeStudentDiscount" type="number" min="0" step="1" value="${discount}" oninput="updateStudentFeePreview(${s.id})" style="width:100%;margin-top:4px;padding:8px;border:1px solid #ddd;border-radius:6px;">
-        </label>
-        <label style="font-size:12px;color:#666;">ছাড় শুরুর তারিখ
-          <input id="feeStudentDiscountFrom" type="date" value="${from}" oninput="updateStudentFeePreview(${s.id})" style="width:100%;margin-top:4px;padding:8px;border:1px solid #ddd;border-radius:6px;">
-        </label>
-        <label style="font-size:12px;color:#666;">ছাড় শেষ হবে
-          <input id="feeStudentDiscountTo" type="date" value="${to}" readonly style="width:100%;margin-top:4px;padding:8px;border:1px solid #ddd;border-radius:6px;background:#f5f5f5;">
-        </label>
-      </div>
-      <div style="font-size:12px;color:#777;margin-top:10px;">ছাড়ের মেয়াদ স্বয়ংক্রিয়ভাবে এক বছর রাখা হবে।</div>
-    </div>
-    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px;">
-      <button class="btn-cancel" onclick="closeModal('detailModal')">বাতিল</button>
-      <button class="btn-save" onclick="saveStudentFeeSettings(${s.id})">ছাড় সংরক্ষণ করুন</button>
-    </div>`);
+  feeInfoStudentId = s.id;
+  feeInfoRows = nqStudentFeeRows(s);
+  renderFeeInfoModal();
+  openModal('feeInfoModal');
 }
-function updateStudentFeePreview(id) {
-  const s = students.find(x => String(x.id) === String(id));
-  if (!s) return;
-  const amount = Math.max(0, Number(document.getElementById('feeStudentDiscount')?.value) || 0);
-  const current = Math.max(0, feeBaseAmount(s) - amount);
-  const currentEl = document.getElementById('feeStudentCurrentPreview');
-  if (currentEl) currentEl.textContent = fmtTk(current) + ' টাকা';
-  const from = document.getElementById('feeStudentDiscountFrom')?.value || nqTodayISO();
-  const toEl = document.getElementById('feeStudentDiscountTo');
-  if (toEl) toEl.value = addOneYearMinusOneDay(from);
+
+function renderFeeInfoModal() {
+  const body = document.getElementById('feeInfoBody');
+  if (!body) return;
+  if (!feeInfoRows.length) {
+    body.innerHTML = '<tr><td colspan="5" class="fi-empty">কোনো ফি নেই</td></tr>';
+  } else {
+    body.innerHTML = feeInfoRows.map((r, i) => {
+      const discount = Math.max(0, r.amount - r.selected);
+      return `<tr>
+        <td>${cmEsc(r.label)}</td>
+        <td><input type="text" value="${r.amount}" readonly></td>
+        <td><input class="fi-editable" type="number" min="0" step="1" value="${r.selected}" oninput="updateFeeInfoRow(${i}, this.value)"></td>
+        <td><input type="text" value="${discount}" readonly></td>
+        <td><button class="fi-del" type="button" title="মুছে ফেলুন" onclick="removeFeeInfoRow(${i})">🗑</button></td>
+      </tr>`;
+    }).join('');
+  }
+  updateFeeInfoTotals();
 }
-function saveStudentFeeSettings(id) {
-  const s = students.find(x => String(x.id) === String(id));
-  if (!s) return;
-  const amount = Math.max(0, Number(document.getElementById('feeStudentDiscount')?.value) || 0);
-  const from = document.getElementById('feeStudentDiscountFrom')?.value || nqTodayISO();
-  const to = addOneYearMinusOneDay(from);
-  const base = feeBaseAmount(s);
+
+function updateFeeInfoRow(i, val) {
+  const r = feeInfoRows[i];
+  if (!r) return;
+  let sel = Math.max(0, Number(val) || 0);
+  if (sel > r.amount) sel = r.amount;
+  r.selected = sel;
+  const tr = document.getElementById('feeInfoBody')?.rows[i];
+  if (tr) {
+    const selInput = tr.cells[2].querySelector('input');
+    if (selInput && Number(selInput.value) !== sel) selInput.value = sel;
+    const discInput = tr.cells[3].querySelector('input');
+    if (discInput) discInput.value = Math.max(0, r.amount - sel);
+  }
+  updateFeeInfoTotals();
+}
+
+function updateFeeInfoTotals() {
+  const amount = feeInfoRows.reduce((a, r) => a + r.amount, 0);
+  const selected = feeInfoRows.reduce((a, r) => a + r.selected, 0);
+  const setVal = (id, v) => { const el = document.getElementById(id); if (el) el.value = v; };
+  setVal('feeInfoTotalAmount', amount);
+  setVal('feeInfoTotalSelected', selected);
+  setVal('feeInfoTotalDiscount', Math.max(0, amount - selected));
+}
+
+function removeFeeInfoRow(i) {
+  if (!feeInfoRows[i]) return;
+  feeInfoRows.splice(i, 1);
+  renderFeeInfoModal();
+}
+
+function saveStudentFeeInfo() {
+  const s = students.find(x => String(x.id) === String(feeInfoStudentId));
+  if (!s) { closeModal('feeInfoModal'); return; }
+  s.feeRows = feeInfoRows.map(r => ({
+    id: r.id, label: r.label, amount: r.amount,
+    selected: r.selected, discount: Math.max(0, r.amount - r.selected)
+  }));
+  const monthly = s.feeRows.find(r => r.id === 'monthly');
+  const base = monthly ? monthly.amount : 0;
+  const selected = monthly ? monthly.selected : 0;
+  const discount = Math.max(0, base - selected);
   s.previousFee = base;
   s.monthlyFeeBeforeDiscount = base;
-  s.feeDiscount = amount > 0 ? { amount, from, to, years: 1, updatedAt: new Date().toISOString(), updatedBy: nqCurrentUserName() } : null;
-  s.fee = Math.max(0, base - (feeDiscountActive(s.feeDiscount) ? amount : 0));
+  s.fee = selected;
+  if (discount > 0) {
+    const from = (s.feeDiscount && s.feeDiscount.from) || nqTodayISO();
+    s.feeDiscount = { amount: discount, from, to: addOneYearMinusOneDay(from), years: 1, updatedAt: new Date().toISOString(), updatedBy: nqCurrentUserName() };
+  } else {
+    s.feeDiscount = null;
+  }
   renderFeeList();
   if (typeof renderStudents === 'function') renderStudents();
   if (typeof nqSaveStateNow === 'function') nqSaveStateNow();
-  closeModal('detailModal');
-  showToast(amount > 0 ? 'শিক্ষার্থীর এক বছরের ছাড় সংরক্ষণ করা হয়েছে' : 'শিক্ষার্থীর ছাড় বাতিল করা হয়েছে');
+  closeModal('feeInfoModal');
+  showToast('শিক্ষার্থীর ফির তথ্য সংরক্ষণ করা হয়েছে');
 }
 
 /* ═══════════ ফি বকেয়ার তালিকা ═══════════ */
