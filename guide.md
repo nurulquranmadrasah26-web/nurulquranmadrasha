@@ -1,3 +1,14 @@
+## বাড়ির কাজ — অনুমোদন ছাড়াই সরাসরি শিক্ষার্থীর নোটিফিকেশনে
+
+- শিক্ষক বাড়ির কাজ (দৈনিক/আবাসিক) দিলে সেটি **সুপার এডমিনের অনুমোদন ছাড়াই** সাথে সাথে প্রকাশ হয়
+  এবং শুধু সংশ্লিষ্ট শিক্ষার্থীদের নোটিফিকেশনে (বেল + পুশ) চলে যায়। সুপার এডমিনের কাছে কিছু যায় না।
+- নতুন API: `POST /api/homework/publish`। পুরনো `POST /api/approval-requests` (kind=homework) এখন
+  একই কাজ করে, ফলে পুরনো ক্যাশ করা অ্যাপেও অনুমোদন লাগে না।
+- সংশোধন করলে শিক্ষার্থী "বাড়ির কাজ সংশোধিত হয়েছে" নোটিফিকেশন পায়।
+- পুশের জন্য Render-এ `VAPID_PUBLIC_KEY`/`VAPID_PRIVATE_KEY` সেট থাকতে হবে; না থাকলে বেল নোটিফিকেশন
+  (প্রতি ২০ সেকেন্ডে হালনাগাদ) কাজ করবে।
+- সিলেবাস, ছুটি, ফলাফল, ভর্তি, ফি ইত্যাদি আগের মতোই সুপার এডমিনের অনুমোদনে যাবে।
+
 ## Teacher approval workflow
 
 Teacher-created homework, syllabus, leave applications, result entries, and admission applications are stored as pending approval requests. Super Admins receive them in the notification bell, can inspect the submitted details, and approve or reject them. Only approved records are written to the shared student-facing store and approved items generate a student notification.

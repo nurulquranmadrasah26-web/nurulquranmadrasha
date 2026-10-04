@@ -2266,10 +2266,15 @@ async function workflowStudentUsers(payload) {
     .concat(p.studentId != null ? [p.studentId] : [])
     .map((x) => String(x));
   const className = String(p.className || "").trim();
+  const idMatched = wantedIds.length > 0 &&
+    records.some((st) => st && st.id != null && wantedIds.includes(String(st.id)));
   const selected = records.filter((st) => {
     if (!st) return false;
     if (wantedIds.length) {
-      return [st.id, st.uid, st.regNo, st.rollNo].some((v) => v != null && wantedIds.includes(String(v)));
+      // প্রথমে অভ্যন্তরীণ id দিয়ে মেলাই; না মিললে uid/regNo/rollNo
+      if (st.id != null && wantedIds.includes(String(st.id))) return true;
+      if (idMatched) return false;
+      return [st.uid, st.regNo, st.rollNo].some((v) => v != null && wantedIds.includes(String(v)));
     }
     const cls = st.cls || st.className || st.attCls || "";
     return className ? String(cls) === className : false;
@@ -2576,7 +2581,120 @@ async function notifyWorkflowStudents(request, users) {
     data: { approvalRequestId: String(request._id), kind: request.kind },
     read: false,
   })));
+  users.forEach((u) => {
+    pushToUser(u._id, { title: `${label} প্রকাশিত হয়েছে`, body: detail, url: "#home", tag: `${request.kind}-${Date.now()}` })
+      .catch(() => {});
+  });
 }
+
+/* ------------------------------------------------------------------ */
+/* বাড়ির কাজ — শিক্ষক দেওয়ামাত্র প্রকাশ + শিক্ষার্থীর নোটিফিকেশন        */
+/* (সুপার এডমিনের অনুমোদন বা নোটিফিকেশন লাগে না)                       */
+/* ------------------------------------------------------------------ */
+async function publishHomeworkDirect(user, payload) {
+  const p = payload || {};
+  const isRes = p.homeworkType === "residential";
+  if (!String(p.task || p.comment || p.details || "").trim())
+    throw Object.assign(new Error("বাড়ির কাজের বিবরণ দিন"), { status: 400 });
+  if (isRes && !(Array.isArray(p.studentIds) && p.studentIds.length))
+    throw Object.assign(new Error("অন্তত একজন শিক্ষার্থী নির্বাচন করুন"), { status: 400 });
+  if (!isRes && !String(p.className || p.cls || "").trim())
+    throw Object.assign(new Error("শ্রেণী নির্বাচন করুন"), { status: 400 });
+
+  const teacherName = user.name || user.uid || "শিক্ষক";
+  const common = {
+    teacher: teacherName,
+    teacherId: user.id,
+    publishedAt: new Date(),
+    status: "প্রকাশিত",
+  };
+  const dateBn = workflowDateBn(p.date);
+  let saved;
+  if (isRes) {
+    const item = Object.assign({}, common, {
+      branchName: p.branchName || "আবাসিক",
+      category: p.category || p.subject || "আবাসিক",
+      subject: p.subject || "",
+      comment: p.task || p.comment || "",
+      details: p.details || "",
+      students: Array.isArray(p.studentIds) ? p.studentIds : [],
+      progress: Array.isArray(p.progress) ? p.progress : [],
+      date: dateBn,
+      dateISO: p.date || "",
+      ts: Date.now(),
+      branch: "আবাসিক",
+    });
+    if (p.editId != null) {
+      saved = await updateStoreArrayItem("hwResidentialList", p.editId, item);
+      if (!saved) throw Object.assign(new Error("বাড়ির কাজের রেকর্ড পাওয়া যায়নি"), { status: 404 });
+    } else {
+      saved = await appendStoreArray("hwResidentialList", item);
+    }
+  } else {
+    const item = Object.assign({}, common, {
+      cls: p.className || p.cls || "",
+      subject: p.subject || "",
+      task: p.task || "",
+      khata: !!p.khata,
+      date: dateBn,
+      dateISO: p.date || "",
+      ts: Date.now(),
+    });
+    if (p.editId != null) {
+      saved = await updateStoreArrayItem("hwDailyList", p.editId, item);
+      if (!saved) throw Object.assign(new Error("বাড়ির কাজের রেকর্ড পাওয়া যায়নি"), { status: 404 });
+    } else {
+      saved = await appendStoreArray("hwDailyList", item);
+    }
+  }
+
+  // শুধু সংশ্লিষ্ট শিক্ষার্থীদের কাছে (সুপার এডমিন নয়)
+  const users = await workflowStudentUsers(p);
+  const edited = p.editId != null;
+  const title = edited ? "বাড়ির কাজ সংশোধিত হয়েছে" : "নতুন বাড়ির কাজ";
+  const subj = p.subject || (isRes ? (p.category || "আবাসিক") : "");
+  const taskText = String(p.task || p.comment || "").trim();
+  const body = [subj, taskText, p.details].filter(Boolean).join(" • ") + ` — ${teacherName}`;
+  if (users.length) {
+    await Notification.insertMany(users.map((u) => ({
+      userId: u._id,
+      title,
+      body,
+      url: "#home",
+      type: "homework",
+      data: { kind: "homework", homeworkId: saved && saved.id },
+      read: false,
+    })));
+    users.forEach((u) => {
+      pushToUser(u._id, { title, body, url: "#home", tag: `homework-${Date.now()}` }).catch(() => {});
+    });
+  }
+  return { item: saved, sent: users.length };
+}
+
+app.post("/api/homework/publish", auth, async (req, res) => {
+  try {
+    if (!["Teacher", "Admin", "Super Admin"].includes(req.user.role))
+      return res.status(403).json({ message: "বাড়ির কাজ দেওয়ার অনুমতি নেই" });
+    const payload = req.body && req.body.payload;
+    if (!payload || typeof payload !== "object" || Array.isArray(payload))
+      return res.status(400).json({ message: "সঠিক তথ্য দিন" });
+    const out = await publishHomeworkDirect(req.user, payload);
+    // পুরনো অপেক্ষমান আবেদন এডিট করে পাঠানো হলে সেটি বন্ধ করে দিই
+    const oldId = req.body && req.body.requestId;
+    if (oldId && req.user.role === "Teacher") {
+      await ApprovalRequest.updateOne(
+        { _id: oldId, submittedBy: req.user.id, kind: "homework", status: "pending" },
+        { status: "approved", decisionNote: "সরাসরি প্রকাশিত", decidedAt: new Date(), $addToSet: { readBy: req.user.id } }
+      ).catch(() => {});
+    }
+    res.status(201).json({ ok: true, item: out.item, sent: out.sent });
+  } catch (e) {
+    if (e && e.status) return res.status(e.status).json({ message: e.message });
+    console.error(e);
+    res.status(500).json({ message: "বাড়ির কাজ প্রকাশ করা যায়নি" });
+  }
+});
 
 app.post("/api/approval-requests", auth, async (req, res) => {
   try {
@@ -2586,6 +2704,12 @@ app.post("/api/approval-requests", auth, async (req, res) => {
     const payload = req.body && req.body.payload;
     if (!APPROVAL_LABELS[kind] || !payload || typeof payload !== "object" || Array.isArray(payload))
       return res.status(400).json({ message: "সঠিক তথ্য দিন" });
+
+    // বাড়ির কাজ অনুমোদন ছাড়াই সরাসরি প্রকাশ হয় ও শিক্ষার্থীর নোটিফিকেশনে যায়
+    if (kind === "homework") {
+      const out = await publishHomeworkDirect(req.user, payload);
+      return res.status(201).json({ ok: true, direct: true, item: out.item, sent: out.sent });
+    }
 
     const request = await ApprovalRequest.create({
       submittedBy: req.user.id,
@@ -2597,6 +2721,7 @@ app.post("/api/approval-requests", auth, async (req, res) => {
     await notifyApprovalRequest(request);
     res.status(201).json({ ok: true, request });
   } catch (e) {
+    if (e && e.status) return res.status(e.status).json({ message: e.message });
     console.error(e);
     res.status(500).json({ message: "অনুমোদনের আবেদন পাঠানো যায়নি" });
   }

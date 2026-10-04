@@ -167,7 +167,7 @@
       });
 
       NQNotify.list().then(render).catch(function () {});
-      setInterval(function () { NQNotify.list().then(render).catch(function () {}); }, 60000);
+      setInterval(function () { NQNotify.list().then(render).catch(function () {}); }, 20000);
     }
   };
 

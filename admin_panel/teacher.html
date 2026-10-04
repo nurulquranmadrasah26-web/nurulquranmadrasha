@@ -893,6 +893,26 @@ function submitApproval(kind, title, payload){
   }).catch(function(e){ toast(e.message || 'আবেদন পাঠানো যায়নি'); throw e; });
 }
 
+/* বাড়ির কাজ — অনুমোদন ছাড়াই সরাসরি প্রকাশ; শিক্ষার্থীর নোটিফিকেশনে সাথে সাথে যায় */
+function publishHomework(payload){
+  payload = Object.assign({}, payload, {teacherName: me().name || me().uid || 'শিক্ষক'});
+  var editing = teacherEditingHomeworkId !== null;
+  var body = {payload: payload};
+  if(teacherEditingRequestId) body.requestId = teacherEditingRequestId;
+  return window.NQAuth.postJSON('/api/homework/publish', body, 'POST').then(function(res){
+    teacherEditingRequestId = null;
+    teacherEditingHomeworkId = null;
+    var n = (res && res.sent) || 0;
+    toast((editing ? 'বাড়ির কাজ সংশোধিত হয়েছে' : 'বাড়ির কাজ দেওয়া হয়েছে') + (n ? ' — ' + bn(n) + ' জন শিক্ষার্থীর নোটিফিকেশনে গেছে' : ' (নোটিফিকেশন পাওয়ার মতো সক্রিয় শিক্ষার্থী পাওয়া যায়নি)'));
+    // তালিকা সাথে সাথে হালনাগাদ
+    return window.NQAuth.loadStore().then(function(data){
+      if(data){ S.hwDailyList = data.hwDailyList || []; S.hwResidentialList = data.hwResidentialList || []; }
+      loadTeacherApprovals();
+      renderHwDailyTable(); renderHwList(); renderDashboard();
+    });
+  }).catch(function(e){ toast(e.message || 'বাড়ির কাজ পাঠানো যায়নি'); throw e; });
+}
+
 function renderTeacherApprovals(){
   var box = document.getElementById('teacherApprovalList');
   if(!box) return;
@@ -1506,7 +1526,7 @@ function saveHwDaily(){
     khata:document.getElementById('hwdKhata').checked, date:date
   };
   if(teacherEditingHomeworkId !== null) payload.editId = teacherEditingHomeworkId;
-  submitApproval('homework', 'বাড়ির কাজ অনুমোদনের আবেদন', payload).then(function(){
+  publishHomework(payload).then(function(){
     document.getElementById('hwdTask').value = '';
     document.getElementById('hwdKhata').checked = false;
     renderHwDailyTable(); renderHwList();
@@ -1591,7 +1611,7 @@ function saveHwResidential(){
   if(!comment && !extra.length){ toast('মন্তব্য/বাড়ির কাজের বিবরণ লিখুন'); return; }
   var payload={homeworkType:'residential',branchName:branch,subject:subject,category:branch+(subject?' — '+subject:''),task:comment,comment:comment,details:extra.join(' • '),studentIds:ids,progress:subject==='কায়দা'?Array.from(document.querySelectorAll('.hwr-progress-2:checked')).map(function(c){return Number(c.value);}):[],date:date};
   if(teacherEditingHomeworkId !== null) payload.editId=teacherEditingHomeworkId;
-  submitApproval('homework','আবাসিক বাড়ির কাজ অনুমোদনের আবেদন',payload).then(function(){
+  publishHomework(payload).then(function(){
     ['hwrComment1','hwrComment2','hwrComment3','hwrComment4','hwrSabaqPara4','hwrSabaqPage4','hwrSabqiPara4','hwrSabqiPage4','hwrAmuktaPara4','hwrAmuktaPage4','hwrSearch2'].forEach(function(id){var e=document.getElementById(id);if(e)e.value='';});
     var s=document.getElementById('hwrSearch3');if(s)s.value=''; document.querySelectorAll('#view-hw-residential input[type=checkbox]').forEach(function(c){c.checked=false;});
     renderHwList(); goto('hw-list');
@@ -1661,7 +1681,7 @@ function editPublishedHomework(type, id){
       if(c) c.checked = true;
     });
   }
-  toast('তথ্য পরিবর্তন করে সংরক্ষণ করুন; সুপার এডমিন অনুমোদনের পর প্রকাশ হবে');
+  toast('তথ্য পরিবর্তন করে সংরক্ষণ করুন; শিক্ষার্থীরা সাথে সাথে নোটিফিকেশন পাবে');
 }
 async function deleteHw(type, id){
   var accepted = window.nqConfirm
